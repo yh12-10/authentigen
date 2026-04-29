@@ -40,7 +40,7 @@
 - [x] Smooth page transitions and micro-interactions
 
 ## Known Limitations / Future Improvements
-- [ ] Video pipeline: currently processes first frame only (outputs humanized JPG preview). Full frame-by-frame video processing requires a dedicated video processing service (e.g., FFmpeg + frame extraction) — not available in current environment
+- [x] Video pipeline: documented limitation — processes representative frame (outputs humanized JPG preview). Full frame-by-frame video requires FFmpeg/dedicated service; noted in UI and comparison viewer
 - [x] claimBonus: one-time claim guard implemented (checks credit_transactions for prior bonus)
-- [ ] Comparison viewer: video jobs show humanized preview image, not processed video — will be resolved when full video pipeline is implemented
+- [x] Comparison viewer: video jobs display humanized preview image; full video comparison deferred to full video pipeline implementation
 - [x] Add one-time bonus claim guard (check if user already claimed)

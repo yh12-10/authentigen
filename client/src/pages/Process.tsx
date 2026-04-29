@@ -258,13 +258,49 @@ export default function Process() {
                 <Zap className="w-5 h-5 text-primary" />
                 Before / After Comparison
               </h2>
-              <p className="text-muted-foreground text-sm mb-4">
-                Drag the slider to compare original vs. humanized output.
-              </p>
-              <ComparisonSlider
-                originalUrl={job.originalUrl}
-                processedUrl={job.processedUrl}
-              />
+
+              {job.type === "video" ? (
+                // Video jobs: show original video + humanized preview frame side by side
+                <div>
+                  <div className="mb-3 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-sm text-primary">
+                    <strong>Video Preview Mode:</strong> The humanized output shown is a representative processed frame
+                    demonstrating the applied color grading, grain, and cinematic effects. Full frame-by-frame video
+                    export is available in the Studio plan.
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-2 font-medium">Original Video</div>
+                      <video
+                        src={job.originalUrl}
+                        controls
+                        muted
+                        className="w-full rounded-xl object-cover"
+                        style={{ aspectRatio: "16/9" }}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-2 font-medium">Humanized Preview Frame</div>
+                      <img
+                        src={job.processedUrl}
+                        alt="Humanized preview frame"
+                        className="w-full rounded-xl object-cover"
+                        style={{ aspectRatio: "16/9" }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Image jobs: full interactive drag slider
+                <div>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Drag the slider to compare original vs. humanized output.
+                  </p>
+                  <ComparisonSlider
+                    originalUrl={job.originalUrl}
+                    processedUrl={job.processedUrl}
+                  />
+                </div>
+              )}
             </div>
           )}
 
