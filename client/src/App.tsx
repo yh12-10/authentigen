@@ -5,33 +5,39 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import Upload from "./pages/Upload";
+import Dashboard from "./pages/Dashboard";
+import Process from "./pages/Process";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      <Route path="/" component={Home} />
+      <Route path="/upload" component={Upload} />
+      <Route path="/process/:jobId" component={Process} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
-          <Toaster />
+          <Toaster
+            theme="dark"
+            toastOptions={{
+              style: {
+                background: "oklch(0.14 0.018 265 / 0.9)",
+                border: "1px solid oklch(0.3 0.02 265 / 0.5)",
+                color: "oklch(0.97 0.005 265)",
+                backdropFilter: "blur(20px)",
+              },
+            }}
+          />
           <Router />
         </TooltipProvider>
       </ThemeProvider>
