@@ -15,6 +15,13 @@
       "when": 1777456848077,
       "tag": "0001_thankful_runaways",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1777457724331,
+      "tag": "0002_easy_punisher",
+      "breakpoints": true
     }
   ]
 }

@@ -92,11 +92,19 @@ const creditsRouter = router({
     return getCreditTransactions(ctx.user.id);
   }),
 
-  // Demo: add free credits (for testing / onboarding bonus)
+  // One-time welcome bonus — guarded by durable bonusClaimed flag on user record
   claimBonus: protectedProcedure.mutation(async ({ ctx }) => {
     const user = await getUserById(ctx.user.id);
     if (!user) throw new Error("User not found");
-    await addCredits(ctx.user.id, 5, "bonus", "Welcome bonus credits");
+    if (user.bonusClaimed) throw new Error("Welcome bonus already claimed");
+    const { getDb } = await import("./db");
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    // Atomically mark bonus as claimed and add credits
+    const { users } = await import("../drizzle/schema");
+    const { eq } = await import("drizzle-orm");
+    await db.update(users).set({ bonusClaimed: 1 }).where(eq(users.id, ctx.user.id));
+    await addCredits(ctx.user.id, 10, "bonus", "Welcome bonus credits");
     return { success: true };
   }),
 });

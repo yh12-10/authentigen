@@ -41,6 +41,6 @@
 
 ## Known Limitations / Future Improvements
 - [ ] Video pipeline: currently processes first frame only (outputs humanized JPG preview). Full frame-by-frame video processing requires a dedicated video processing service (e.g., FFmpeg + frame extraction) — not available in current environment
-- [ ] claimBonus: currently repeatable for demo purposes — add one-time claim guard or replace with real billing
+- [x] claimBonus: one-time claim guard implemented (checks credit_transactions for prior bonus)
 - [ ] Comparison viewer: video jobs show humanized preview image, not processed video — will be resolved when full video pipeline is implemented
-- [ ] Add one-time bonus claim guard (check if user already claimed)
+- [x] Add one-time bonus claim guard (check if user already claimed)

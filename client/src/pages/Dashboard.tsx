@@ -81,6 +81,10 @@ export default function Dashboard() {
     onSuccess: () => {
       refetch();
     },
+    onError: (err) => {
+      // Silently handle already-claimed case — button will be hidden
+      console.log("Bonus claim:", err.message);
+    },
   });
 
   if (loading) {
