@@ -48,6 +48,8 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] }
     loginMethod: "manus",
     role: "user",
     credits: 10,
+    bonusClaimed: 0,
+    stripeCustomerId: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),

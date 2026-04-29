@@ -7,8 +7,10 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import {
   Upload as UploadIcon, Image, Video, Sparkles, ArrowLeft,
-  X, FileImage, FileVideo, Zap, Layers, Shield
+  X, FileImage, FileVideo, Zap, Layers, Shield, Files,
 } from "lucide-react";
+import { RippleButton } from "@/components/visual/RippleButton";
+import { motion } from "framer-motion";
 
 type Intensity = "light" | "medium" | "heavy";
 type FileType = "image" | "video" | null;
@@ -145,6 +147,9 @@ export default function Upload() {
             <span className="font-semibold text-lg tracking-tight">AuthentiGen</span>
           </button>
           <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/batch")}>
+              <Files className="w-4 h-4 mr-1.5" /> Batch
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>Dashboard</Button>
           </div>
         </div>
@@ -271,24 +276,31 @@ export default function Upload() {
           </div>
 
           {/* Submit */}
-          <Button
-            size="lg"
-            className="w-full h-14 text-base font-semibold glow-gold"
-            disabled={!file || isUploading}
-            onClick={handleSubmit}
-          >
-            {isUploading ? (
-              <>
-                <div className="w-4 h-4 rounded-full border-2 border-primary-foreground border-t-transparent animate-spin mr-2" />
-                Uploading & Processing...
-              </>
-            ) : (
-              <>
-                <Zap className="w-5 h-5 mr-2" />
-                Humanize {fileType === "video" ? "Video" : "Image"}
-              </>
-            )}
-          </Button>
+          <motion.div whileTap={{ scale: 0.98 }}>
+            <RippleButton
+              size="lg"
+              className="w-full h-14 text-base font-semibold glow-gold"
+              disabled={!file || isUploading}
+              onClick={handleSubmit}
+            >
+              {isUploading ? (
+                <>
+                  <div className="w-4 h-4 rounded-full border-2 border-black border-t-transparent animate-spin mr-2" />
+                  Uploading & Processing…
+                </>
+              ) : (
+                <>
+                  <Zap className="w-5 h-5 mr-2" />
+                  Humanize {fileType === "video" ? "Video" : "Image"}
+                </>
+              )}
+            </RippleButton>
+          </motion.div>
+          {fileType === "video" && (
+            <p className="text-xs text-muted-foreground text-center mt-3">
+              Videos are humanized at sampled framerate with audio passthrough · 30s max.
+            </p>
+          )}
         </div>
       </main>
     </div>

@@ -136,58 +136,9 @@ export async function processImageJob(jobId: number): Promise<void> {
 }
 
 export async function processVideoJob(jobId: number): Promise<void> {
-  const job = await getJobById(jobId);
-  if (!job) throw new Error(`Job ${jobId} not found`);
-
-  const creditsNeeded = getCreditsForJob("video", job.intensity);
-
-  await updateJobStatus(jobId, "processing", { processingStartedAt: new Date(), progress: 5 });
-
-  try {
-    const deducted = await deductCredits(job.userId, creditsNeeded, jobId, `Video humanization (${job.intensity})`);
-    if (!deducted) {
-      await updateJobStatus(jobId, "failed", { errorMessage: "Insufficient credits" });
-      return;
-    }
-
-    await updateJobProgress(jobId, 10);
-
-    // For video, we process it as a single representative frame humanization
-    // and apply the video-specific prompt to the thumbnail/first frame
-    // In a production system this would be frame-by-frame processing
-    const prompt = buildVideoFramePrompt(job.intensity, 0, 30);
-
-    await updateJobProgress(jobId, 20);
-
-    // Generate humanized version using the video URL as reference
-    const result = await generateImage({
-      prompt: prompt + " Output as a video-ready frame with cinematic quality.",
-      originalImages: [{ url: job.originalUrl, mimeType: "image/jpeg" }],
-    });
-
-    await updateJobProgress(jobId, 60);
-
-    // Store the processed result
-    if (!result.url) throw new Error("Image generation returned no URL");
-    const response = await fetch(result.url);
-    const buffer = Buffer.from(await response.arrayBuffer());
-    const processedKey = `processed/${job.userId}/${jobId}/humanized_preview.jpg`;
-    const { url: processedUrl } = await storagePut(processedKey, buffer, "image/jpeg");
-
-    await updateJobProgress(jobId, 90);
-
-    await updateJobStatus(jobId, "completed", {
-      processedKey,
-      processedUrl,
-      progress: 100,
-      completedAt: new Date(),
-      creditsUsed: creditsNeeded,
-    });
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : "Unknown processing error";
-    await updateJobStatus(jobId, "failed", { errorMessage: msg });
-    const { addCredits } = await import("./db");
-    await addCredits(job.userId, creditsNeeded, "refund", `Refund for failed video job #${jobId}`);
-    throw error;
-  }
+  // Real frame-sampled FFmpeg pipeline lives in ./video.ts.
+  // It owns credit deduction, refund-on-failure, duration cap, temp cleanup,
+  // and per-user concurrency.
+  const { runVideoPipeline } = await import("./video");
+  await runVideoPipeline(jobId);
 }

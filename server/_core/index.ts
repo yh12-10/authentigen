@@ -5,6 +5,8 @@ import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
+import { registerStripeWebhook } from "./stripeWebhook";
+import { registerBatchDownload } from "./batchDownload";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -31,11 +33,16 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  // Stripe webhook MUST be registered with raw body BEFORE express.json
+  registerStripeWebhook(app);
+
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+  registerBatchDownload(app);
   // tRPC API
   app.use(
     "/api/trpc",
@@ -57,6 +64,11 @@ async function startServer() {
   if (port !== preferredPort) {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
+
+  // Clean up orphan video temp dirs older than 1h on boot.
+  import("../video")
+    .then((m) => m.sweepOldTempDirs())
+    .catch((err) => console.warn("[Startup] sweep failed:", err));
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);

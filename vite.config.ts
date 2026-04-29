@@ -167,6 +167,21 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes("node_modules")) {
+            if (
+              id.includes("three") ||
+              id.includes("@react-three/fiber") ||
+              id.includes("@react-three/drei")
+            ) {
+              return "three-vendor";
+            }
+          }
+        },
+      },
+    },
   },
   server: {
     host: true,

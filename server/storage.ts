@@ -76,6 +76,15 @@ export async function storageGet(relKey: string): Promise<{ key: string; url: st
   return { key, url: `/manus-storage/${key}` };
 }
 
+export async function storageGetBuffer(relKey: string): Promise<Buffer> {
+  const url = await storageGetSignedUrl(relKey);
+  const resp = await fetch(url);
+  if (!resp.ok) {
+    throw new Error(`Storage fetch failed (${resp.status}) for key ${relKey}`);
+  }
+  return Buffer.from(await resp.arrayBuffer());
+}
+
 export async function storageGetSignedUrl(relKey: string): Promise<string> {
   const { forgeUrl, forgeKey } = getForgeConfig();
   const key = normalizeKey(relKey);
