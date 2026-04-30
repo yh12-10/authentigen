@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
@@ -132,7 +131,7 @@ export default function BatchUpload() {
             <CardDescription>Sign in to start a batch upload.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => (window.location.href = getLoginUrl())} className="w-full">Sign In</Button>
+            <Button onClick={() => navigate("/login")} className="w-full">Sign In</Button>
           </CardContent>
         </Card>
       </div>

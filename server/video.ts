@@ -245,15 +245,22 @@ async function processVideoOnce(jobId: number): Promise<void> {
       const prompt = buildVideoFramePrompt(intensity, i, frameTotal);
       const result = await generateImage({
         prompt,
+        intensity,
         originalImages: [{ b64Json: b64, mimeType: "image/png" }],
       });
       if (!result.url) throw new Error(`Frame ${i} returned no URL`);
 
-      // Fetch the generated frame and write to outFramesDir
-      const resp = await fetch(result.url);
-      if (!resp.ok) throw new Error(`Failed to fetch generated frame ${i}: ${resp.status}`);
-      const outBuf = Buffer.from(await resp.arrayBuffer());
-      const outName = name.replace("in_", "out_");
+      // Read the generated frame (JPEG bytes from humanizer) from local storage or HTTP.
+      let outBuf: Buffer;
+      if (result.url.startsWith("/storage/")) {
+        const key = result.url.slice("/storage/".length);
+        outBuf = await storageGetBuffer(key);
+      } else {
+        const resp = await fetch(result.url);
+        if (!resp.ok) throw new Error(`Failed to fetch generated frame ${i}: ${resp.status}`);
+        outBuf = Buffer.from(await resp.arrayBuffer());
+      }
+      const outName = name.replace("in_", "out_").replace(/\.png$/, ".jpg");
       await fs.writeFile(path.join(outFramesDir, outName), outBuf);
 
       // Progress 10 → 90
@@ -271,7 +278,7 @@ async function processVideoOnce(jobId: number): Promise<void> {
     const reassembleArgs: string[] = [
       "-y",
       "-framerate", String(outFps),
-      "-i", path.join(outFramesDir, "out_%05d.png"),
+      "-i", path.join(outFramesDir, "out_%05d.jpg"),
     ];
     if (info.hasAudio) {
       reassembleArgs.push("-i", inPath, "-map", "0:v", "-map", "1:a", "-c:a", "copy");

@@ -1,33 +1,53 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import {
-  Sparkles, Shield, Zap, Eye, Image, Video, ChevronRight,
-  Check, Star, ArrowRight, Layers, Cpu, Lock, Github, Twitter, Linkedin,
+  Sparkles, Shield, Zap, Eye, ChevronRight, Crosshair,
+  Check, Star, ArrowRight, Layers, Lock, Github, Twitter, Linkedin,
 } from "lucide-react";
+import { type ComponentType } from "react";
 import { Reveal } from "@/components/visual/Reveal";
 import { StaggerGroup, StaggerChild } from "@/components/visual/StaggerGroup";
 import { Counter } from "@/components/visual/Counter";
-import { Typewriter } from "@/components/visual/Typewriter";
-import { HeroVisual } from "@/components/visual/HeroVisual";
 import { TrustedByBadge } from "@/components/visual/TrustedByBadge";
 import { DetectorLogos } from "@/components/visual/DetectorLogos";
 import { Testimonials } from "@/components/visual/Testimonials";
 import { FAQAccordion } from "@/components/visual/FAQAccordion";
 import { PricingCardFlip } from "@/components/visual/PricingCardFlip";
 import { RippleButton } from "@/components/visual/RippleButton";
+import { MagneticButton } from "@/components/visual/MagneticButton";
+import { FloatCard } from "@/components/visual/FloatCard";
+import { Hero3DShowcase } from "@/components/visual/Hero3DShowcase";
 import { PRICING_BACK_BULLETS } from "@/components/visual/_data";
 import { motion } from "framer-motion";
 
-const FEATURES = [
-  { icon: Image, title: "Image Humanization", desc: "Inject organic noise, color grading, textural imperfections, and lighting variations that defeat every major AI detector." },
-  { icon: Video, title: "Video Humanization", desc: "Real frame-sampled processing applies natural motion blur, grain, and micro-imperfections frame by frame." },
+// ── CDN-hosted brand imagery ──────────────────────────────────────────────────
+const IMAGES = {
+  heroBg: "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/hero_bg-kcR6dzewB9D3GtidFycy7U.webp",
+  heroMain: "/storage/originals/1/hf_20260430_115238_af044ea3-5047-4709-972a-82a3ea5dcaa9.png",
+  howItWorks: "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/how_it_works-GzWpzzK3RGiWrDaZ3XnWxV.webp",
+  featureShield: "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/feature_shield-5aympYYyki6z5uCpsMWN94.webp",
+  featureHumanizer: "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/feature_humanizer-YLWtwRqsT5MUjd9mYKRp6K.webp",
+  featureVideo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/feature_video-42jBJtdPW8t5YqMdKdCyCf.webp",
+  pricingBg: "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/pricing_bg-bUPbt5GkjuDKtSMLB66HfJ.webp",
+  dashboardPreview: "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/dashboard_preview-UpA6PRuPsRJrDctDkypkhD.webp",
+} as const;
+
+type Feature = {
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  desc: string;
+  image?: string;
+};
+
+const FEATURES: Feature[] = [
+  { icon: Shield, image: IMAGES.featureShield, title: "AI Detection Bypass", desc: "Defeats Hive, Illuminarty, AI or Not, Hugging Face, GPTZero, Originality.ai and every other major detector with a 13-step pixel-level pipeline." },
+  { icon: Sparkles, image: IMAGES.featureHumanizer, title: "Image Humanizer", desc: "Sub-pixel barrel warp, edge-aware chromatic aberration, Gaussian sensor noise, lens vignette, film halation — applied with real cinematic intent." },
+  { icon: Sparkles, image: IMAGES.featureVideo, title: "Video Processing", desc: "Frame-sampled FFmpeg pipeline humanizes every frame, preserves audio, caps at 30 s, plays back from a real MP4 you can download." },
   { icon: Layers, title: "Intensity Control", desc: "Three precision tiers — Light, Medium, and Heavy — give you full control over the transformation depth." },
   { icon: Eye, title: "Before/After Viewer", desc: "Interactive side-by-side comparison slider lets you inspect every detail of the transformation." },
-  { icon: Cpu, title: "Real-Time Processing", desc: "Live progress tracking with estimated completion time so you always know exactly where your job stands." },
-  { icon: Lock, title: "Secure & Private", desc: "Files are stored in per-user S3 buckets via signed URLs. Never used for training. Delete anytime." },
+  { icon: Lock, title: "Secure & Private", desc: "Files are stored in per-user buckets via signed URLs. Never used for training. Delete anytime." },
 ];
 
 const PRICING = [
@@ -43,14 +63,24 @@ const STATS = [
   { value: 50, suffix: "K+", label: "Files humanized" },
 ];
 
+// Reusable fade-in-up + viewport variants for image reveals
+const fadeInUp = {
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-80px" },
+  transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const },
+};
+
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
 
   const handleCTA = () => {
     if (isAuthenticated) navigate("/upload");
-    else window.location.href = getLoginUrl();
+    else navigate("/signup");
   };
+
+  const handleSignIn = () => navigate("/login");
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -81,7 +111,7 @@ export default function Home() {
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" onClick={() => window.location.href = getLoginUrl()}>
+                <Button variant="ghost" size="sm" onClick={handleSignIn}>
                   Sign In
                 </Button>
                 <RippleButton size="sm" onClick={handleCTA} className="glow-gold-sm">
@@ -93,19 +123,35 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative min-h-screen overflow-hidden hero-gradient pt-24">
+      {/* ─────────────────────────── Hero ─────────────────────────── */}
+      <section className="relative min-h-screen overflow-hidden pt-24">
+        {/* Full-bleed background image */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${IMAGES.heroBg})` }}
+        />
+        {/* Dark gradient overlay so text stays readable */}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(8,8,8,0.30) 0%, rgba(8,8,8,0.85) 100%)",
+          }}
+        />
+
         <div className="container relative z-10 grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-6rem)] py-12">
           <div className="page-enter text-center lg:text-left">
             <div className="mb-6 inline-block">
               <TrustedByBadge />
             </div>
             <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-normal leading-[1.05] tracking-tight mb-6 text-balance">
-              Make AI{" "}
-              <span className="block sm:inline">
-                <Typewriter words={["Images", "Videos", "Art", "Photography"]} />
-              </span>{" "}
-              <span className="text-gold italic block sm:inline">Undetectable</span>
+              Make AI <span className="text-gold">Image</span>
+              <span className="block">
+                <span className="text-gold italic">|</span>{" "}
+                <span className="text-gold italic">Undetectable</span>
+              </span>
             </h1>
 
             <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed">
@@ -113,25 +159,47 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
-              <RippleButton size="lg" onClick={handleCTA} className="h-14 px-8 text-base font-semibold glow-gold gradient-border-animated group">
-                Start Humanizing
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </RippleButton>
+              <MagneticButton strength={14} radius={140}>
+                <RippleButton size="lg" onClick={handleCTA} className="h-14 px-8 text-base font-semibold glow-gold gradient-border-animated group">
+                  Start Humanizing
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </RippleButton>
+              </MagneticButton>
               <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-muted-foreground hover:text-foreground"
                 onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })}>
                 See How It Works
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
+
+            {/* Trust pill row: 4 icon-label pairs */}
+            <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-6 max-w-xl mx-auto lg:mx-0">
+              {[
+                { icon: Shield, label: ["Advanced", "Humanization"] },
+                { icon: Crosshair, label: ["Multi-Detector", "Bypass"] },
+                { icon: Zap, label: ["Lightning", "Fast"] },
+                { icon: Lock, label: ["Privacy", "Focused"] },
+              ].map(({ icon: Icon, label }) => (
+                <div key={label.join("-")} className="flex flex-col items-center lg:items-start gap-2.5">
+                  <Icon className="w-6 h-6 text-[#F5A623]" strokeWidth={1.5} />
+                  <div className="text-xs leading-tight text-muted-foreground text-center lg:text-left">
+                    <div>{label[0]}</div>
+                    <div>{label[1]}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="relative h-[400px] lg:h-[600px]">
-            <HeroVisual />
-          </div>
+          {/* Hero main visual: 3D-tilted, floating, glow-haloed showcase */}
+          <Hero3DShowcase
+            src={IMAGES.heroMain}
+            alt="AuthentiGen humanization in action"
+          />
         </div>
       </section>
 
-      {/* Stats */}
+      {/* ────────────────────────── Stats ──────────────────────────── */}
       <section className="relative -mt-16 pb-16">
         <div className="container">
           <Reveal>
@@ -149,7 +217,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Detector logos */}
+      {/* ─────────────────── Detector logos ──────────────────────── */}
       <section className="py-12">
         <div className="container max-w-6xl mx-auto">
           <Reveal>
@@ -161,11 +229,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* ─────────────────── How It Works ────────────────────────── */}
       <section id="how-it-works" className="py-24">
         <div className="container">
           <Reveal>
-            <div className="text-center mb-16">
+            <div className="text-center mb-12">
               <Badge variant="outline" className="mb-4 border-[#F5A623]/30 text-[#F5A623] bg-[#F5A623]/5 text-xs tracking-widest uppercase">Process</Badge>
               <h2 className="font-serif text-4xl sm:text-5xl font-normal mb-4">
                 Three Steps to <span className="text-gold italic">Authenticity</span>
@@ -174,31 +242,42 @@ export default function Home() {
             </div>
           </Reveal>
 
+          {/* Pipeline visual */}
+          <motion.div
+            initial={fadeInUp.initial}
+            whileInView={fadeInUp.whileInView}
+            viewport={fadeInUp.viewport}
+            transition={fadeInUp.transition}
+            className="mb-16 mx-auto max-w-[900px]"
+          >
+            <img
+              src={IMAGES.howItWorks}
+              alt="AuthentiGen humanization pipeline"
+              loading="lazy"
+              className="w-full h-auto rounded-2xl"
+              style={{ boxShadow: "0 0 40px rgba(245,166,35,0.15), 0 10px 40px rgba(0,0,0,0.4)" }}
+            />
+          </motion.div>
+
           <StaggerGroup className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
-              { step: "01", icon: Image, title: "Upload Your File", desc: "Drop in your AI-generated image (JPG, PNG, WEBP) or video (MP4, WEBM). Files are encrypted on upload." },
-              { step: "02", icon: Layers, title: "Choose Intensity", desc: "Select Light, Medium, or Heavy humanization. Our AI pipeline applies the right level of organic imperfection." },
-              { step: "03", icon: Zap, title: "Download Result", desc: "Your humanized file is ready in seconds. Compare before/after, then download." },
-            ].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <StaggerChild key={i}>
-                  <div className="glass rounded-2xl p-8 gradient-border group hover:glow-gold-sm transition-all duration-300 hover:-translate-y-1">
-                    <div className="text-6xl font-bold text-gold opacity-20 mb-4 font-serif">{item.step}</div>
-                    <div className="w-12 h-12 rounded-xl bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] mb-4 group-hover:bg-[#F5A623]/20 transition-colors">
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
-                  </div>
-                </StaggerChild>
-              );
-            })}
+              { step: "01", title: "Upload Your File", desc: "Drop in your AI-generated image (JPG, PNG, WEBP) or video (MP4, WEBM). Files are encrypted on upload." },
+              { step: "02", title: "Choose Intensity", desc: "Select Light, Medium, or Heavy humanization. Our AI pipeline applies the right level of organic imperfection." },
+              { step: "03", title: "Download Result", desc: "Your humanized file is ready in seconds. Compare before/after, then download." },
+            ].map((item, i) => (
+              <StaggerChild key={i}>
+                <div className="glass rounded-2xl p-8 gradient-border group hover:glow-gold-sm transition-all duration-300 hover:-translate-y-1 h-full">
+                  <div className="text-6xl font-bold text-gold opacity-20 mb-4 font-serif">{item.step}</div>
+                  <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+                </div>
+              </StaggerChild>
+            ))}
           </StaggerGroup>
         </div>
       </section>
 
-      {/* Features */}
+      {/* ────────────────────── Features ─────────────────────────── */}
       <section id="features" className="py-24">
         <div className="container">
           <Reveal>
@@ -215,17 +294,44 @@ export default function Home() {
               const Icon = f.icon;
               return (
                 <StaggerChild key={i}>
-                  <motion.div
-                    whileHover={{ rotateY: 4, rotateX: -4, translateY: -4 }}
-                    style={{ transformStyle: "preserve-3d", transformPerspective: 800 }}
-                    className="glass rounded-2xl p-6 group hover:glow-gold-sm transition-all duration-300 hover:border-[#F5A623]/30 h-full"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] mb-4 group-hover:bg-[#F5A623]/20 transition-colors">
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <h3 className="font-semibold text-base mb-2">{f.title}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
-                  </motion.div>
+                  <FloatCard amplitude={5} className="h-full">
+                    <motion.div
+                      whileHover={{ rotateY: 4, rotateX: -4, translateY: -6, scale: 1.01 }}
+                      style={{ transformStyle: "preserve-3d", transformPerspective: 800 }}
+                      className="glass rounded-2xl group hover:glow-gold-sm transition-all duration-300 hover:border-[#F5A623]/30 h-full overflow-hidden flex flex-col"
+                    >
+                      {f.image ? (
+                        <motion.div
+                          initial={fadeInUp.initial}
+                          whileInView={fadeInUp.whileInView}
+                          viewport={fadeInUp.viewport}
+                          transition={fadeInUp.transition}
+                          className="relative overflow-hidden"
+                        >
+                          <img
+                            src={f.image}
+                            alt={f.title}
+                            loading="lazy"
+                            className="w-full h-48 object-cover rounded-t-2xl transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div
+                            className="absolute inset-0 pointer-events-none"
+                            style={{ background: "linear-gradient(to top, rgba(20,20,20,0.85) 0%, rgba(20,20,20,0) 50%)" }}
+                          />
+                        </motion.div>
+                      ) : (
+                        <div className="p-6 pb-0">
+                          <div className="w-12 h-12 rounded-xl bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] group-hover:bg-[#F5A623]/20 transition-colors">
+                            <Icon className="w-6 h-6" />
+                          </div>
+                        </div>
+                      )}
+                      <div className="p-6 flex-1">
+                        <h3 className="font-semibold text-base mb-2">{f.title}</h3>
+                        <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
+                      </div>
+                    </motion.div>
+                  </FloatCard>
                 </StaggerChild>
               );
             })}
@@ -233,9 +339,58 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="py-24">
+      {/* ───────────────── Dashboard Showcase ────────────────────── */}
+      <section id="dashboard" className="py-24">
         <div className="container">
+          <Reveal>
+            <div className="text-center mb-12 max-w-2xl mx-auto">
+              <Badge variant="outline" className="mb-4 border-[#4F8EF7]/30 text-[#4F8EF7] bg-[#4F8EF7]/5 text-xs tracking-widest uppercase">
+                Your Command Center
+              </Badge>
+              <h2 className="font-serif text-4xl sm:text-5xl font-normal mb-4">
+                Everything You Need, <span className="text-gold italic">In One Place</span>
+              </h2>
+              <p className="text-muted-foreground text-lg">
+                Track every job, manage your credits, and download humanized files — all from your sleek dashboard.
+              </p>
+            </div>
+          </Reveal>
+
+          <motion.div
+            initial={fadeInUp.initial}
+            whileInView={fadeInUp.whileInView}
+            viewport={fadeInUp.viewport}
+            transition={fadeInUp.transition}
+            className="dashboard-tilt mx-auto w-full max-w-[900px] cursor-default"
+          >
+            <img
+              src={IMAGES.dashboardPreview}
+              alt="AuthentiGen dashboard"
+              loading="lazy"
+              className="w-full h-auto rounded-2xl"
+            />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─────────────────────── Pricing ─────────────────────────── */}
+      <section id="pricing" className="relative py-24 overflow-hidden">
+        {/* Full-bleed background image with uniform 70% dark overlay */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${IMAGES.pricingBg})` }}
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(8,8,8,0.7) 0%, rgba(8,8,8,0.7) 100%)",
+          }}
+        />
+
+        <div className="container relative z-10">
           <Reveal>
             <div className="text-center mb-16">
               <Badge variant="outline" className="mb-4 border-[#F5A623]/30 text-[#F5A623] bg-[#F5A623]/5 text-xs tracking-widest uppercase">Pricing</Badge>
@@ -311,7 +466,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* ───────────────────── Testimonials ──────────────────────── */}
       <section className="py-24">
         <div className="container">
           <Reveal>
@@ -326,7 +481,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* ─────────────────────── FAQ ─────────────────────────────── */}
       <section id="faq" className="py-24">
         <div className="container max-w-3xl mx-auto">
           <Reveal>
@@ -343,7 +498,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Banner */}
+      {/* ───────────────────── CTA Banner ────────────────────────── */}
       <section className="py-24">
         <div className="container">
           <Reveal>
@@ -367,17 +522,19 @@ export default function Home() {
                 <p className="text-muted-foreground text-lg mb-8 max-w-lg mx-auto">
                   Join thousands of creators who trust AuthentiGen to keep their AI-generated content authentic.
                 </p>
-                <RippleButton size="lg" onClick={handleCTA} className="h-14 px-10 text-base font-semibold glow-gold">
-                  Start Free — 10 Credits Included
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </RippleButton>
+                <MagneticButton strength={12} radius={150}>
+                  <RippleButton size="lg" onClick={handleCTA} className="h-14 px-10 text-base font-semibold glow-gold">
+                    Start Free — 10 Credits Included
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </RippleButton>
+                </MagneticButton>
               </div>
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* Footer */}
+      {/* ─────────────────────── Footer ─────────────────────────── */}
       <footer className="border-t border-border/40 py-10 relative">
         <div className="absolute inset-x-0 -top-px h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(245,166,35,0.5), transparent)" }} />
         <div className="container grid sm:grid-cols-3 gap-8">

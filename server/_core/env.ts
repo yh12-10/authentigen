@@ -1,3 +1,39 @@
+import { randomBytes } from "node:crypto";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+/**
+ * In dev, auto-generate a JWT_SECRET on first run and persist it to .env so
+ * sessions survive server restarts. In production we never silently generate
+ * one — operators must set it explicitly.
+ */
+function ensureDevJwtSecret(): void {
+  if (process.env.JWT_SECRET && process.env.JWT_SECRET.length >= 32) return;
+  if (process.env.NODE_ENV === "production") return;
+
+  const secret = randomBytes(48).toString("hex"); // 96 hex chars
+  process.env.JWT_SECRET = secret;
+
+  try {
+    const envPath = path.resolve(process.cwd(), ".env");
+    let contents = existsSync(envPath) ? readFileSync(envPath, "utf8") : "";
+
+    if (/^\s*JWT_SECRET\s*=.*$/m.test(contents)) {
+      contents = contents.replace(/^\s*JWT_SECRET\s*=.*$/m, `JWT_SECRET=${secret}`);
+    } else {
+      if (contents.length > 0 && !contents.endsWith("\n")) contents += "\n";
+      contents += `JWT_SECRET=${secret}\n`;
+    }
+    writeFileSync(envPath, contents, "utf8");
+    console.log("[env] Generated JWT_SECRET and wrote it to .env (dev only).");
+  } catch (err) {
+    // If we can't write .env, sessions are still valid for this process — just won't persist on restart.
+    console.warn("[env] Could not persist JWT_SECRET to .env:", err);
+  }
+}
+
+ensureDevJwtSecret();
+
 export const ENV = {
   appId: process.env.VITE_APP_ID ?? "",
   cookieSecret: process.env.JWT_SECRET ?? "",
@@ -5,8 +41,6 @@ export const ENV = {
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
   isProduction: process.env.NODE_ENV === "production",
-  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
-  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   // Stripe
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",

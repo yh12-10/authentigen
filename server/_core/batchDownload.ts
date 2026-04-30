@@ -1,16 +1,16 @@
 import type { Express } from "express";
+import { authenticateRequest } from "./auth";
 
 /**
  * Mounts GET /api/batch/:batchId/download which streams a ZIP of all
  * completed humanized files in the batch.
  * Implementation lives in server/batch.ts; this module wires it to Express
- * and handles auth via the same Manus session cookie path used by tRPC.
+ * and handles auth via the native session-cookie path used by tRPC.
  */
 export function registerBatchDownload(app: Express): void {
   app.get("/api/batch/:batchId/download", async (req, res) => {
     try {
-      const { sdk } = await import("./sdk");
-      const user = await sdk.authenticateRequest(req).catch(() => null);
+      const user = await authenticateRequest(req).catch(() => null);
       if (!user) {
         return res.status(401).json({ error: "Unauthorized" });
       }

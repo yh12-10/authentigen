@@ -35,9 +35,13 @@ export async function createBatch(userId: number, files: BatchFile[]): Promise<{
 
   for (const file of files) {
     const type = file.mimeType.startsWith("image/") ? "image" : "video";
-    const originalKey = `originals/${userId}/${Date.now()}-${file.filename}`;
+    const requestedKey = `originals/${userId}/${Date.now()}-${file.filename}`;
     const buf = Buffer.from(file.fileDataBase64, "base64");
-    const { url: originalUrl } = await storagePut(originalKey, buf, file.mimeType);
+    const { key: originalKey, url: originalUrl } = await storagePut(
+      requestedKey,
+      buf,
+      file.mimeType
+    );
 
     const jobId = await createJob({
       userId,

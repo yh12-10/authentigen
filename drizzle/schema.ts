@@ -10,20 +10,28 @@ import {
   index,
 } from "drizzle-orm/mysql-core";
 
-export const users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
-  name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  credits: int("credits").default(10).notNull(),
-  bonusClaimed: int("bonusClaimed").default(0).notNull(),
-  stripeCustomerId: varchar("stripeCustomerId", { length: 64 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
-});
+export const users = mysqlTable(
+  "users",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    // openId stays for compatibility — generated UUID for native signups, optional for future SSO providers.
+    openId: varchar("openId", { length: 64 }).unique(),
+    name: text("name"),
+    email: varchar("email", { length: 320 }).notNull(),
+    passwordHash: varchar("passwordHash", { length: 255 }),
+    loginMethod: varchar("loginMethod", { length: 64 }),
+    role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+    credits: int("credits").default(10).notNull(),
+    bonusClaimed: int("bonusClaimed").default(0).notNull(),
+    stripeCustomerId: varchar("stripeCustomerId", { length: 64 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+    lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  },
+  (t) => ({
+    usersEmailUnique: uniqueIndex("users_email_unique").on(t.email),
+  }),
+);
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;

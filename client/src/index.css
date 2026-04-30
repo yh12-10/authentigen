@@ -361,6 +361,17 @@
 .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .rotate-y-180 { transform: rotateY(180deg); }
 
+/* ── Dashboard mockup perspective (straightens on hover) ───── */
+.dashboard-tilt img {
+  transform: perspective(1200px) rotateX(5deg) rotateY(-5deg);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 30px 60px rgba(245, 166, 35, 0.18))
+          drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+}
+.dashboard-tilt:hover img {
+  transform: perspective(1200px) rotateX(0deg) rotateY(0deg);
+}
+
 /* ── Reduced motion guard (global short-circuit) ────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,

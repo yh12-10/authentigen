@@ -1,48 +1,22 @@
 import type { Express } from "express";
-import { ENV } from "./env";
+import express from "express";
+import { promises as fs } from "node:fs";
+import { STORAGE_ROOT } from "../storage";
 
+/**
+ * Serve files from the local ./storage/ directory at /storage/*.
+ * Streams the actual file (not a redirect), so URLs work for both <img>
+ * and <video> tags including when fetched cross-origin during humanization.
+ */
 export function registerStorageProxy(app: Express) {
-  app.get("/manus-storage/*", async (req, res) => {
-    const key = (req.params as Record<string, string | undefined>)[0];
-    if (!key) {
-      res.status(400).send("Missing storage key");
-      return;
-    }
-
-    if (!ENV.forgeApiUrl || !ENV.forgeApiKey) {
-      res.status(500).send("Storage proxy not configured");
-      return;
-    }
-
-    try {
-      const forgeUrl = new URL(
-        "v1/storage/presign/get",
-        ENV.forgeApiUrl.replace(/\/+$/, "") + "/",
-      );
-      forgeUrl.searchParams.set("path", key);
-
-      const forgeResp = await fetch(forgeUrl, {
-        headers: { Authorization: `Bearer ${ENV.forgeApiKey}` },
-      });
-
-      if (!forgeResp.ok) {
-        const body = await forgeResp.text().catch(() => "");
-        console.error(`[StorageProxy] forge error: ${forgeResp.status} ${body}`);
-        res.status(502).send("Storage backend error");
-        return;
-      }
-
-      const { url } = (await forgeResp.json()) as { url: string };
-      if (!url) {
-        res.status(502).send("Empty signed URL from backend");
-        return;
-      }
-
-      res.set("Cache-Control", "no-store");
-      res.redirect(307, url);
-    } catch (err) {
-      console.error("[StorageProxy] failed:", err);
-      res.status(502).send("Storage proxy error");
-    }
-  });
+  // Make sure the directory exists so express.static doesn't 404 on first boot.
+  fs.mkdir(STORAGE_ROOT, { recursive: true }).catch(() => {});
+  app.use(
+    "/storage",
+    express.static(STORAGE_ROOT, {
+      setHeaders: (res) => {
+        res.setHeader("Cache-Control", "private, max-age=3600");
+      },
+    })
+  );
 }

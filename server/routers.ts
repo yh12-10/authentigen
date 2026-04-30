@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
+import { signupUser, loginUser, signSessionToken } from "./_core/auth";
 import {
   createJob,
   getJobById,
@@ -53,10 +54,15 @@ const jobsRouter = router({
         });
       }
 
-      // Upload original file to storage
-      const originalKey = `originals/${userId}/${Date.now()}-${input.filename}`;
+      // Upload original file to storage. storagePut returns the actual key
+      // (with a unique hash suffix) — store THAT in the DB so subsequent reads find the file.
+      const requestedKey = `originals/${userId}/${Date.now()}-${input.filename}`;
       const fileBuffer = Buffer.from(input.fileDataBase64, "base64");
-      const { url: originalUrl } = await storagePut(originalKey, fileBuffer, input.mimeType);
+      const { key: originalKey, url: originalUrl } = await storagePut(
+        requestedKey,
+        fileBuffer,
+        input.mimeType
+      );
 
       // Create job record
       const jobId = await createJob({
@@ -206,6 +212,50 @@ export const appRouter = router({
 
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
+
+    signup: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email().max(320),
+          password: z.string().min(8).max(128),
+          name: z.string().min(1).max(120).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        let user;
+        try {
+          user = await signupUser(input);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "Signup failed";
+          throw new TRPCError({ code: "BAD_REQUEST", message: msg });
+        }
+        const token = await signSessionToken(user.id);
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        return { success: true, user } as const;
+      }),
+
+    login: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email().max(320),
+          password: z.string().min(1).max(128),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        let user;
+        try {
+          user = await loginUser(input.email, input.password);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "Login failed";
+          throw new TRPCError({ code: "UNAUTHORIZED", message: msg });
+        }
+        const token = await signSessionToken(user.id);
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        return { success: true, user } as const;
+      }),
+
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });

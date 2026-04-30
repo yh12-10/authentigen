@@ -8,6 +8,7 @@ import { CustomCursor } from "@/components/visual/CustomCursor";
 import { DriftingOrbs } from "@/components/visual/DriftingOrbs";
 import { LoadingScreen } from "@/components/visual/LoadingScreen";
 import { NoiseOverlay } from "@/components/visual/NoiseOverlay";
+import { ScrollProgress } from "@/components/visual/ScrollProgress";
 import Home from "./pages/Home";
 import Upload from "./pages/Upload";
 import Dashboard from "./pages/Dashboard";
@@ -16,11 +17,15 @@ import Admin from "./pages/Admin";
 import BillingSuccess from "./pages/BillingSuccess";
 import BillingCancel from "./pages/BillingCancel";
 import BatchUpload from "./pages/BatchUpload";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
+      <Route path="/signup" component={Signup} />
       <Route path="/upload" component={Upload} />
       <Route path="/batch" component={BatchUpload} />
       <Route path="/process/:jobId" component={Process} />
@@ -51,6 +56,7 @@ function App() {
             }}
           />
           <LoadingScreen />
+          <ScrollProgress />
           <DriftingOrbs />
           <NoiseOverlay />
           <CustomCursor />

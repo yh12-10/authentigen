@@ -101,6 +101,9 @@ jspm_packages/
 tmp/
 temp/
 
+# Local-FS uploads + humanized outputs (replaces Manus Forge S3)
+storage/
+
 # Database
 *.db
 *.sqlite

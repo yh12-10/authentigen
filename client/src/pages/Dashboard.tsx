@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
-import { getLoginUrl } from "@/const";
 import {
   Sparkles, Plus, Download, Clock, CheckCircle2, XCircle,
   Loader2, Image, Video, Coins, LayoutGrid, LogOut, Zap,
@@ -100,7 +99,7 @@ export default function Dashboard() {
         <div className="glass rounded-3xl p-12 text-center max-w-md gradient-border">
           <h2 className="font-serif text-3xl font-normal mb-3">Sign In Required</h2>
           <p className="text-muted-foreground mb-8">Sign in to access your dashboard.</p>
-          <Button className="glow-gold w-full h-12" onClick={() => window.location.href = getLoginUrl()}>
+          <Button className="glow-gold w-full h-12" onClick={() => navigate("/login")}>
             Sign In
           </Button>
         </div>
