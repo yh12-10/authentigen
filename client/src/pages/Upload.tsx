@@ -515,7 +515,7 @@ function PreviewPanel({ intensity }: { intensity: Intensity }) {
 
         <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
           <ShieldCheck className="size-3.5 text-emerald-400 flex-shrink-0" />
-          <span>Powered by advanced detection bypass technology</span>
+          <span>Powered by a deterministic, pixel-level realism pipeline</span>
         </div>
       </div>
     </aside>
@@ -663,7 +663,7 @@ export default function Upload() {
                     Upload Your <span className="text-gold italic">Content</span>
                   </h1>
                   <p className="text-muted-foreground mt-1.5">
-                    Drop your AI-generated image or video below and we'll make it undetectable.
+                    Drop your AI-generated image or video below and we'll give it the look of real photography.
                   </p>
                 </div>
                 <HowItWorksDialog />

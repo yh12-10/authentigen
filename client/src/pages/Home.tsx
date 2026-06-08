@@ -42,12 +42,12 @@ type Feature = {
 };
 
 const FEATURES: Feature[] = [
-  { icon: Shield, image: IMAGES.featureShield, title: "AI Detection Bypass", desc: "Defeats Hive, Illuminarty, AI or Not, Hugging Face, GPTZero, Originality.ai and every other major detector with a 13-step pixel-level pipeline." },
+  { icon: Shield, image: IMAGES.featureShield, title: "Camera-Realistic Output", desc: "A 13-step pixel-level pipeline reintroduces the sensor noise, lens optics, and compression artefacts of real photography — the camera-domain signals clean synthetic output is missing." },
   { icon: Sparkles, image: IMAGES.featureHumanizer, title: "Image Humanizer", desc: "Sub-pixel barrel warp, edge-aware chromatic aberration, Gaussian sensor noise, lens vignette, film halation — applied with real cinematic intent." },
   { icon: Sparkles, image: IMAGES.featureVideo, title: "Video Processing", desc: "Frame-sampled FFmpeg pipeline humanizes every frame, preserves audio, caps at 30 s, plays back from a real MP4 you can download." },
   { icon: Layers, title: "Intensity Control", desc: "Three precision tiers — Light, Medium, and Heavy — give you full control over the transformation depth." },
   { icon: Eye, title: "Before/After Viewer", desc: "Interactive side-by-side comparison slider lets you inspect every detail of the transformation." },
-  { icon: Lock, title: "Secure & Private", desc: "Files are stored in per-user buckets via signed URLs. Never used for training. Delete anytime." },
+  { icon: Lock, title: "Secure & Private", desc: "Self-hosted: files are stored under per-user keys on your own server, never sent to a third party or used for training. Delete anytime." },
 ];
 
 const PRICING = [
@@ -56,11 +56,17 @@ const PRICING = [
   { name: "Studio", price: "$29.99", period: "500 credits", credits: "500 credits", description: "For agencies and studios", features: ["500 credits", "Bulk processing", "All intensity levels", "Highest priority queue", "Concurrent video jobs", "Priority support"], cta: "Buy Studio Pack", highlight: false },
 ];
 
-const STATS = [
-  { value: 99.7, suffix: "%", label: "Detection bypass rate", decimals: 1 },
-  { value: 60, prefix: "<", suffix: "s", label: "Average processing time" },
-  { value: 12, suffix: "+", label: "AI detectors defeated" },
-  { value: 50, suffix: "K+", label: "Files humanized" },
+const STATS: {
+  value: number;
+  label: string;
+  suffix?: string;
+  prefix?: string;
+  decimals?: number;
+}[] = [
+  { value: 13, suffix: "", label: "Pixel-pipeline stages" },
+  { value: 60, prefix: "<", suffix: "s", label: "Typical image time" },
+  { value: 3, suffix: "", label: "Intensity levels" },
+  { value: 100, suffix: "%", label: "Open-source & self-hosted" },
 ];
 
 // Reusable fade-in-up + viewport variants for image reveals
@@ -150,12 +156,12 @@ export default function Home() {
               Make AI <span className="text-gold">Image</span>
               <span className="block">
                 <span className="text-gold italic">|</span>{" "}
-                <span className="text-gold italic">Undetectable</span>
+                <span className="text-gold italic">Camera-Real</span>
               </span>
             </h1>
 
             <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed">
-              Transform AI-generated images and videos into authentically human-made content. Defeat every major AI detector with our precision humanization pipeline.
+              Give AI-generated images and videos the grain, lens optics, and imperfections of real photography — through a deterministic, pixel-level pipeline that runs entirely on your own server.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
@@ -176,7 +182,7 @@ export default function Home() {
             <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-6 max-w-xl mx-auto lg:mx-0">
               {[
                 { icon: Shield, label: ["Advanced", "Humanization"] },
-                { icon: Crosshair, label: ["Multi-Detector", "Bypass"] },
+                { icon: Crosshair, label: ["Camera-Domain", "Realism"] },
                 { icon: Zap, label: ["Lightning", "Fast"] },
                 { icon: Lock, label: ["Privacy", "Focused"] },
               ].map(({ icon: Icon, label }) => (
@@ -222,7 +228,7 @@ export default function Home() {
         <div className="container max-w-6xl mx-auto">
           <Reveal>
             <p className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground mb-6">
-              Defeats every major AI detector
+              Tested against leading AI-image detectors
             </p>
           </Reveal>
           <DetectorLogos />
@@ -238,7 +244,7 @@ export default function Home() {
               <h2 className="font-serif text-4xl sm:text-5xl font-normal mb-4">
                 Three Steps to <span className="text-gold italic">Authenticity</span>
               </h2>
-              <p className="text-muted-foreground text-lg max-w-xl mx-auto">From upload to undetectable in minutes.</p>
+              <p className="text-muted-foreground text-lg max-w-xl mx-auto">From upload to camera-real in minutes.</p>
             </div>
           </Reveal>
 
@@ -517,10 +523,10 @@ export default function Home() {
                   <Shield className="w-8 h-8" />
                 </div>
                 <h2 className="font-serif text-4xl font-normal mb-4">
-                  Ready to Make Your Content <span className="text-gold italic">Undetectable?</span>
+                  Ready to Make Your Content <span className="text-gold italic">Camera-Real?</span>
                 </h2>
                 <p className="text-muted-foreground text-lg mb-8 max-w-lg mx-auto">
-                  Join thousands of creators who trust AuthentiGen to keep their AI-generated content authentic.
+                  Add the grain, optics, and imperfections of real photography to your AI-generated images and video.
                 </p>
                 <MagneticButton strength={12} radius={150}>
                   <RippleButton size="lg" onClick={handleCTA} className="h-14 px-10 text-base font-semibold glow-gold">
@@ -546,7 +552,7 @@ export default function Home() {
               <span className="text-base font-semibold">AuthentiGen</span>
             </div>
             <p className="text-xs text-muted-foreground max-w-xs">
-              Premium AI humanization for images and videos. Undetectable, private, and beautifully crafted.
+              Premium AI humanization for images and videos. Camera-realistic, private, and self-hosted.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -565,6 +571,14 @@ export default function Home() {
             </div>
             <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} AuthentiGen. All rights reserved.</p>
           </div>
+        </div>
+        <div className="container mt-8">
+          <p className="text-[11px] leading-relaxed text-muted-foreground/70 max-w-3xl">
+            AuthentiGen adds authentic photographic characteristics to digital media. Please use it
+            responsibly and lawfully — it is not intended for fraud, academic dishonesty,
+            disinformation, or misrepresenting synthetic media as authentic where authenticity
+            matters. Detector-evasion outcomes are not guaranteed.
+          </p>
         </div>
       </footer>
     </div>
