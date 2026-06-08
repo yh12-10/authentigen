@@ -36,6 +36,7 @@ import {
   addCredits,
 } from "./db";
 import { sendJobCompletionEmail } from "./_core/email";
+import { ENV } from "./_core/env";
 
 export type IntensityLevel = "light" | "medium" | "heavy";
 export type MediaType = "image" | "video";
@@ -950,6 +951,37 @@ async function downloadOriginal(originalKey: string, originalUrl: string): Promi
   return Buffer.from(await resp.arrayBuffer());
 }
 
+// Global limiter so concurrent image humanizations (sharp is CPU/RAM heavy)
+// can't exhaust the box under load. Excess jobs queue and run as slots free up.
+let activeImageJobs = 0;
+const imageSlotWaiters: Array<() => void> = [];
+
+function acquireImageSlot(): Promise<void> {
+  if (activeImageJobs < ENV.maxConcurrentImageJobs) {
+    activeImageJobs++;
+    return Promise.resolve();
+  }
+  return new Promise<void>((resolve) => imageSlotWaiters.push(resolve));
+}
+
+function releaseImageSlot(): void {
+  const next = imageSlotWaiters.shift();
+  if (next) {
+    next(); // hand the active slot directly to the next waiter
+  } else {
+    activeImageJobs--;
+  }
+}
+
+async function withImageSlot<T>(fn: () => Promise<T>): Promise<T> {
+  await acquireImageSlot();
+  try {
+    return await fn();
+  } finally {
+    releaseImageSlot();
+  }
+}
+
 export async function processImageJob(jobId: number): Promise<void> {
   const job = await getJobById(jobId);
   if (!job) throw new Error(`Job ${jobId} not found`);
@@ -970,22 +1002,24 @@ export async function processImageJob(jobId: number): Promise<void> {
       return;
     }
 
-    await updateJobProgress(jobId, 15);
-    const originalBuf = await downloadOriginal(job.originalKey, job.originalUrl);
-    await updateJobProgress(jobId, 30);
+    await withImageSlot(async () => {
+      await updateJobProgress(jobId, 15);
+      const originalBuf = await downloadOriginal(job.originalKey, job.originalUrl);
+      await updateJobProgress(jobId, 30);
 
-    const humanized = await humanizeImageBuffer(originalBuf, job.intensity);
-    await updateJobProgress(jobId, 90);
+      const humanized = await humanizeImageBuffer(originalBuf, job.intensity);
+      await updateJobProgress(jobId, 90);
 
-    const processedKey = `processed/${job.userId}/${jobId}/humanized.jpg`;
-    const { url: processedUrl } = await storagePut(
-      processedKey, humanized, "image/jpeg"
-    );
+      const processedKey = `processed/${job.userId}/${jobId}/humanized.jpg`;
+      const { url: processedUrl } = await storagePut(
+        processedKey, humanized, "image/jpeg"
+      );
 
-    await updateJobStatus(jobId, "completed", {
-      processedKey, processedUrl,
-      progress: 100, completedAt: new Date(),
-      creditsUsed: creditsNeeded,
+      await updateJobStatus(jobId, "completed", {
+        processedKey, processedUrl,
+        progress: 100, completedAt: new Date(),
+        creditsUsed: creditsNeeded,
+      });
     });
 
     // Best-effort completion email (no-op unless SMTP is configured).
