@@ -14,7 +14,7 @@ const STEPS = [
   { key: "finalize", label: "Finalizing", icon: CheckCircle2, range: [90, 100] as const },
 ];
 
-function stepStateAt(progress: number, status: StepIndicatorsProps["status"], stepIdx: number) {
+export function stepStateAt(progress: number, status: StepIndicatorsProps["status"], stepIdx: number) {
   if (status === "completed") return "done";
   if (status === "failed") return progress > STEPS[stepIdx].range[0] ? "current" : "pending";
   const [start, end] = STEPS[stepIdx].range;
