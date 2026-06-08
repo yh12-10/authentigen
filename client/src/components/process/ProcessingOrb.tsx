@@ -6,7 +6,10 @@ interface ProcessingOrbProps {
   status?: "pending" | "processing" | "completed" | "failed";
 }
 
-export function ProcessingOrb({ size = 120, status = "processing" }: ProcessingOrbProps) {
+export function ProcessingOrb({
+  size = 120,
+  status = "processing",
+}: ProcessingOrbProps) {
   const reduced = useReducedMotion();
   if (status === "completed" || status === "failed") return null;
 
@@ -20,14 +23,19 @@ export function ProcessingOrb({ size = 120, status = "processing" }: ProcessingO
           background: `radial-gradient(closest-side, ${color}, transparent 70%)`,
           filter: "blur(16px)",
         }}
-        animate={reduced ? {} : { scale: [1, 1.15, 1], opacity: [0.5, 0.85, 0.5] }}
+        animate={
+          reduced ? {} : { scale: [1, 1.15, 1], opacity: [0.5, 0.85, 0.5] }
+        }
         transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
         className="absolute inset-2 rounded-full border-2"
         style={{ borderColor: `${color}80` }}
         animate={reduced ? {} : { scale: [1, 1.1, 1], rotate: [0, 360] }}
-        transition={{ scale: { duration: 2.4, repeat: Infinity, ease: "easeInOut" }, rotate: { duration: 8, repeat: Infinity, ease: "linear" } }}
+        transition={{
+          scale: { duration: 2.4, repeat: Infinity, ease: "easeInOut" },
+          rotate: { duration: 8, repeat: Infinity, ease: "linear" },
+        }}
       />
       <motion.div
         className="absolute inset-6 rounded-full"

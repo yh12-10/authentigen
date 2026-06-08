@@ -6,7 +6,11 @@ interface TypewriterProps {
   caretClassName?: string;
 }
 
-export function Typewriter({ words, className, caretClassName }: TypewriterProps) {
+export function Typewriter({
+  words,
+  className,
+  caretClassName,
+}: TypewriterProps) {
   const text = useTypewriter({ words });
   return (
     <span className={className}>

@@ -1,6 +1,12 @@
 import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { users, jobs, creditTransactions, InsertJob, Job } from "../drizzle/schema";
+import {
+  users,
+  jobs,
+  creditTransactions,
+  InsertJob,
+  Job,
+} from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -21,14 +27,22 @@ export async function getDb() {
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.openId, openId))
+    .limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
 export async function getUserByEmail(email: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
@@ -39,23 +53,43 @@ export async function getUserById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function deductCredits(userId: number, amount: number, jobId: number, description: string): Promise<boolean> {
+export async function deductCredits(
+  userId: number,
+  amount: number,
+  jobId: number,
+  description: string
+): Promise<boolean> {
   const db = await getDb();
   if (!db) return false;
   const user = await getUserById(userId);
   if (!user || user.credits < amount) return false;
-  await db.update(users).set({ credits: user.credits - amount }).where(eq(users.id, userId));
-  await db.insert(creditTransactions).values({ userId, jobId, amount: -amount, type: "usage", description });
+  await db
+    .update(users)
+    .set({ credits: user.credits - amount })
+    .where(eq(users.id, userId));
+  await db
+    .insert(creditTransactions)
+    .values({ userId, jobId, amount: -amount, type: "usage", description });
   return true;
 }
 
-export async function addCredits(userId: number, amount: number, type: "purchase" | "bonus" | "refund", description: string): Promise<void> {
+export async function addCredits(
+  userId: number,
+  amount: number,
+  type: "purchase" | "bonus" | "refund",
+  description: string
+): Promise<void> {
   const db = await getDb();
   if (!db) return;
   const user = await getUserById(userId);
   if (!user) return;
-  await db.update(users).set({ credits: user.credits + amount }).where(eq(users.id, userId));
-  await db.insert(creditTransactions).values({ userId, amount, type, description });
+  await db
+    .update(users)
+    .set({ credits: user.credits + amount })
+    .where(eq(users.id, userId));
+  await db
+    .insert(creditTransactions)
+    .values({ userId, amount, type, description });
 }
 
 // ─── Job helpers ─────────────────────────────────────────────────────────────
@@ -77,20 +111,42 @@ export async function getJobById(id: number): Promise<Job | undefined> {
 export async function getJobsByUserId(userId: number): Promise<Job[]> {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)).limit(50);
+  return db
+    .select()
+    .from(jobs)
+    .where(eq(jobs.userId, userId))
+    .orderBy(desc(jobs.createdAt))
+    .limit(50);
 }
 
 export async function updateJobStatus(
   id: number,
   status: Job["status"],
-  extra?: Partial<Pick<Job, "progress" | "processedKey" | "processedUrl" | "errorMessage" | "processingStartedAt" | "completedAt" | "creditsUsed">>
+  extra?: Partial<
+    Pick<
+      Job,
+      | "progress"
+      | "processedKey"
+      | "processedUrl"
+      | "errorMessage"
+      | "processingStartedAt"
+      | "completedAt"
+      | "creditsUsed"
+    >
+  >
 ): Promise<void> {
   const db = await getDb();
   if (!db) return;
-  await db.update(jobs).set({ status, ...extra }).where(eq(jobs.id, id));
+  await db
+    .update(jobs)
+    .set({ status, ...extra })
+    .where(eq(jobs.id, id));
 }
 
-export async function updateJobProgress(id: number, progress: number): Promise<void> {
+export async function updateJobProgress(
+  id: number,
+  progress: number
+): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db.update(jobs).set({ progress }).where(eq(jobs.id, id));
@@ -101,5 +157,10 @@ export async function updateJobProgress(id: number, progress: number): Promise<v
 export async function getCreditTransactions(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(creditTransactions).where(eq(creditTransactions.userId, userId)).orderBy(desc(creditTransactions.createdAt)).limit(20);
+  return db
+    .select()
+    .from(creditTransactions)
+    .where(eq(creditTransactions.userId, userId))
+    .orderBy(desc(creditTransactions.createdAt))
+    .limit(20);
 }

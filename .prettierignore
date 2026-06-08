@@ -20,6 +20,13 @@ pnpm-lock.yaml
 *.sqlite
 *.sqlite3
 
+# Drizzle-generated migration artifacts (schema.ts/relations.ts are still formatted)
+drizzle/*.sql
+drizzle/meta/
+
+# Local file storage
+storage/
+
 # Logs
 *.log
 

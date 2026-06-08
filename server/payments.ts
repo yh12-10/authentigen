@@ -8,7 +8,9 @@ let _stripe: Stripe | null = null;
 
 export function getStripe(): Stripe {
   if (!isStripeConfigured()) {
-    throw new Error("Stripe is not configured. Set STRIPE_SECRET_KEY and price IDs in .env.");
+    throw new Error(
+      "Stripe is not configured. Set STRIPE_SECRET_KEY and price IDs in .env."
+    );
   }
   if (!_stripe) {
     _stripe = new Stripe(ENV.stripeSecretKey);
@@ -20,7 +22,12 @@ export type PackKey = "starter" | "pro" | "studio";
 
 export const PRICE_PACKS: Record<
   PackKey,
-  { credits: number; label: string; priceCents: number; getPriceId: () => string }
+  {
+    credits: number;
+    label: string;
+    priceCents: number;
+    getPriceId: () => string;
+  }
 > = {
   starter: {
     credits: 50,
@@ -42,14 +49,18 @@ export const PRICE_PACKS: Record<
   },
 };
 
-export async function createCheckoutSession(userId: number, pack: PackKey): Promise<string> {
+export async function createCheckoutSession(
+  userId: number,
+  pack: PackKey
+): Promise<string> {
   const stripe = getStripe();
   const user = await getUserById(userId);
   if (!user) throw new Error("User not found");
 
   const config = PRICE_PACKS[pack];
   const priceId = config.getPriceId();
-  if (!priceId) throw new Error(`Stripe price ID for ${pack} is not configured`);
+  if (!priceId)
+    throw new Error(`Stripe price ID for ${pack} is not configured`);
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -74,7 +85,9 @@ export async function createCheckoutSession(userId: number, pack: PackKey): Prom
  * Idempotently grant credits for a completed checkout session.
  * Idempotency is enforced by the unique index on credit_transactions.stripeSessionId.
  */
-export async function handleCheckoutCompleted(event: Stripe.Event): Promise<void> {
+export async function handleCheckoutCompleted(
+  event: Stripe.Event
+): Promise<void> {
   if (event.type !== "checkout.session.completed") return;
   const session = event.data.object as Stripe.Checkout.Session;
 
@@ -96,13 +109,20 @@ export async function handleCheckoutCompleted(event: Stripe.Event): Promise<void
 
   const db = await getDb();
   if (!db) {
-    console.warn("[Stripe] DB unavailable; cannot grant credits for session", session.id);
+    console.warn(
+      "[Stripe] DB unavailable; cannot grant credits for session",
+      session.id
+    );
     return;
   }
 
   const user = await getUserById(userId);
   if (!user) {
-    console.error("[Stripe] user not found for completed session", userId, session.id);
+    console.error(
+      "[Stripe] user not found for completed session",
+      userId,
+      session.id
+    );
     return;
   }
 
@@ -117,7 +137,11 @@ export async function handleCheckoutCompleted(event: Stripe.Event): Promise<void
     });
   } catch (err) {
     // Duplicate insert means this session was already processed. Idempotent skip.
-    console.log("[Stripe] duplicate webhook for session", session.id, "- skipping credit grant");
+    console.log(
+      "[Stripe] duplicate webhook for session",
+      session.id,
+      "- skipping credit grant"
+    );
     return;
   }
 
@@ -129,8 +153,13 @@ export async function handleCheckoutCompleted(event: Stripe.Event): Promise<void
 
   // Persist the Stripe customer ID if present and we don't already have it.
   const stripeCustomerId =
-    typeof session.customer === "string" ? session.customer : session.customer?.id;
+    typeof session.customer === "string"
+      ? session.customer
+      : session.customer?.id;
   if (stripeCustomerId && !user.stripeCustomerId) {
-    await db.update(users).set({ stripeCustomerId }).where(eq(users.id, userId));
+    await db
+      .update(users)
+      .set({ stripeCustomerId })
+      .where(eq(users.id, userId));
   }
 }

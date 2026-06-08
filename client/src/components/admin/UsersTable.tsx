@@ -1,9 +1,22 @@
 import { trpc } from "@/lib/trpc";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -13,10 +26,15 @@ export function UsersTable() {
   const usersQuery = trpc.admin.users.useQuery({ limit: 50, offset: 0 });
   const grant = trpc.admin.grantCredits.useMutation();
   const utils = trpc.useUtils();
-  const [target, setTarget] = useState<{ id: number; name: string | null; email: string | null } | null>(null);
+  const [target, setTarget] = useState<{
+    id: number;
+    name: string | null;
+    email: string | null;
+  } | null>(null);
   const [amount, setAmount] = useState<string>("50");
 
-  if (usersQuery.isLoading) return <div className="text-muted-foreground p-8">Loading users…</div>;
+  if (usersQuery.isLoading)
+    return <div className="text-muted-foreground p-8">Loading users…</div>;
   if (!usersQuery.data) return null;
 
   return (
@@ -35,14 +53,20 @@ export function UsersTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {usersQuery.data.map((u) => (
+            {usersQuery.data.map(u => (
               <TableRow key={u.id}>
                 <TableCell className="font-medium">{u.name ?? "—"}</TableCell>
-                <TableCell className="text-muted-foreground">{u.email ?? "—"}</TableCell>
-                <TableCell>
-                  <Badge variant={u.role === "admin" ? "default" : "secondary"}>{u.role}</Badge>
+                <TableCell className="text-muted-foreground">
+                  {u.email ?? "—"}
                 </TableCell>
-                <TableCell className="text-right font-mono">{u.credits}</TableCell>
+                <TableCell>
+                  <Badge variant={u.role === "admin" ? "default" : "secondary"}>
+                    {u.role}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right font-mono">
+                  {u.credits}
+                </TableCell>
                 <TableCell className="text-right">{u.jobsCount}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {format(new Date(u.createdAt), "MMM d, yyyy")}
@@ -51,7 +75,9 @@ export function UsersTable() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setTarget({ id: u.id, name: u.name, email: u.email })}
+                    onClick={() =>
+                      setTarget({ id: u.id, name: u.name, email: u.email })
+                    }
                   >
                     Grant credits
                   </Button>
@@ -62,10 +88,13 @@ export function UsersTable() {
         </Table>
       </div>
 
-      <Dialog open={!!target} onOpenChange={(open) => !open && setTarget(null)}>
+      <Dialog open={!!target} onOpenChange={open => !open && setTarget(null)}>
         <DialogContent className="glass-strong">
           <DialogHeader>
-            <DialogTitle>Grant credits to {target?.name ?? target?.email ?? `user ${target?.id}`}</DialogTitle>
+            <DialogTitle>
+              Grant credits to{" "}
+              {target?.name ?? target?.email ?? `user ${target?.id}`}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <Label htmlFor="grant-amount">Credits to grant</Label>
@@ -75,11 +104,13 @@ export function UsersTable() {
               value={amount}
               min={1}
               max={10000}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={e => setAmount(e.target.value)}
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setTarget(null)}>
+              Cancel
+            </Button>
             <Button
               onClick={async () => {
                 if (!target) return;

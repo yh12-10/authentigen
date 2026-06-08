@@ -11,7 +11,7 @@ function makeCtx(role: "user" | "admin"): TrpcContext {
     openId: "x",
     email: "u@example.com",
     name: "U",
-    loginMethod: "manus",
+    loginMethod: "email",
     role,
     credits: 0,
     bonusClaimed: 0,
@@ -31,7 +31,9 @@ describe("admin procedures", () => {
   it("rejects non-admin with FORBIDDEN", async () => {
     const caller = appRouter.createCaller(makeCtx("user"));
     await expect(caller.admin.stats()).rejects.toThrow(TRPCError);
-    await expect(caller.admin.stats()).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(caller.admin.stats()).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
   });
 
   it("admin caller passes the role gate (DB calls may return zeros without DATABASE_URL)", async () => {

@@ -13,7 +13,11 @@ export function EmptyState({ title, description, action }: EmptyStateProps) {
       <div className="relative mx-auto mb-6 flex size-32 items-center justify-center">
         <div
           className="absolute inset-0 rounded-full"
-          style={{ background: "radial-gradient(closest-side, rgba(245,166,35,0.25), transparent 70%)", filter: "blur(20px)" }}
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(245,166,35,0.25), transparent 70%)",
+            filter: "blur(20px)",
+          }}
         />
         <motion.svg
           width="80"
@@ -37,7 +41,11 @@ export function EmptyState({ title, description, action }: EmptyStateProps) {
         </motion.svg>
       </div>
       <h3 className="font-serif text-2xl mb-2">{title}</h3>
-      {description && <p className="text-muted-foreground mb-6 max-w-md mx-auto">{description}</p>}
+      {description && (
+        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+          {description}
+        </p>
+      )}
       {action}
     </div>
   );

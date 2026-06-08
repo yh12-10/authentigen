@@ -7,10 +7,10 @@ export function DetectorLogos() {
       <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
       <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
       <Marquee durationSeconds={40}>
-        {DETECTORS.map((d) => {
+        {DETECTORS.map(d => {
           const initials = d
             .split(" ")
-            .map((w) => w[0])
+            .map(w => w[0])
             .slice(0, 2)
             .join("")
             .toUpperCase();

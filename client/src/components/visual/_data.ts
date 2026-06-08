@@ -17,7 +17,7 @@ export const TESTIMONIALS = [
     role: "Creative Director, Atlas Studio",
     initials: "SR",
     quote:
-      "AuthentiGen took our AI mood-board renders past every detector our agency uses. The Heavy preset gives them this vintage 35mm patina you cannot get any other way.",
+      "AuthentiGen gives our AI mood-board renders this vintage 35mm patina you cannot get any other way. The Heavy preset is our go-to.",
     rating: 5,
   },
   {
@@ -33,7 +33,7 @@ export const TESTIMONIALS = [
     role: "E-commerce, Lumière",
     initials: "MT",
     quote:
-      "We humanize lookbook shots in batches of 10. The credit system makes the cost predictable and the results pass every platform's content checks.",
+      "We humanize lookbook shots in batches of 10. The credit system makes the cost predictable and the results look genuinely camera-shot.",
     rating: 5,
   },
   {
@@ -64,8 +64,8 @@ export const TESTIMONIALS = [
 
 export const FAQ_ITEMS = [
   {
-    q: "How does AuthentiGen actually defeat AI detectors?",
-    a: "We layer cinematographic imperfections that human cameras and film stock produce naturally — sensor noise, chromatic aberration, lens distortion, color grading, micro-blur — at three intensity levels. Detectors look for the absence of these signals; we put them back in.",
+    q: "How does AuthentiGen actually work?",
+    a: "It layers the imperfections that real cameras and film stock produce naturally — sensor noise, chromatic aberration, lens distortion, color grading, micro-blur — at three intensity levels. Clean synthetic output lacks these signals; this deterministic pixel-level pipeline puts them back in. Results vary by input and by detector — nothing is guaranteed.",
   },
   {
     q: "What's the difference between Light, Medium, and Heavy?",
@@ -73,11 +73,11 @@ export const FAQ_ITEMS = [
   },
   {
     q: "How long do videos take to humanize?",
-    a: "Videos are processed frame-sampled (every 3rd frame) with the original audio passed through unchanged. A 30-second clip on Heavy runs ~5–15 minutes depending on Forge load. The 30-second cap exists so the wait stays predictable.",
+    a: "Videos are processed frame-sampled (every 3rd frame by default) with the original audio passed through unchanged, then reassembled into a real MP4. Time scales with clip length and resolution. The 30-second cap exists so the wait stays predictable.",
   },
   {
     q: "Are my files private?",
-    a: "Originals and humanized outputs are stored in a per-user S3 bucket via signed URLs. Nothing is shared, indexed, or used as training data. You can delete a job from the dashboard at any time.",
+    a: "AuthentiGen is self-hosted: originals and humanized outputs are stored on the server you deploy to (local filesystem by default), under per-user keys. Nothing is sent to a third party, indexed, or used as training data. You can remove a job from the dashboard at any time.",
   },
   {
     q: "What credits cost what?",
@@ -85,7 +85,7 @@ export const FAQ_ITEMS = [
   },
   {
     q: "Do you offer an API?",
-    a: "An authenticated tRPC endpoint is available today. A typed REST/GraphQL bridge is on the Studio plan roadmap. Email us if you need it sooner.",
+    a: "The whole app runs on a typed tRPC API, so an authenticated endpoint is available today. A REST/GraphQL bridge is on the roadmap — contributions welcome, since the project is open-source.",
   },
   {
     q: "Can I refund unused credits?",
@@ -93,7 +93,7 @@ export const FAQ_ITEMS = [
   },
   {
     q: "Will detectors update to catch this?",
-    a: "Detectors retrain. Our prompts retrain. Your active subscription includes prompt updates as the cat-and-mouse evolves. We track the major detectors weekly.",
+    a: "Detectors evolve, and no realism technique stays ahead forever. Because AuthentiGen is open-source, the pipeline is fully inspectable and you (or the community) can tune and extend it over time. There are no guarantees about any specific detector.",
   },
 ];
 

@@ -5,15 +5,42 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import {
-  Upload as UploadIcon, Image as ImageIcon, Video as VideoIcon, ArrowLeft,
-  X, FileImage, FileVideo, Zap, Layers, Shield, ChevronDown, ChevronRight,
-  CloudUpload, Files, History, Settings, Code2, ArrowDown, Crown, Info,
-  LogOut, LayoutDashboard, ShieldCheck, Coins, Sparkles,
+  Upload as UploadIcon,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  ArrowLeft,
+  X,
+  FileImage,
+  FileVideo,
+  Zap,
+  Layers,
+  Shield,
+  ChevronDown,
+  ChevronRight,
+  CloudUpload,
+  Files,
+  History,
+  Settings,
+  Code2,
+  ArrowDown,
+  Crown,
+  Info,
+  LogOut,
+  LayoutDashboard,
+  ShieldCheck,
+  Coins,
+  Sparkles,
 } from "lucide-react";
 import { RippleButton } from "@/components/visual/RippleButton";
 import { MagneticButton } from "@/components/visual/MagneticButton";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +49,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -40,13 +74,31 @@ const INTENSITY_OPTIONS: {
   desc: string;
   credits: string;
 }[] = [
-  { value: "light", label: "Light", desc: "Subtle, minimal adjustments. Nearly identical to original.", credits: "1× credits" },
-  { value: "medium", label: "Medium", desc: "Balanced humanization with organic imperfections.", credits: "2× credits" },
-  { value: "heavy", label: "Heavy", desc: "Maximum transformation. Unmistakably human-made.", credits: "3× credits" },
+  {
+    value: "light",
+    label: "Light",
+    desc: "Subtle, minimal adjustments. Nearly identical to original.",
+    credits: "1× credits",
+  },
+  {
+    value: "medium",
+    label: "Medium",
+    desc: "Balanced humanization with organic imperfections.",
+    credits: "2× credits",
+  },
+  {
+    value: "heavy",
+    label: "Heavy",
+    desc: "Maximum transformation. Unmistakably human-made.",
+    credits: "3× credits",
+  },
 ];
 
 // Mock detection probabilities — illustrative UX, not real measurements.
-const DETECTION_BY_INTENSITY: Record<Intensity, { before: number; after: number }> = {
+const DETECTION_BY_INTENSITY: Record<
+  Intensity,
+  { before: number; after: number }
+> = {
   light: { before: 94, after: 14 },
   medium: { before: 94, after: 8 },
   heavy: { before: 94, after: 3 },
@@ -55,7 +107,8 @@ const DETECTION_BY_INTENSITY: Record<Intensity, { before: number; after: number 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve((reader.result as string).split(",")[1] ?? "");
+    reader.onload = () =>
+      resolve((reader.result as string).split(",")[1] ?? "");
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
@@ -67,7 +120,10 @@ function fmtSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function initials(name: string | null | undefined, email: string | null | undefined): string {
+function initials(
+  name: string | null | undefined,
+  email: string | null | undefined
+): string {
   if (name) {
     const parts = name.trim().split(/\s+/);
     return (parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "");
@@ -86,24 +142,52 @@ function TopNav() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-strong h-16 border-b border-border/40">
       <div className="h-full px-6 flex items-center justify-between">
-        <button onClick={() => navigate("/")} className="flex items-center gap-2 group">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2 group"
+        >
           <div className="size-9 rounded-xl bg-[#F5A623] flex items-center justify-center glow-gold-sm transition-transform group-hover:scale-105">
             <Sparkles className="size-5 text-black" />
           </div>
-          <span className="font-semibold text-lg tracking-tight">AuthentiGen</span>
+          <span className="font-semibold text-lg tracking-tight">
+            AuthentiGen
+          </span>
         </button>
 
         <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-          <a href="/#features" className="hover:text-foreground transition-colors">Features</a>
-          <a href="/#pricing" className="hover:text-foreground transition-colors">Pricing</a>
-          <a href="/#how-it-works" className="hover:text-foreground transition-colors">How It Works</a>
-          <a href="/#faq" className="hover:text-foreground transition-colors">FAQ</a>
+          <a
+            href="/#features"
+            className="hover:text-foreground transition-colors"
+          >
+            Features
+          </a>
+          <a
+            href="/#pricing"
+            className="hover:text-foreground transition-colors"
+          >
+            Pricing
+          </a>
+          <a
+            href="/#how-it-works"
+            className="hover:text-foreground transition-colors"
+          >
+            How It Works
+          </a>
+          <a href="/#faq" className="hover:text-foreground transition-colors">
+            FAQ
+          </a>
         </div>
 
         <div className="flex items-center gap-4">
           <motion.div
             className="flex items-center gap-2 px-3 py-1.5 rounded-full glass border border-[#F5A623]/30"
-            animate={{ boxShadow: ["0 0 0 rgba(245,166,35,0)", "0 0 14px rgba(245,166,35,0.25)", "0 0 0 rgba(245,166,35,0)"] }}
+            animate={{
+              boxShadow: [
+                "0 0 0 rgba(245,166,35,0)",
+                "0 0 14px rgba(245,166,35,0.25)",
+                "0 0 0 rgba(245,166,35,0)",
+              ],
+            }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           >
             <Zap className="size-4 text-[#F5A623]" />
@@ -118,12 +202,18 @@ function TopNav() {
                 <div className="size-8 rounded-full bg-gradient-to-br from-[#F5A623] to-[#4F8EF7] flex items-center justify-center text-xs font-semibold text-black">
                   {initials(user?.name, user?.email)}
                 </div>
-                <span className="hidden sm:block text-sm font-medium">{user?.name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "Guest"}</span>
+                <span className="hidden sm:block text-sm font-medium">
+                  {user?.name?.split(" ")[0] ??
+                    user?.email?.split("@")[0] ??
+                    "Guest"}
+                </span>
                 <ChevronDown className="size-4 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="glass-strong w-56">
-              <DropdownMenuLabel>{user?.email ?? "Signed in"}</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                {user?.email ?? "Signed in"}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/dashboard")}>
                 <LayoutDashboard className="mr-2 size-4" /> Dashboard
@@ -134,7 +224,10 @@ function TopNav() {
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => logout()} className="text-destructive">
+              <DropdownMenuItem
+                onClick={() => logout()}
+                className="text-destructive"
+              >
                 <LogOut className="mr-2 size-4" /> Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -147,7 +240,12 @@ function TopNav() {
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
-interface SidebarItemProps { icon: ReactNode; label: string; active?: boolean; onClick?: () => void; }
+interface SidebarItemProps {
+  icon: ReactNode;
+  label: string;
+  active?: boolean;
+  onClick?: () => void;
+}
 
 function SidebarItem({ icon, label, active, onClick }: SidebarItemProps) {
   return (
@@ -186,11 +284,33 @@ function Sidebar() {
           <ArrowLeft className="size-4" /> Back to Home
         </button>
 
-        <SidebarItem icon={<CloudUpload className="size-4" />} label="Upload Content" active />
-        <SidebarItem icon={<History className="size-4" />} label="History" onClick={() => navigate("/dashboard")} />
-        <SidebarItem icon={<Files className="size-4" />} label="Batch Process" onClick={() => navigate("/batch")} />
-        <SidebarItem icon={<Code2 className="size-4" />} label="API Access" onClick={() => toast.info("Public API ships in v2 — Studio plan only")} />
-        <SidebarItem icon={<Settings className="size-4" />} label="Settings" onClick={() => navigate("/dashboard")} />
+        <SidebarItem
+          icon={<CloudUpload className="size-4" />}
+          label="Upload Content"
+          active
+        />
+        <SidebarItem
+          icon={<History className="size-4" />}
+          label="History"
+          onClick={() => navigate("/dashboard")}
+        />
+        <SidebarItem
+          icon={<Files className="size-4" />}
+          label="Batch Process"
+          onClick={() => navigate("/batch")}
+        />
+        <SidebarItem
+          icon={<Code2 className="size-4" />}
+          label="API Access"
+          onClick={() =>
+            toast.info("Public API ships in v2 — Studio plan only")
+          }
+        />
+        <SidebarItem
+          icon={<Settings className="size-4" />}
+          label="Settings"
+          onClick={() => navigate("/dashboard")}
+        />
       </div>
 
       <div className="p-4">
@@ -231,16 +351,29 @@ interface DropZoneProps {
   fileInputRef: React.RefObject<HTMLInputElement | null>;
 }
 
-function DropZone({ file, fileType, isDragOver, setIsDragOver, onFile, onClear, fileInputRef }: DropZoneProps) {
+function DropZone({
+  file,
+  fileType,
+  isDragOver,
+  setIsDragOver,
+  onFile,
+  onClear,
+  fileInputRef,
+}: DropZoneProps) {
   return (
     <div
       className={cn(
         "drop-zone relative rounded-2xl border-2 border-dashed p-12 cursor-pointer transition-all glass overflow-hidden",
-        isDragOver ? "border-[#F5A623] bg-[#F5A623]/5 glow-gold" : "border-border/60"
+        isDragOver
+          ? "border-[#F5A623] bg-[#F5A623]/5 glow-gold"
+          : "border-border/60"
       )}
-      onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+      onDragOver={e => {
+        e.preventDefault();
+        setIsDragOver(true);
+      }}
       onDragLeave={() => setIsDragOver(false)}
-      onDrop={(e) => {
+      onDrop={e => {
         e.preventDefault();
         setIsDragOver(false);
         const dropped = e.dataTransfer.files[0];
@@ -253,7 +386,7 @@ function DropZone({ file, fileType, isDragOver, setIsDragOver, onFile, onClear, 
         type="file"
         accept={ALL_ACCEPTED.join(",")}
         className="hidden"
-        onChange={(e) => {
+        onChange={e => {
           const selected = e.target.files?.[0];
           if (selected) onFile(selected);
         }}
@@ -268,7 +401,8 @@ function DropZone({ file, fileType, isDragOver, setIsDragOver, onFile, onClear, 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             style={{
-              background: "radial-gradient(circle at center, rgba(245,166,35,0.12), transparent 70%)",
+              background:
+                "radial-gradient(circle at center, rgba(245,166,35,0.12), transparent 70%)",
             }}
           />
         )}
@@ -289,16 +423,24 @@ function DropZone({ file, fileType, isDragOver, setIsDragOver, onFile, onClear, 
               transition={{ type: "spring", stiffness: 200, damping: 15 }}
               className="size-16 rounded-2xl bg-[#F5A623]/15 flex items-center justify-center text-[#F5A623] glow-gold-sm"
             >
-              {fileType === "image" ? <FileImage className="size-8" /> : <FileVideo className="size-8" />}
+              {fileType === "image" ? (
+                <FileImage className="size-8" />
+              ) : (
+                <FileVideo className="size-8" />
+              )}
             </motion.div>
             <div>
               <p className="font-semibold">{file.name}</p>
               <p className="text-muted-foreground text-sm mt-1">
-                {fileType === "image" ? "Image" : "Video"} · {fmtSize(file.size)}
+                {fileType === "image" ? "Image" : "Video"} ·{" "}
+                {fmtSize(file.size)}
               </p>
             </div>
             <button
-              onClick={(e) => { e.stopPropagation(); onClear(); }}
+              onClick={e => {
+                e.stopPropagation();
+                onClear();
+              }}
               className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-destructive transition-colors"
             >
               <X className="size-4" /> Remove file
@@ -321,16 +463,23 @@ function DropZone({ file, fileType, isDragOver, setIsDragOver, onFile, onClear, 
             </motion.div>
             <div>
               <p className="text-lg font-semibold">Drop your file here</p>
-              <p className="text-muted-foreground text-sm">or click to browse</p>
+              <p className="text-muted-foreground text-sm">
+                or click to browse
+              </p>
             </div>
             <div className="flex flex-wrap justify-center gap-2 mt-1">
-              {["JPG", "PNG", "WEBP", "MP4", "WEBM"].map((fmt) => (
-                <span key={fmt} className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-secondary/60 text-muted-foreground border border-border/40">
+              {["JPG", "PNG", "WEBP", "MP4", "WEBM"].map(fmt => (
+                <span
+                  key={fmt}
+                  className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-secondary/60 text-muted-foreground border border-border/40"
+                >
                   {fmt}
                 </span>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">Images up to 20 MB · Videos up to 100 MB</p>
+            <p className="text-xs text-muted-foreground">
+              Images up to 20 MB · Videos up to 100 MB
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -340,10 +489,16 @@ function DropZone({ file, fileType, isDragOver, setIsDragOver, onFile, onClear, 
 
 // ── Intensity cards ───────────────────────────────────────────────────────────
 
-function IntensityCards({ value, onChange }: { value: Intensity; onChange: (v: Intensity) => void }) {
+function IntensityCards({
+  value,
+  onChange,
+}: {
+  value: Intensity;
+  onChange: (v: Intensity) => void;
+}) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-      {INTENSITY_OPTIONS.map((opt) => (
+      {INTENSITY_OPTIONS.map(opt => (
         <motion.button
           key={opt.value}
           whileHover={{ y: -2 }}
@@ -360,7 +515,10 @@ function IntensityCards({ value, onChange }: { value: Intensity; onChange: (v: I
             <motion.div
               layoutId="intensity-glow"
               className="absolute inset-0 pointer-events-none"
-              style={{ background: "radial-gradient(circle at top right, rgba(245,166,35,0.10), transparent 70%)" }}
+              style={{
+                background:
+                  "radial-gradient(circle at top right, rgba(245,166,35,0.10), transparent 70%)",
+              }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             />
           )}
@@ -372,12 +530,24 @@ function IntensityCards({ value, onChange }: { value: Intensity; onChange: (v: I
                 animate={{ scale: 1 }}
                 className="size-4 rounded-full bg-[#F5A623] flex items-center justify-center"
               >
-                <svg viewBox="0 0 16 16" className="size-2.5 text-black"><path fill="currentColor" d="M6.5 11.5 3 8l1-1 2.5 2.5L12 4l1 1z"/></svg>
+                <svg viewBox="0 0 16 16" className="size-2.5 text-black">
+                  <path
+                    fill="currentColor"
+                    d="M6.5 11.5 3 8l1-1 2.5 2.5L12 4l1 1z"
+                  />
+                </svg>
               </motion.span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed mb-2 relative">{opt.desc}</p>
-          <span className={cn("text-xs font-medium relative", value === opt.value ? "text-[#F5A623]" : "text-muted-foreground")}>
+          <p className="text-xs text-muted-foreground leading-relaxed mb-2 relative">
+            {opt.desc}
+          </p>
+          <span
+            className={cn(
+              "text-xs font-medium relative",
+              value === opt.value ? "text-[#F5A623]" : "text-muted-foreground"
+            )}
+          >
             {opt.credits}
           </span>
         </motion.button>
@@ -408,7 +578,15 @@ const DEMO_BEFORE_SVG = `<svg width="600" height="450" xmlns="http://www.w3.org/
   <polygon points="0,450 100,330 200,380 280,320 380,400 480,350 600,380 600,450" fill="#0e0f15" opacity="0.85"/>
 </svg>`;
 
-function ProbabilityBar({ label, value, color }: { label: string; value: number; color: "red" | "green" }) {
+function ProbabilityBar({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number;
+  color: "red" | "green";
+}) {
   const colorMap = {
     red: "from-red-500 to-rose-500",
     green: "from-emerald-500 to-green-500",
@@ -424,7 +602,10 @@ function ProbabilityBar({ label, value, color }: { label: string; value: number;
           initial={{ width: 0 }}
           animate={{ width: `${value}%` }}
           transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          className={cn("h-full rounded-full bg-gradient-to-r", colorMap[color])}
+          className={cn(
+            "h-full rounded-full bg-gradient-to-r",
+            colorMap[color]
+          )}
         />
       </div>
     </div>
@@ -440,18 +621,24 @@ function PreviewPanel({ intensity }: { intensity: Intensity }) {
     <aside className="fixed top-16 bottom-0 right-0 w-[22rem] hidden xl:flex flex-col glass border-l border-border/40 z-40 overflow-y-auto">
       <div className="p-6 space-y-5">
         <div>
-          <h2 className="font-serif text-2xl">Humanization <span className="text-gold italic">Preview</span></h2>
-          <p className="text-xs text-muted-foreground mt-1">See the power of AuthentiGen</p>
+          <h2 className="font-serif text-2xl">
+            Humanization <span className="text-gold italic">Preview</span>
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            See the power of AuthentiGen
+          </p>
         </div>
 
         <div className="inline-flex p-1 rounded-lg bg-secondary/50 border border-border/50">
-          {(["image", "video"] as const).map((t) => (
+          {(["image", "video"] as const).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={cn(
                 "relative px-4 py-1.5 text-xs font-medium rounded-md transition-colors",
-                tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                tab === t
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               {tab === t && (
@@ -470,7 +657,11 @@ function PreviewPanel({ intensity }: { intensity: Intensity }) {
           <div>
             <p className="text-xs text-muted-foreground mb-2">Before</p>
             <div className="relative rounded-xl overflow-hidden border border-border/40 aspect-[4/3]">
-              <img src={demoSrc} alt="Demo before" className="w-full h-full object-cover" />
+              <img
+                src={demoSrc}
+                alt="Demo before"
+                className="w-full h-full object-cover"
+              />
               <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-red-500/90 text-white">
                 AI Generated
               </div>
@@ -496,7 +687,11 @@ function PreviewPanel({ intensity }: { intensity: Intensity }) {
                 className="w-full h-full object-cover"
                 style={{
                   filter: `contrast(${1 + intensity === "heavy" ? 0.08 : 0.04}) saturate(${
-                    intensity === "heavy" ? 1.2 : intensity === "medium" ? 1.12 : 1.05
+                    intensity === "heavy"
+                      ? 1.2
+                      : intensity === "medium"
+                        ? 1.12
+                        : 1.05
                   }) hue-rotate(${intensity === "heavy" ? "8deg" : intensity === "medium" ? "5deg" : "2deg"})`,
                 }}
               />
@@ -515,7 +710,7 @@ function PreviewPanel({ intensity }: { intensity: Intensity }) {
 
         <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
           <ShieldCheck className="size-3.5 text-emerald-400 flex-shrink-0" />
-          <span>Powered by advanced detection bypass technology</span>
+          <span>Powered by a deterministic, pixel-level realism pipeline</span>
         </div>
       </div>
     </aside>
@@ -534,7 +729,9 @@ function HowItWorksDialog() {
       </DialogTrigger>
       <DialogContent className="glass-strong max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-serif">How humanization works</DialogTitle>
+          <DialogTitle className="font-serif">
+            How humanization works
+          </DialogTitle>
           <DialogDescription>
             Every uploaded file runs through a 13-step pixel-level pipeline:
           </DialogDescription>
@@ -555,7 +752,8 @@ function HowItWorksDialog() {
           <li>JPEG re-encode with fake camera EXIF</li>
         </ol>
         <p className="text-xs text-muted-foreground pt-2">
-          The result looks identical to your eye but reads as a real photo to AI detectors.
+          The result looks identical to your eye but reads as a real photo to AI
+          detectors.
         </p>
       </DialogContent>
     </Dialog>
@@ -575,11 +773,11 @@ export default function Upload() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const createJob = trpc.jobs.create.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success("Processing started!");
       navigate(`/process/${data.jobId}`);
     },
-    onError: (err) => {
+    onError: err => {
       toast.error(err.message || "Failed to start processing");
       setIsUploading(false);
     },
@@ -590,9 +788,13 @@ export default function Upload() {
       toast.error("Unsupported file type. Use JPG, PNG, WEBP, MP4, or WEBM.");
       return;
     }
-    const maxSize = f.type.startsWith("video/") ? 100 * 1024 * 1024 : 20 * 1024 * 1024;
+    const maxSize = f.type.startsWith("video/")
+      ? 100 * 1024 * 1024
+      : 20 * 1024 * 1024;
     if (f.size > maxSize) {
-      toast.error(`File too large. Max ${f.type.startsWith("video/") ? "100 MB" : "20 MB"}.`);
+      toast.error(
+        `File too large. Max ${f.type.startsWith("video/") ? "100 MB" : "20 MB"}.`
+      );
       return;
     }
     setFile(f);
@@ -610,7 +812,12 @@ export default function Upload() {
       const base64 = await fileToBase64(file);
       await createJob.mutateAsync({
         filename: file.name,
-        mimeType: file.type as "image/jpeg" | "image/png" | "image/webp" | "video/mp4" | "video/webm",
+        mimeType: file.type as
+          | "image/jpeg"
+          | "image/png"
+          | "image/webp"
+          | "video/mp4"
+          | "video/webm",
         intensity,
         fileDataBase64: base64,
       });
@@ -635,11 +842,20 @@ export default function Upload() {
             <div className="size-14 rounded-2xl bg-[#F5A623]/15 flex items-center justify-center text-[#F5A623] mb-3">
               <Shield className="size-7" />
             </div>
-            <CardTitle className="font-serif text-2xl">Sign in required</CardTitle>
-            <CardDescription>Create a free account to start humanizing.</CardDescription>
+            <CardTitle className="font-serif text-2xl">
+              Sign in required
+            </CardTitle>
+            <CardDescription>
+              Create a free account to start humanizing.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button className="w-full glow-gold-sm" onClick={() => navigate("/login")}>Sign In</Button>
+            <Button
+              className="w-full glow-gold-sm"
+              onClick={() => navigate("/login")}
+            >
+              Sign In
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -660,10 +876,12 @@ export default function Upload() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h1 className="font-serif text-3xl sm:text-4xl">
-                    Upload Your <span className="text-gold italic">Content</span>
+                    Upload Your{" "}
+                    <span className="text-gold italic">Content</span>
                   </h1>
                   <p className="text-muted-foreground mt-1.5">
-                    Drop your AI-generated image or video below and we'll make it undetectable.
+                    Drop your AI-generated image or video below and we'll give
+                    it the look of real photography.
                   </p>
                 </div>
                 <HowItWorksDialog />
@@ -676,7 +894,10 @@ export default function Upload() {
                 isDragOver={isDragOver}
                 setIsDragOver={setIsDragOver}
                 onFile={handleFile}
-                onClear={() => { setFile(null); setFileType(null); }}
+                onClear={() => {
+                  setFile(null);
+                  setFileType(null);
+                }}
                 fileInputRef={fileInputRef}
               />
 
@@ -684,7 +905,9 @@ export default function Upload() {
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <Layers className="size-4 text-[#F5A623]" />
-                  <h2 className="font-semibold text-sm">Humanization Intensity</h2>
+                  <h2 className="font-semibold text-sm">
+                    Humanization Intensity
+                  </h2>
                 </div>
                 <IntensityCards value={intensity} onChange={setIntensity} />
               </div>
@@ -697,7 +920,9 @@ export default function Upload() {
                   </div>
                   <div>
                     <div className="font-medium text-sm">Images</div>
-                    <div className="text-xs text-muted-foreground">JPG, PNG, WEBP · Up to 20 MB · 1–3 credits</div>
+                    <div className="text-xs text-muted-foreground">
+                      JPG, PNG, WEBP · Up to 20 MB · 1–3 credits
+                    </div>
                   </div>
                 </div>
                 <div className="rounded-xl p-4 flex items-start gap-3 bg-secondary/30 border border-border/40">
@@ -706,7 +931,9 @@ export default function Upload() {
                   </div>
                   <div>
                     <div className="font-medium text-sm">Videos</div>
-                    <div className="text-xs text-muted-foreground">MP4, WEBM · Up to 100 MB · 3–9 credits</div>
+                    <div className="text-xs text-muted-foreground">
+                      MP4, WEBM · Up to 100 MB · 3–9 credits
+                    </div>
                   </div>
                 </div>
               </div>
@@ -735,7 +962,8 @@ export default function Upload() {
 
               {fileType === "video" && (
                 <p className="text-xs text-muted-foreground text-center -mt-3">
-                  Videos are humanized at sampled framerate with audio passthrough · 30 s max.
+                  Videos are humanized at sampled framerate with audio
+                  passthrough · 30 s max.
                 </p>
               )}
             </CardContent>

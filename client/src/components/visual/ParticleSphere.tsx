@@ -45,7 +45,8 @@ function ParticlePoints() {
   useFrame((state, delta) => {
     if (!pointsRef.current) return;
     pointsRef.current.rotation.y += delta * 0.08;
-    pointsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.1;
+    pointsRef.current.rotation.x =
+      Math.sin(state.clock.elapsedTime * 0.2) * 0.1;
     // Mouse parallax
     const mx = state.mouse.x * 0.3;
     const my = state.mouse.y * 0.3;
@@ -59,7 +60,12 @@ function ParticlePoints() {
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
-      uPixelRatio: { value: typeof window !== "undefined" ? Math.min(window.devicePixelRatio, 2) : 1 },
+      uPixelRatio: {
+        value:
+          typeof window !== "undefined"
+            ? Math.min(window.devicePixelRatio, 2)
+            : 1,
+      },
     }),
     []
   );

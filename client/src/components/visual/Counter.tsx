@@ -9,7 +9,14 @@ interface CounterProps {
   className?: string;
 }
 
-export function Counter({ to, prefix = "", suffix = "", decimals = 0, duration = 1600, className }: CounterProps) {
+export function Counter({
+  to,
+  prefix = "",
+  suffix = "",
+  decimals = 0,
+  duration = 1600,
+  className,
+}: CounterProps) {
   const { ref, display } = useCountUp({ to, duration, decimals });
   return (
     <span ref={ref} className={className}>

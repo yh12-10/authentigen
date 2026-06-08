@@ -4,7 +4,13 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { RippleButton } from "@/components/visual/RippleButton";
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -21,7 +27,7 @@ export default function Login() {
       toast.success("Welcome back");
       navigate("/dashboard");
     },
-    onError: (err) => toast.error(err.message),
+    onError: err => toast.error(err.message),
   });
 
   const onSubmit = (e: React.FormEvent) => {
@@ -32,7 +38,10 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 hero-gradient">
       <div className="w-full max-w-md">
-        <button onClick={() => navigate("/")} className="mb-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+        <button
+          onClick={() => navigate("/")}
+          className="mb-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
           <div className="w-8 h-8 rounded-lg bg-[#F5A623] flex items-center justify-center glow-gold-sm">
             <Sparkles className="w-4 h-4 text-black" />
           </div>
@@ -40,7 +49,9 @@ export default function Login() {
         </button>
         <Card className="glass gradient-border-animated">
           <CardHeader>
-            <CardTitle className="font-serif text-3xl">Welcome <span className="text-gold italic">back</span></CardTitle>
+            <CardTitle className="font-serif text-3xl">
+              Welcome <span className="text-gold italic">back</span>
+            </CardTitle>
             <CardDescription>Sign in to continue humanizing.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -52,7 +63,7 @@ export default function Login() {
                   type="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   autoComplete="email"
                   autoFocus
@@ -65,14 +76,20 @@ export default function Login() {
                   type="password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   autoComplete="current-password"
                 />
               </div>
-              <RippleButton type="submit" className="w-full h-11 glow-gold-sm" disabled={login.isPending}>
+              <RippleButton
+                type="submit"
+                className="w-full h-11 glow-gold-sm"
+                disabled={login.isPending}
+              >
                 {login.isPending ? (
-                  <><Loader2 className="size-4 mr-2 animate-spin" /> Signing in…</>
+                  <>
+                    <Loader2 className="size-4 mr-2 animate-spin" /> Signing in…
+                  </>
                 ) : (
                   "Sign In"
                 )}
@@ -80,7 +97,9 @@ export default function Login() {
             </form>
             <p className="text-sm text-muted-foreground mt-6 text-center">
               No account?{" "}
-              <Link href="/signup" className="text-gold hover:underline">Create one</Link>
+              <Link href="/signup" className="text-gold hover:underline">
+                Create one
+              </Link>
             </p>
           </CardContent>
         </Card>

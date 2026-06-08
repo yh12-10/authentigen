@@ -35,7 +35,8 @@ async function loadInput(opts: GenerateImageOptions): Promise<Buffer> {
       return storageGetBuffer(src.url.slice("/storage/".length));
     }
     const resp = await fetch(src.url);
-    if (!resp.ok) throw new Error(`Failed to fetch source image: ${resp.status}`);
+    if (!resp.ok)
+      throw new Error(`Failed to fetch source image: ${resp.status}`);
     return Buffer.from(await resp.arrayBuffer());
   }
   throw new Error("Source image had neither b64Json nor url");
@@ -45,8 +46,13 @@ export async function generateImage(
   options: GenerateImageOptions
 ): Promise<GenerateImageResponse> {
   const inputBuffer = await loadInput(options);
-  const intensity = options.intensity ?? inferIntensityFromPrompt(options.prompt);
+  const intensity =
+    options.intensity ?? inferIntensityFromPrompt(options.prompt);
   const outputBuffer = await humanizeImageBuffer(inputBuffer, intensity);
-  const { url } = await storagePut(`generated/${Date.now()}.jpg`, outputBuffer, "image/jpeg");
+  const { url } = await storagePut(
+    `generated/${Date.now()}.jpg`,
+    outputBuffer,
+    "image/jpeg"
+  );
   return { url };
 }

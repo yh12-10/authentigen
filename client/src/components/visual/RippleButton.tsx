@@ -11,7 +11,12 @@ interface Ripple {
 
 type RippleButtonProps = ComponentProps<typeof Button>;
 
-export function RippleButton({ children, className, onMouseDown, ...props }: RippleButtonProps) {
+export function RippleButton({
+  children,
+  className,
+  onMouseDown,
+  ...props
+}: RippleButtonProps) {
   const [ripples, setRipples] = useState<Ripple[]>([]);
 
   function handleMouseDown(e: MouseEvent<HTMLButtonElement>) {
@@ -21,8 +26,8 @@ export function RippleButton({ children, className, onMouseDown, ...props }: Rip
     const x = e.clientX - rect.left - size / 2;
     const y = e.clientY - rect.top - size / 2;
     const id = Date.now() + Math.random();
-    setRipples((rs) => [...rs, { id, x, y, size }]);
-    setTimeout(() => setRipples((rs) => rs.filter((r) => r.id !== id)), 700);
+    setRipples(rs => [...rs, { id, x, y, size }]);
+    setTimeout(() => setRipples(rs => rs.filter(r => r.id !== id)), 700);
     onMouseDown?.(e);
   }
 
@@ -32,7 +37,7 @@ export function RippleButton({ children, className, onMouseDown, ...props }: Rip
       onMouseDown={handleMouseDown}
       {...props}
     >
-      {ripples.map((r) => (
+      {ripples.map(r => (
         <span
           key={r.id}
           aria-hidden

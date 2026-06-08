@@ -1,6 +1,12 @@
 import { useState, type ReactNode } from "react";
 import { useHasTouch } from "@/hooks/useHasTouch";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 
 interface PricingCardFlipProps {
@@ -11,7 +17,13 @@ interface PricingCardFlipProps {
   popular?: boolean;
 }
 
-export function PricingCardFlip({ front, back, height = 540, className, popular }: PricingCardFlipProps) {
+export function PricingCardFlip({
+  front,
+  back,
+  height = 540,
+  className,
+  popular,
+}: PricingCardFlipProps) {
   const touch = useHasTouch();
   const [hovered, setHovered] = useState(false);
   const [open, setOpen] = useState(false);
@@ -23,7 +35,9 @@ export function PricingCardFlip({ front, back, height = 540, className, popular 
           {front}
           <div className="px-6 pb-6">
             <DrawerTrigger asChild>
-              <Button variant="outline" className="w-full">View details</Button>
+              <Button variant="outline" className="w-full">
+                View details
+              </Button>
             </DrawerTrigger>
           </div>
         </div>
@@ -49,7 +63,9 @@ export function PricingCardFlip({ front, back, height = 540, className, popular 
       onMouseLeave={() => setHovered(false)}
     >
       <div className="absolute inset-0 backface-hidden">{front}</div>
-      <div className="absolute inset-0 backface-hidden rotate-y-180">{back}</div>
+      <div className="absolute inset-0 backface-hidden rotate-y-180">
+        {back}
+      </div>
     </div>
   );
 }

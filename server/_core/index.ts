@@ -2,7 +2,9 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import rateLimit from "express-rate-limit";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { ENV } from "./env";
 import { registerStorageProxy } from "./storageProxy";
 import { registerStripeWebhook } from "./stripeWebhook";
 import { registerBatchDownload } from "./batchDownload";
@@ -33,6 +35,12 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  // When behind a reverse proxy, trust it so rate-limit/IP detection is correct.
+  if (ENV.trustProxy) {
+    const n = Number(ENV.trustProxy);
+    app.set("trust proxy", Number.isNaN(n) ? ENV.trustProxy : n);
+  }
+
   // Stripe webhook MUST be registered with raw body BEFORE express.json
   registerStripeWebhook(app);
 
@@ -41,9 +49,21 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerBatchDownload(app);
+
+  // Rate limit the API surface (storage proxy, Stripe webhook, and batch
+  // download are intentionally exempt — they are separate routes).
+  const apiLimiter = rateLimit({
+    windowMs: ENV.rateLimitWindowMs,
+    limit: ENV.rateLimitMax,
+    standardHeaders: "draft-7",
+    legacyHeaders: false,
+    message: { error: "Too many requests, please slow down." },
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",
+    apiLimiter,
     createExpressMiddleware({
       router: appRouter,
       createContext,
@@ -65,8 +85,13 @@ async function startServer() {
 
   // Clean up orphan video temp dirs older than 1h on boot.
   import("../video")
-    .then((m) => m.sweepOldTempDirs())
-    .catch((err) => console.warn("[Startup] sweep failed:", err));
+    .then(m => m.sweepOldTempDirs())
+    .catch(err => console.warn("[Startup] sweep failed:", err));
+
+  // Reconcile jobs left pending/processing after a crash or restart.
+  import("../recovery")
+    .then(m => m.recoverOrphanedJobs())
+    .catch(err => console.warn("[Startup] job recovery failed:", err));
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);

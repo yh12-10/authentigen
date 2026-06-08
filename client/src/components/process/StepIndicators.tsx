@@ -9,14 +9,34 @@ interface StepIndicatorsProps {
 
 const STEPS = [
   { key: "upload", label: "Uploading", icon: Upload, range: [0, 10] as const },
-  { key: "analyze", label: "Analyzing", icon: Search, range: [10, 30] as const },
-  { key: "humanize", label: "Humanizing", icon: Sparkles, range: [30, 90] as const },
-  { key: "finalize", label: "Finalizing", icon: CheckCircle2, range: [90, 100] as const },
+  {
+    key: "analyze",
+    label: "Analyzing",
+    icon: Search,
+    range: [10, 30] as const,
+  },
+  {
+    key: "humanize",
+    label: "Humanizing",
+    icon: Sparkles,
+    range: [30, 90] as const,
+  },
+  {
+    key: "finalize",
+    label: "Finalizing",
+    icon: CheckCircle2,
+    range: [90, 100] as const,
+  },
 ];
 
-function stepStateAt(progress: number, status: StepIndicatorsProps["status"], stepIdx: number) {
+export function stepStateAt(
+  progress: number,
+  status: StepIndicatorsProps["status"],
+  stepIdx: number
+) {
   if (status === "completed") return "done";
-  if (status === "failed") return progress > STEPS[stepIdx].range[0] ? "current" : "pending";
+  if (status === "failed")
+    return progress > STEPS[stepIdx].range[0] ? "current" : "pending";
   const [start, end] = STEPS[stepIdx].range;
   if (progress >= end) return "done";
   if (progress >= start) return "current";
@@ -38,8 +58,14 @@ export function StepIndicators({ progress, status }: StepIndicatorsProps) {
                 state === "current" && "bg-[#F5A623]/15 glow-gold-sm",
                 state === "pending" && "bg-secondary/30"
               )}
-              animate={state === "current" ? { scale: [1, 1.03, 1] } : { scale: 1 }}
-              transition={{ duration: 1.6, repeat: state === "current" ? Infinity : 0, ease: "easeInOut" }}
+              animate={
+                state === "current" ? { scale: [1, 1.03, 1] } : { scale: 1 }
+              }
+              transition={{
+                duration: 1.6,
+                repeat: state === "current" ? Infinity : 0,
+                ease: "easeInOut",
+              }}
             >
               <div
                 className={cn(
@@ -54,7 +80,9 @@ export function StepIndicators({ progress, status }: StepIndicatorsProps) {
               <span
                 className={cn(
                   "text-[11px] font-medium uppercase tracking-wide",
-                  state === "pending" ? "text-muted-foreground" : "text-foreground"
+                  state === "pending"
+                    ? "text-muted-foreground"
+                    : "text-foreground"
                 )}
               >
                 {step.label}

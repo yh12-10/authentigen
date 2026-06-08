@@ -1,0 +1,102 @@
+# Local one-command stack: MySQL + AuthentiGen.
+#   docker compose up --build
+# Then open http://localhost:3000
+#
+# The default DB credentials below are for LOCAL DEVELOPMENT ONLY.
+# Set real secrets via a .env file or your environment before deploying.
+
+services:
+  db:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: authgen
+      MYSQL_DATABASE: authentigen
+    healthcheck:
+      test:
+        ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pauthgen"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - db_data:/var/lib/mysql
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql://root:authgen@db:3306/authentigen
+      NODE_ENV: production
+      PORT: 3000
+      # Leave JWT_SECRET unset to auto-generate one persisted in the storage
+      # volume, or set your own here / via a .env file.
+      JWT_SECRET: ${JWT_SECRET:-}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      # Stripe is optional — leave blank to disable paid checkout.
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_STARTER: ${STRIPE_PRICE_STARTER:-}
+      STRIPE_PRICE_PRO: ${STRIPE_PRICE_PRO:-}
+      STRIPE_PRICE_STUDIO: ${STRIPE_PRICE_STUDIO:-}
+      VIDEO_MAX_DURATION_SECONDS: ${VIDEO_MAX_DURATION_SECONDS:-30}
+      VIDEO_FRAME_SAMPLE_EVERY: ${VIDEO_FRAME_SAMPLE_EVERY:-3}
+      # Storage: "local" (default) or "s3". For the dev MinIO below, set
+      # STORAGE_BACKEND=s3, S3_ENDPOINT=http://minio:9000, S3_FORCE_PATH_STYLE=true.
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-local}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-false}
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      # Email: leave blank to disable. For the dev Mailhog below, set
+      # SMTP_HOST=mailhog, SMTP_PORT=1025, SMTP_FROM=no-reply@authentigen.local.
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      OWNER_EMAIL: ${OWNER_EMAIL:-}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-60000}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-100}
+      TRUST_PROXY: ${TRUST_PROXY:-}
+      MAX_CONCURRENT_IMAGE_JOBS: ${MAX_CONCURRENT_IMAGE_JOBS:-4}
+    ports:
+      - "3000:3000"
+    volumes:
+      - storage_data:/app/storage
+
+  # Optional local-dev helpers — start with: docker compose --profile dev up
+  # Mailhog: catches outgoing email, web UI at http://localhost:8025
+  mailhog:
+    image: mailhog/mailhog
+    profiles: ["dev"]
+    restart: unless-stopped
+    ports:
+      - "8025:8025" # web UI
+      - "1025:1025" # SMTP
+
+  # MinIO: S3-compatible storage, console at http://localhost:9001 (minioadmin/minioadmin)
+  minio:
+    image: minio/minio
+    profiles: ["dev"]
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+volumes:
+  db_data:
+  storage_data:
+  minio_data:

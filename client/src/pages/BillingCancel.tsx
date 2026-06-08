@@ -15,9 +15,13 @@ export default function BillingCancel() {
         <XCircle className="size-10 text-zinc-300" />
       </motion.div>
       <h1 className="font-serif text-4xl mb-3">Payment Cancelled</h1>
-      <p className="text-muted-foreground">No charges were made to your card.</p>
+      <p className="text-muted-foreground">
+        No charges were made to your card.
+      </p>
       <div className="mt-8 flex justify-center gap-3">
-        <Link href="/dashboard"><Button variant="outline">Back to Dashboard</Button></Link>
+        <Link href="/dashboard">
+          <Button variant="outline">Back to Dashboard</Button>
+        </Link>
       </div>
     </div>
   );

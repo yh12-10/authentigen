@@ -1,0 +1,12 @@
+# Normalize line endings. Shell scripts must stay LF so they run in Linux
+# containers even when checked out on Windows.
+* text=auto eol=lf
+*.sh text eol=lf
+docker-entrypoint.sh text eol=lf
+
+# Treat lockfiles and binaries appropriately
+pnpm-lock.yaml -diff
+*.png binary
+*.jpg binary
+*.webp binary
+*.mp4 binary

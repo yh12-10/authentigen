@@ -32,8 +32,11 @@ import {
   updateJobStatus,
   deductCredits,
   getJobById,
+  getUserById,
   addCredits,
 } from "./db";
+import { sendJobCompletionEmail } from "./_core/email";
+import { ENV } from "./_core/env";
 
 export type IntensityLevel = "light" | "medium" | "heavy";
 export type MediaType = "image" | "video";
@@ -52,7 +55,7 @@ interface Profile {
   jpegQuality: number;
   // Film halation — soft warm bloom from highlights, like 35mm film stock
   halationStrength: number; // 0..1
-  halationSigma: number;    // gaussian blur sigma for the bloom radius
+  halationSigma: number; // gaussian blur sigma for the bloom radius
   exif: {
     Make: string;
     Model: string;
@@ -66,31 +69,67 @@ interface Profile {
 
 const PROFILES: Record<IntensityLevel, Profile> = {
   light: {
-    grainSigma: 4, caShift: 1, vignetteStrength: 0.10, blurSigma: 0.3,
-    redBoost: 4, blueReduce: -3, barrelK: 0.0005, jpegQuality: 88,
-    halationStrength: 0.08, halationSigma: 14,
+    grainSigma: 4,
+    caShift: 1,
+    vignetteStrength: 0.1,
+    blurSigma: 0.3,
+    redBoost: 4,
+    blueReduce: -3,
+    barrelK: 0.0005,
+    jpegQuality: 88,
+    halationStrength: 0.08,
+    halationSigma: 14,
     exif: {
-      Make: "Apple", Model: "iPhone 14", Software: "iOS 17.4.1",
-      ISO: 200, FNumber: "1.78", ExposureTime: "1/200", FocalLength: "5.7",
+      Make: "Apple",
+      Model: "iPhone 14",
+      Software: "iOS 17.4.1",
+      ISO: 200,
+      FNumber: "1.78",
+      ExposureTime: "1/200",
+      FocalLength: "5.7",
     },
   },
   medium: {
-    grainSigma: 10, caShift: 2, vignetteStrength: 0.20, blurSigma: 0.5,
-    redBoost: 8, blueReduce: -6, barrelK: 0.001, jpegQuality: 82,
-    halationStrength: 0.18, halationSigma: 19,
+    grainSigma: 10,
+    caShift: 2,
+    vignetteStrength: 0.2,
+    blurSigma: 0.5,
+    redBoost: 8,
+    blueReduce: -6,
+    barrelK: 0.001,
+    jpegQuality: 82,
+    halationStrength: 0.18,
+    halationSigma: 19,
     exif: {
-      Make: "Apple", Model: "iPhone 13 Pro", Software: "iOS 16.6",
-      ISO: 800, FNumber: "1.5", ExposureTime: "1/60", FocalLength: "5.7",
+      Make: "Apple",
+      Model: "iPhone 13 Pro",
+      Software: "iOS 16.6",
+      ISO: 800,
+      FNumber: "1.5",
+      ExposureTime: "1/60",
+      FocalLength: "5.7",
     },
   },
   heavy: {
     // 35 mm film vibe: less grain, lighter vignette, warmer bloom.
-    grainSigma: 14, caShift: 3, vignetteStrength: 0.22, blurSigma: 0.8,
-    redBoost: 14, blueReduce: -10, barrelK: 0.002, jpegQuality: 75,
-    halationStrength: 0.32, halationSigma: 24,
+    grainSigma: 14,
+    caShift: 3,
+    vignetteStrength: 0.22,
+    blurSigma: 0.8,
+    redBoost: 14,
+    blueReduce: -10,
+    barrelK: 0.002,
+    jpegQuality: 75,
+    halationStrength: 0.32,
+    halationSigma: 24,
     exif: {
-      Make: "Canon", Model: "EOS R5", Software: "Adobe Lightroom 13.0",
-      ISO: 3200, FNumber: "1.4", ExposureTime: "1/30", FocalLength: "50",
+      Make: "Canon",
+      Model: "EOS R5",
+      Software: "Adobe Lightroom 13.0",
+      ISO: 3200,
+      FNumber: "1.4",
+      ExposureTime: "1/30",
+      FocalLength: "50",
     },
   },
 };
@@ -104,25 +143,31 @@ const INTENSITY_SCALE: Record<IntensityLevel, number> = {
 
 /** Heavy-intensity (100%) baselines for the 6 new effects. Other intensities use INTENSITY_SCALE × these. */
 const HEAVY_BASE = {
-  hotPixelCount: 15,            // 5–15 per spec
-  dustSpotCount: 5,             // 2–5 per spec
-  motionBlurFactor: 1.0,        // alpha of motion-blurred copy at the outermost edge
-  highlightStrength: 0.6,       // 0..1 push toward white above threshold
-  shadowStrength: 0.55,         // 0..1 push toward black below threshold
-  bandingAmplitude: 2.0,        // ±N pixel value variation
+  hotPixelCount: 15, // 5–15 per spec
+  dustSpotCount: 5, // 2–5 per spec
+  motionBlurFactor: 1.0, // alpha of motion-blurred copy at the outermost edge
+  highlightStrength: 0.6, // 0..1 push toward white above threshold
+  shadowStrength: 0.55, // 0..1 push toward black below threshold
+  bandingAmplitude: 2.0, // ±N pixel value variation
 };
 
 // ─── Pure pixel kernels ──────────────────────────────────────────────────────
 
 /** Box-Muller Gaussian noise → grey RGB buffer centred at 128 with stddev sigma. */
-function gaussianNoiseRgb(width: number, height: number, sigma: number): Buffer {
+function gaussianNoiseRgb(
+  width: number,
+  height: number,
+  sigma: number
+): Buffer {
   const buf = Buffer.alloc(width * height * 3);
   for (let i = 0; i < buf.length; i += 3) {
     const u1 = Math.max(Number.EPSILON, Math.random());
     const u2 = Math.random();
     const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
     const v = Math.max(0, Math.min(255, Math.round(128 + z * sigma)));
-    buf[i] = v; buf[i + 1] = v; buf[i + 2] = v;
+    buf[i] = v;
+    buf[i + 1] = v;
+    buf[i + 2] = v;
   }
   return buf;
 }
@@ -131,7 +176,9 @@ function gaussianNoiseRgb(width: number, height: number, sigma: number): Buffer 
 function rgbToGreyscale(rgb: Buffer, W: number, H: number): Buffer {
   const out = Buffer.alloc(W * H);
   for (let i = 0; i < W * H; i++) {
-    const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2];
+    const r = rgb[i * 3],
+      g = rgb[i * 3 + 1],
+      b = rgb[i * 3 + 2];
     out[i] = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
   }
   return out;
@@ -163,11 +210,16 @@ function sobelEdgeMagnitude(grey: Buffer, W: number, H: number): Buffer {
 function buildSkinMask(rgb: Buffer, W: number, H: number): Uint8Array {
   const out = new Uint8Array(W * H);
   for (let i = 0; i < W * H; i++) {
-    const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2];
+    const r = rgb[i * 3],
+      g = rgb[i * 3 + 1],
+      b = rgb[i * 3 + 2];
     // Classic RGB-domain skin rule (Kovac et al, daylight variant)
     const isSkin =
-      r > 95 && g > 40 && b > 20 &&
-      r > g && r > b &&
+      r > 95 &&
+      g > 40 &&
+      b > 20 &&
+      r > g &&
+      r > b &&
       Math.abs(r - g) > 12 &&
       r - b > 12 &&
       Math.max(r, g, b) - Math.min(r, g, b) > 10;
@@ -209,8 +261,8 @@ function applyEdgeAwareCA(
       const rx = shift > 0 ? Math.max(0, x - shift) : x;
       const bx = shift > 0 ? Math.min(W - 1, x + shift) : x;
 
-      out[idx * 3]     = rgb[(rowBase + rx) * 3];     // red shifted right
-      out[idx * 3 + 1] = rgb[idx * 3 + 1];            // green unchanged
+      out[idx * 3] = rgb[(rowBase + rx) * 3]; // red shifted right
+      out[idx * 3 + 1] = rgb[idx * 3 + 1]; // green unchanged
       out[idx * 3 + 2] = rgb[(rowBase + bx) * 3 + 2]; // blue shifted left
     }
   }
@@ -219,11 +271,15 @@ function applyEdgeAwareCA(
 
 /** Subtle barrel distortion via custom kernel: inverse map + bilinear sample. */
 function applyBarrelDistortion(
-  rgb: Buffer, W: number, H: number, k: number
+  rgb: Buffer,
+  W: number,
+  H: number,
+  k: number
 ): Buffer {
   if (k === 0) return rgb;
   const out = Buffer.alloc(rgb.length);
-  const cx = W / 2, cy = H / 2;
+  const cx = W / 2,
+    cy = H / 2;
   const norm = Math.sqrt(cx * cx + cy * cy);
 
   for (let y = 0; y < H; y++) {
@@ -235,8 +291,10 @@ function applyBarrelDistortion(
       const sx = cx + dx * factor * norm;
       const sy = cy + dy * factor * norm;
 
-      const x0 = Math.floor(sx), y0 = Math.floor(sy);
-      const fx = sx - x0, fy = sy - y0;
+      const x0 = Math.floor(sx),
+        y0 = Math.floor(sy);
+      const fx = sx - x0,
+        fy = sy - y0;
       const cx0 = Math.max(0, Math.min(W - 1, x0));
       const cx1 = Math.max(0, Math.min(W - 1, x0 + 1));
       const cy0 = Math.max(0, Math.min(H - 1, y0));
@@ -276,7 +334,9 @@ function applyToneAndBanding(
 
     for (let x = 0; x < W; x++) {
       const idx = (y * W + x) * 3;
-      let r = rgb[idx], g = rgb[idx + 1], b = rgb[idx + 2];
+      let r = rgb[idx],
+        g = rgb[idx + 1],
+        b = rgb[idx + 2];
 
       // Shadow crush — push near-black toward 0
       const luma = 0.299 * r + 0.587 * g + 0.114 * b;
@@ -299,7 +359,7 @@ function applyToneAndBanding(
       }
 
       // Banding (clamp to byte range)
-      out[idx]     = Math.max(0, Math.min(255, Math.round(r + bandOffset)));
+      out[idx] = Math.max(0, Math.min(255, Math.round(r + bandOffset)));
       out[idx + 1] = Math.max(0, Math.min(255, Math.round(g + bandOffset)));
       out[idx + 2] = Math.max(0, Math.min(255, Math.round(b + bandOffset)));
     }
@@ -314,7 +374,7 @@ function applyMotionBlurEdgeRing(
   H: number,
   blurDistance: number,
   angleRadians: number,
-  intensityFactor: number,        // 0..1 — mixes in the motion-blurred copy
+  intensityFactor: number, // 0..1 — mixes in the motion-blurred copy
   ringStart = 0.85
 ): Buffer {
   if (blurDistance <= 0 || intensityFactor <= 0) return rgb;
@@ -324,12 +384,14 @@ function applyMotionBlurEdgeRing(
   const dy = Math.round(blurDistance * Math.sin(angleRadians));
   if (dx === 0 && dy === 0) return out;
 
-  const cx = W / 2, cy = H / 2;
+  const cx = W / 2,
+    cy = H / 2;
   const maxDist = Math.sqrt(cx * cx + cy * cy);
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      const fdx = x - cx, fdy = y - cy;
+      const fdx = x - cx,
+        fdy = y - cy;
       const dist = Math.sqrt(fdx * fdx + fdy * fdy) / maxDist;
       if (dist < ringStart) continue; // only the outer 15% gets motion blur
 
@@ -464,7 +526,7 @@ function applyAnamorphicFlares(
 
   const flareColors: Array<[number, number, number]> = [
     [120, 180, 255], // cool blue
-    [255, 170, 90],  // warm orange
+    [255, 170, 90], // warm orange
   ];
   const verticalReach = 4;
   const sigma = W * 0.12;
@@ -493,9 +555,15 @@ function applyAnamorphicFlares(
 
         const idx = (y * W + x) * 3;
         const inv = 1 - s;
-        out[idx]     = Math.min(255, Math.round(out[idx]     * inv + color[0] * s));
-        out[idx + 1] = Math.min(255, Math.round(out[idx + 1] * inv + color[1] * s));
-        out[idx + 2] = Math.min(255, Math.round(out[idx + 2] * inv + color[2] * s));
+        out[idx] = Math.min(255, Math.round(out[idx] * inv + color[0] * s));
+        out[idx + 1] = Math.min(
+          255,
+          Math.round(out[idx + 1] * inv + color[1] * s)
+        );
+        out[idx + 2] = Math.min(
+          255,
+          Math.round(out[idx + 2] * inv + color[2] * s)
+        );
       }
     }
   }
@@ -503,7 +571,12 @@ function applyAnamorphicFlares(
 }
 
 /** Scatter `count` bright single-pixel hot pixels in-place. Real cameras have these. */
-function applyHotPixels(rgb: Buffer, W: number, H: number, count: number): void {
+function applyHotPixels(
+  rgb: Buffer,
+  W: number,
+  H: number,
+  count: number
+): void {
   if (count <= 0) return;
   const tints: Array<[number, number, number]> = [
     [255, 255, 255],
@@ -517,7 +590,9 @@ function applyHotPixels(rgb: Buffer, W: number, H: number, count: number): void 
     const y = Math.floor(Math.random() * H);
     const idx = (y * W + x) * 3;
     const t = tints[Math.floor(Math.random() * tints.length)];
-    rgb[idx] = t[0]; rgb[idx + 1] = t[1]; rgb[idx + 2] = t[2];
+    rgb[idx] = t[0];
+    rgb[idx + 1] = t[1];
+    rgb[idx + 2] = t[2];
   }
 }
 
@@ -535,9 +610,13 @@ type ImageType = "standard" | "darkComplex";
 function detectImageType(rgb: Buffer, W: number, H: number): ImageType {
   const npx = W * H;
   const stride = 4;
-  let lumaSum = 0, chromaSum = 0, count = 0;
+  let lumaSum = 0,
+    chromaSum = 0,
+    count = 0;
   for (let i = 0; i < npx; i += stride) {
-    const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2];
+    const r = rgb[i * 3],
+      g = rgb[i * 3 + 1],
+      b = rgb[i * 3 + 2];
     lumaSum += 0.299 * r + 0.587 * g + 0.114 * b;
     chromaSum += Math.max(r, g, b) - Math.min(r, g, b);
     count++;
@@ -563,7 +642,9 @@ function applyShadowNoise(
   const out = Buffer.from(rgb);
   const npx = W * H;
   for (let i = 0; i < npx; i++) {
-    const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2];
+    const r = rgb[i * 3],
+      g = rgb[i * 3 + 1],
+      b = rgb[i * 3 + 2];
     const luma = 0.299 * r + 0.587 * g + 0.114 * b;
     if (luma >= shadowThreshold) continue;
 
@@ -574,7 +655,7 @@ function applyShadowNoise(
     const n = z * sigma * depth;
 
     // Push along the green↔magenta axis: R + B move together, G moves opposite.
-    out[i * 3]     = Math.max(0, Math.min(255, Math.round(r + n)));
+    out[i * 3] = Math.max(0, Math.min(255, Math.round(r + n)));
     out[i * 3 + 1] = Math.max(0, Math.min(255, Math.round(g - n)));
     out[i * 3 + 2] = Math.max(0, Math.min(255, Math.round(b + n)));
   }
@@ -606,7 +687,9 @@ async function applyAtmosphericHaze(
       <rect width="100%" height="100%" fill="url(#haze)"/>
     </svg>`
   );
-  return sharp(base).composite([{ input: haze, blend: "over" }]).toBuffer();
+  return sharp(base)
+    .composite([{ input: haze, blend: "over" }])
+    .toBuffer();
 }
 
 /**
@@ -627,7 +710,9 @@ async function applyNeonBloom(
   let foundNeon = false;
   const npx = W * H;
   for (let i = 0; i < npx; i++) {
-    const r = raw[i * 3], g = raw[i * 3 + 1], b = raw[i * 3 + 2];
+    const r = raw[i * 3],
+      g = raw[i * 3 + 1],
+      b = raw[i * 3 + 2];
     const luma = 0.299 * r + 0.587 * g + 0.114 * b;
     const chroma = Math.max(r, g, b) - Math.min(r, g, b);
     if (luma > 170 && chroma > 35) {
@@ -639,14 +724,18 @@ async function applyNeonBloom(
   }
   if (!foundNeon) return base;
 
-  const opacity = 0.20 * scale; // base 20% per spec
-  const bloom = await sharp(neonOnly, { raw: { width: W, height: H, channels: 3 } })
+  const opacity = 0.2 * scale; // base 20% per spec
+  const bloom = await sharp(neonOnly, {
+    raw: { width: W, height: H, channels: 3 },
+  })
     .blur(3.5)
     .linear(opacity, 0)
     .png()
     .toBuffer();
 
-  return sharp(base).composite([{ input: bloom, blend: "screen" }]).toBuffer();
+  return sharp(base)
+    .composite([{ input: bloom, blend: "screen" }])
+    .toBuffer();
 }
 
 /**
@@ -673,7 +762,7 @@ async function applyRainStreaks(
     const angle = baseAngle + (Math.random() - 0.5) * 0.1;
     const x2 = x1 + Math.cos(angle) * length;
     const y2 = y1 + Math.sin(angle) * length;
-    const op = (0.10 + Math.random() * 0.08) * scale;
+    const op = (0.1 + Math.random() * 0.08) * scale;
     lines.push(
       `<line x1="${x1.toFixed(0)}" y1="${y1.toFixed(0)}" x2="${x2.toFixed(0)}" y2="${y2.toFixed(0)}" stroke="white" stroke-width="1" stroke-opacity="${op.toFixed(3)}" stroke-linecap="round"/>`
     );
@@ -681,13 +770,18 @@ async function applyRainStreaks(
   const svg = Buffer.from(
     `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">${lines.join("")}</svg>`
   );
-  return sharp(base).composite([{ input: svg, blend: "over" }]).toBuffer();
+  return sharp(base)
+    .composite([{ input: svg, blend: "over" }])
+    .toBuffer();
 }
 
 // ─── SVG composite layers ────────────────────────────────────────────────────
 
 function buildVignetteSvg(W: number, H: number, strength: number): Buffer {
-  const cx = W / 2, cy = H / 2, rx = W * 0.7, ry = H * 0.7;
+  const cx = W / 2,
+    cy = H / 2,
+    rx = W * 0.7,
+    ry = H * 0.7;
   const opacity = Math.min(1, Math.max(0, strength));
   return Buffer.from(
     `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
@@ -725,34 +819,43 @@ async function applyFilmHalation(
   // Then heavy blur spreads the halo. Then global scale by `strength` dims it.
   const halation = await sharp(base)
     .linear(5.0, -1000)
-    .linear([1.0, 0.55, 0.20], [0, 0, 0])
+    .linear([1.0, 0.55, 0.2], [0, 0, 0])
     .blur(blurSigma)
     .linear(strength, 0)
     .png()
     .toBuffer();
 
-  return sharp(base).composite([{ input: halation, blend: "screen" }]).toBuffer();
+  return sharp(base)
+    .composite([{ input: halation, blend: "screen" }])
+    .toBuffer();
 }
 
 /** Random faint dark blobs that simulate lens dust, biased to the outer half. */
 function buildDustSvg(W: number, H: number, count: number): Buffer {
   if (count <= 0) {
-    return Buffer.from(`<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg"></svg>`);
+    return Buffer.from(
+      `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg"></svg>`
+    );
   }
-  const cx = W / 2, cy = H / 2;
+  const cx = W / 2,
+    cy = H / 2;
   const minDistSq = (Math.min(W, H) * 0.2) ** 2;
   const blobs: string[] = [];
   for (let i = 0; i < count; i++) {
-    let bx = 0, by = 0, distSq = 0, attempts = 0;
+    let bx = 0,
+      by = 0,
+      distSq = 0,
+      attempts = 0;
     do {
       bx = Math.random() * W;
       by = Math.random() * H;
-      const dx = bx - cx, dy = by - cy;
+      const dx = bx - cx,
+        dy = by - cy;
       distSq = dx * dx + dy * dy;
       attempts++;
     } while (distSq < minDistSq && attempts < 12);
 
-    const r = 3 + Math.random() * 5;            // 3–8 px
+    const r = 3 + Math.random() * 5; // 3–8 px
     const opacity = 0.03 + Math.random() * 0.05; // 3–8 %
     blobs.push(
       `<circle cx="${bx.toFixed(0)}" cy="${by.toFixed(0)}" r="${r.toFixed(1)}" fill="#000" fill-opacity="${opacity.toFixed(3)}"/>`
@@ -811,7 +914,9 @@ export async function humanizeImageBuffer(
 
   // Step 5: Shadow crush + highlight clip + horizontal micro-banding
   raw = applyToneAndBanding(
-    raw, W, H,
+    raw,
+    W,
+    H,
     highlightStrength,
     shadowStrength,
     bandingAmplitude
@@ -819,9 +924,11 @@ export async function humanizeImageBuffer(
 
   // Step 6: Directional motion blur — outer 15% ring only
   raw = applyMotionBlurEdgeRing(
-    raw, W, H,
-    1 + Math.random(),                                 // 1–2 px
-    Math.random() * Math.PI * 2,                       // random angle
+    raw,
+    W,
+    H,
+    1 + Math.random(), // 1–2 px
+    Math.random() * Math.PI * 2, // random angle
     motionBlurMix
   );
 
@@ -830,7 +937,9 @@ export async function humanizeImageBuffer(
   // single-pixel sensor defects can't seed flares.
   const flareSeparation = Math.max(80, Math.floor(Math.min(W, H) * 0.12));
   const flares = findBrightestClusters(
-    raw, W, H,
+    raw,
+    W,
+    H,
     /* maxCount        */ 3,
     /* minLuma         */ 230,
     /* minSeparationPx */ flareSeparation,
@@ -843,7 +952,13 @@ export async function humanizeImageBuffer(
 
   // Step 7.5: Dark/neon — green-magenta chroma noise in shadows
   if (imageType === "darkComplex") {
-    raw = applyShadowNoise(raw, W, H, /* threshold */ 60, /* sigma */ 14 * scale);
+    raw = applyShadowNoise(
+      raw,
+      W,
+      H,
+      /* threshold */ 60,
+      /* sigma */ 14 * scale
+    );
   }
 
   // Re-encode raw → PNG so subsequent sharp() ops can auto-detect format.
@@ -853,15 +968,16 @@ export async function humanizeImageBuffer(
 
   // Steps 8 + 9: Color-temperature drift (per-channel offset) + focus-falloff blur
   buf = await sharp(buf)
-    .linear(
-      [1.0, 1.0, 1.0],
-      [profile.redBoost, 0, profile.blueReduce]
-    )
+    .linear([1.0, 1.0, 1.0], [profile.redBoost, 0, profile.blueReduce])
     .blur(profile.blurSigma)
     .toBuffer();
 
   // Step 9.5: Film halation — soft warm bloom from highlights (35 mm film feel)
-  buf = await applyFilmHalation(buf, profile.halationStrength, profile.halationSigma);
+  buf = await applyFilmHalation(
+    buf,
+    profile.halationStrength,
+    profile.halationSigma
+  );
 
   // Step 9.6/9.7: Dark/neon scene additions — atmospheric haze + neon bloom.
   // Run after halation so the warm bloom doesn't interfere, and before the
@@ -875,13 +991,18 @@ export async function humanizeImageBuffer(
   const noiseRaw = gaussianNoiseRgb(W, H, profile.grainSigma);
   const noiseImg = await sharp(noiseRaw, {
     raw: { width: W, height: H, channels: 3 },
-  }).png().toBuffer();
+  })
+    .png()
+    .toBuffer();
 
   buf = await sharp(buf)
     .composite([
       { input: noiseImg, blend: "overlay" },
       { input: buildDustSvg(W, H, dustSpotCount), blend: "over" },
-      { input: buildVignetteSvg(W, H, profile.vignetteStrength), blend: "multiply" },
+      {
+        input: buildVignetteSvg(W, H, profile.vignetteStrength),
+        blend: "multiply",
+      },
     ])
     .toBuffer();
 
@@ -892,7 +1013,11 @@ export async function humanizeImageBuffer(
   }
 
   // Step 11: JPEG re-encode @ profile quality with realistic camera EXIF
-  const dt = new Date().toISOString().replace("T", " ").slice(0, 19).replace(/-/g, ":");
+  const dt = new Date()
+    .toISOString()
+    .replace("T", " ")
+    .slice(0, 19)
+    .replace(/-/g, ":");
   const final = await sharp(buf)
     .withMetadata({
       exif: {
@@ -928,15 +1053,25 @@ export async function humanizeImageBuffer(
 
 // ─── Credit pricing ───────────────────────────────────────────────────────────
 
-export function getCreditsForJob(type: MediaType, intensity: IntensityLevel): number {
+export function getCreditsForJob(
+  type: MediaType,
+  intensity: IntensityLevel
+): number {
   const base = type === "image" ? 1 : 3;
-  const multiplier: Record<IntensityLevel, number> = { light: 1, medium: 2, heavy: 3 };
+  const multiplier: Record<IntensityLevel, number> = {
+    light: 1,
+    medium: 2,
+    heavy: 3,
+  };
   return base * multiplier[intensity];
 }
 
 // ─── Job orchestration ───────────────────────────────────────────────────────
 
-async function downloadOriginal(originalKey: string, originalUrl: string): Promise<Buffer> {
+async function downloadOriginal(
+  originalKey: string,
+  originalUrl: string
+): Promise<Buffer> {
   if (!originalKey.startsWith("http")) {
     const key = originalKey.startsWith("/storage/")
       ? originalKey.slice("/storage/".length)
@@ -946,6 +1081,37 @@ async function downloadOriginal(originalKey: string, originalUrl: string): Promi
   const resp = await fetch(originalUrl);
   if (!resp.ok) throw new Error(`Failed to fetch original: ${resp.status}`);
   return Buffer.from(await resp.arrayBuffer());
+}
+
+// Global limiter so concurrent image humanizations (sharp is CPU/RAM heavy)
+// can't exhaust the box under load. Excess jobs queue and run as slots free up.
+let activeImageJobs = 0;
+const imageSlotWaiters: Array<() => void> = [];
+
+function acquireImageSlot(): Promise<void> {
+  if (activeImageJobs < ENV.maxConcurrentImageJobs) {
+    activeImageJobs++;
+    return Promise.resolve();
+  }
+  return new Promise<void>(resolve => imageSlotWaiters.push(resolve));
+}
+
+function releaseImageSlot(): void {
+  const next = imageSlotWaiters.shift();
+  if (next) {
+    next(); // hand the active slot directly to the next waiter
+  } else {
+    activeImageJobs--;
+  }
+}
+
+async function withImageSlot<T>(fn: () => Promise<T>): Promise<T> {
+  await acquireImageSlot();
+  try {
+    return await fn();
+  } finally {
+    releaseImageSlot();
+  }
 }
 
 export async function processImageJob(jobId: number): Promise<void> {
@@ -960,35 +1126,64 @@ export async function processImageJob(jobId: number): Promise<void> {
 
   try {
     const deducted = await deductCredits(
-      job.userId, creditsNeeded, jobId,
+      job.userId,
+      creditsNeeded,
+      jobId,
       `Image humanization (${job.intensity})`
     );
     if (!deducted) {
-      await updateJobStatus(jobId, "failed", { errorMessage: "Insufficient credits" });
+      await updateJobStatus(jobId, "failed", {
+        errorMessage: "Insufficient credits",
+      });
       return;
     }
 
-    await updateJobProgress(jobId, 15);
-    const originalBuf = await downloadOriginal(job.originalKey, job.originalUrl);
-    await updateJobProgress(jobId, 30);
+    await withImageSlot(async () => {
+      await updateJobProgress(jobId, 15);
+      const originalBuf = await downloadOriginal(
+        job.originalKey,
+        job.originalUrl
+      );
+      await updateJobProgress(jobId, 30);
 
-    const humanized = await humanizeImageBuffer(originalBuf, job.intensity);
-    await updateJobProgress(jobId, 90);
+      const humanized = await humanizeImageBuffer(originalBuf, job.intensity);
+      await updateJobProgress(jobId, 90);
 
-    const processedKey = `processed/${job.userId}/${jobId}/humanized.jpg`;
-    const { url: processedUrl } = await storagePut(
-      processedKey, humanized, "image/jpeg"
-    );
+      const processedKey = `processed/${job.userId}/${jobId}/humanized.jpg`;
+      const { url: processedUrl } = await storagePut(
+        processedKey,
+        humanized,
+        "image/jpeg"
+      );
 
-    await updateJobStatus(jobId, "completed", {
-      processedKey, processedUrl,
-      progress: 100, completedAt: new Date(),
-      creditsUsed: creditsNeeded,
+      await updateJobStatus(jobId, "completed", {
+        processedKey,
+        processedUrl,
+        progress: 100,
+        completedAt: new Date(),
+        creditsUsed: creditsNeeded,
+      });
     });
+
+    // Best-effort completion email (no-op unless SMTP is configured).
+    try {
+      const user = await getUserById(job.userId);
+      if (user?.email) {
+        await sendJobCompletionEmail({ to: user.email, jobId, type: "image" });
+      }
+    } catch (err) {
+      console.warn(`[email] job ${jobId} completion notice failed:`, err);
+    }
   } catch (error) {
-    const msg = error instanceof Error ? error.message : "Unknown processing error";
+    const msg =
+      error instanceof Error ? error.message : "Unknown processing error";
     await updateJobStatus(jobId, "failed", { errorMessage: msg.slice(0, 500) });
-    await addCredits(job.userId, creditsNeeded, "refund", `Refund for failed job #${jobId}`);
+    await addCredits(
+      job.userId,
+      creditsNeeded,
+      "refund",
+      `Refund for failed job #${jobId}`
+    );
     throw error;
   }
 }

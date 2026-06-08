@@ -50,7 +50,9 @@ export default function Admin() {
           <h1 className="font-serif text-4xl">
             <span className="text-gold">Admin</span> Dashboard
           </h1>
-          <p className="text-muted-foreground mt-2">System-wide statistics, user management, and revenue.</p>
+          <p className="text-muted-foreground mt-2">
+            System-wide statistics, user management, and revenue.
+          </p>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
@@ -64,18 +66,27 @@ export default function Admin() {
           <TabsContent value="overview" className="space-y-6">
             <StatsCards stats={stats.data} />
             <Card className="glass">
-              <CardHeader><CardTitle>Recent activity</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Recent activity</CardTitle>
+              </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Switch to the Jobs tab for a paginated view of all recent activity.
+                  Switch to the Jobs tab for a paginated view of all recent
+                  activity.
                 </p>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="users"><UsersTable /></TabsContent>
-          <TabsContent value="jobs"><JobsTable /></TabsContent>
-          <TabsContent value="revenue"><RevenueChart /></TabsContent>
+          <TabsContent value="users">
+            <UsersTable />
+          </TabsContent>
+          <TabsContent value="jobs">
+            <JobsTable />
+          </TabsContent>
+          <TabsContent value="revenue">
+            <RevenueChart />
+          </TabsContent>
         </Tabs>
       </div>
     </div>

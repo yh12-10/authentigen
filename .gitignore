@@ -17,6 +17,7 @@ build/
 # IDE and editor files
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 *~
@@ -101,16 +102,11 @@ jspm_packages/
 tmp/
 temp/
 
-# Local-FS uploads + humanized outputs (replaces Manus Forge S3)
-storage/
-
 # Database
 *.db
 *.sqlite
 *.sqlite3
 
-# Webdev artifacts (checkpoint zips, migrations, etc.)
-.webdev/
-
-# Manus version file (auto-generated, not part of source)
-client/public/__manus__/version.json
+# Local file storage: user uploads + humanized outputs (keep the dir, ignore contents)
+storage/*
+!storage/.gitkeep
