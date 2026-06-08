@@ -104,6 +104,27 @@ Copy `.env.example` to `.env`. Summary:
 | `STRIPE_PRICE_STARTER` / `STRIPE_PRICE_PRO` / `STRIPE_PRICE_STUDIO` | optional | Stripe Price IDs for the three packs. |
 | `VIDEO_MAX_DURATION_SECONDS` | optional | Hard cap on input video length (default 30); over-limit jobs auto-refund. |
 | `VIDEO_FRAME_SAMPLE_EVERY` | optional | Humanize every Nth frame (default 3). |
+| `STORAGE_BACKEND` | optional | `local` (default) or `s3`. See [Storage backends](#storage-backends). |
+| `S3_BUCKET` / `S3_REGION` / `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | for S3 | Required when `STORAGE_BACKEND=s3`. `S3_ENDPOINT` + `S3_FORCE_PATH_STYLE` enable R2/MinIO/B2; `S3_PUBLIC_URL` serves long-lived URLs via a CDN. |
+| `SMTP_HOST` / `SMTP_FROM` / `SMTP_*` | optional | Enable email; blank disables it (logs to console). See [Email](#email). `OWNER_EMAIL` receives admin notifications. |
+| `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | optional | API rate limit (default 100 req / 60s). Set `TRUST_PROXY` behind a proxy. |
+| `MAX_CONCURRENT_IMAGE_JOBS` | optional | Cap on simultaneous image humanizations (default 4). |
+
+### Storage backends
+
+By default, uploads and processed output are stored on the local filesystem under `storage/` and served
+via the `/storage` route. To use object storage, set `STORAGE_BACKEND=s3` plus `S3_BUCKET`, `S3_REGION`,
+and AWS credentials. It works with any S3-compatible service — set `S3_ENDPOINT` (and
+`S3_FORCE_PATH_STYLE=true` for MinIO) for Cloudflare R2, MinIO, or Backblaze B2. Set `S3_PUBLIC_URL` to a
+public/CDN base for long-lived links; otherwise the app issues presigned URLs (max 7-day expiry). The
+Compose `dev` profile includes a MinIO service for local testing — see below.
+
+### Email
+
+Email is optional and off unless configured — `notifyOwner` and job-completion notices fall back to
+console logging. Set `SMTP_HOST`, `SMTP_FROM` (and `SMTP_USER`/`SMTP_PASSWORD` if your provider needs
+auth) for any SMTP provider. For local testing, `docker compose --profile dev up` starts
+[Mailhog](http://localhost:8025) — point `SMTP_HOST=mailhog`, `SMTP_PORT=1025`.
 
 ### Enabling Stripe (optional)
 
@@ -136,7 +157,7 @@ Full details — data model, job lifecycle, and pipeline internals — are in **
 
 ```bash
 pnpm check      # TypeScript (no emit)
-pnpm test       # Vitest
+pnpm test       # Vitest — server (node) + client (jsdom) projects
 pnpm format     # Prettier write
 ```
 
@@ -167,13 +188,13 @@ outcomes are not guaranteed and vary by input and detector.
 
 ## Roadmap
 
-Not yet implemented (contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md)):
+Done recently: pluggable S3 storage, SMTP email, API rate limiting, crash-recovery for jobs, and a
+front-end test project. Still open (contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md)):
 
-- Pluggable object storage (S3) alongside the local filesystem backend
-- Rate limiting and abuse protection
-- Real email notifications (currently a `console.log` stub)
-- A distributed job queue for multi-instance deployments
-- Front-end test coverage
+- A distributed job queue (e.g. Redis/BullMQ) for multi-instance deployments
+- On-read presigned URLs so S3 links never expire without a CDN
+- Broader front-end and integration test coverage
+- Email verification on signup
 
 ## Security
 

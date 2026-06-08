@@ -42,8 +42,10 @@ A humanization job is **fire-and-forget async** inside the same process:
 4. The client polls `jobs.status` (~2s) and renders progress, then the before/after view.
 
 Video jobs additionally pass through a **per-user in-process semaphore** so a single user can only
-run one video at a time. There is no external queue — this is a single-instance design (see
-[SECURITY.md](SECURITY.md) for scaling caveats).
+run one video at a time, and image jobs share a **global concurrency cap** (`MAX_CONCURRENT_IMAGE_JOBS`).
+There is no external queue — this is a single-instance design, but `server/recovery.ts` reconciles jobs
+left `pending`/`processing` after a restart on boot (re-queue or fail+refund). See
+[SECURITY.md](SECURITY.md) for scaling caveats.
 
 ## The humanization pipeline
 
@@ -100,9 +102,11 @@ verifies the signature (raw body) and grants credits idempotently via the unique
 
 ## Storage (`server/storage.ts`)
 
-Local filesystem under `storage/`, served at `/storage/*`. Keys get a random suffix; a
-`safeAbsolutePath` guard prevents path traversal. Swapping in S3 is the natural first extension point
-(the AWS SDK is already a dependency).
+A pluggable backend behind a stable API (`storagePut`/`storageGet`/`storageGetBuffer`/
+`storageGetSignedUrl`), selected by `STORAGE_BACKEND`. The **local** backend writes under `storage/`
+(served at `/storage/*`); the **s3** backend targets S3 or any S3-compatible service (R2/MinIO/B2) and
+returns public or presigned URLs. Keys get a random suffix and a `safeAbsolutePath` guard prevents path
+traversal. The AWS SDK is imported lazily so local deployments never load it.
 
 ## Conventions
 
