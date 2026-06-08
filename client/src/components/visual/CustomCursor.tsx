@@ -40,7 +40,9 @@ export function CustomCursor() {
     const onOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
-      const interactive = target.closest("button, a, [role='button'], input, textarea, select, [data-cursor-hover]");
+      const interactive = target.closest(
+        "button, a, [role='button'], input, textarea, select, [data-cursor-hover]"
+      );
       setHovering(Boolean(interactive));
     };
 

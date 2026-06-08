@@ -41,7 +41,12 @@ export function FloatCard({
   return (
     <motion.div
       animate={{ y: [0, -amplitude, 0, amplitude * 0.6, 0] }}
-      transition={{ duration: d, delay: dly, repeat: Infinity, ease: "easeInOut" }}
+      transition={{
+        duration: d,
+        delay: dly,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
       {...rest}
     >
       {children}

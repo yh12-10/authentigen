@@ -23,15 +23,15 @@ for how the pieces fit together.
 
 ## Scripts
 
-| Command | What it does |
-|---------|--------------|
-| `pnpm dev` | Run the dev server (Express + Vite middleware, hot reload) |
-| `pnpm build` | Production build (client → `dist/public`, server → `dist/index.js`) |
-| `pnpm start` | Run the production build |
-| `pnpm check` | TypeScript type-check (`tsc --noEmit`) — must pass with 0 errors |
-| `pnpm test` | Run the Vitest suite |
-| `pnpm format` | Format the codebase with Prettier |
-| `pnpm db:push` | Generate + apply Drizzle migrations |
+| Command        | What it does                                                        |
+| -------------- | ------------------------------------------------------------------- |
+| `pnpm dev`     | Run the dev server (Express + Vite middleware, hot reload)          |
+| `pnpm build`   | Production build (client → `dist/public`, server → `dist/index.js`) |
+| `pnpm start`   | Run the production build                                            |
+| `pnpm check`   | TypeScript type-check (`tsc --noEmit`) — must pass with 0 errors    |
+| `pnpm test`    | Run the Vitest suite                                                |
+| `pnpm format`  | Format the codebase with Prettier                                   |
+| `pnpm db:push` | Generate + apply Drizzle migrations                                 |
 
 ## Before opening a PR
 

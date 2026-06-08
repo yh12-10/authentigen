@@ -80,7 +80,10 @@ async function getS3Client(): Promise<S3Client> {
     endpoint: ENV.s3Endpoint || undefined,
     forcePathStyle: ENV.s3ForcePathStyle,
     credentials: ENV.s3AccessKeyId
-      ? { accessKeyId: ENV.s3AccessKeyId, secretAccessKey: ENV.s3SecretAccessKey }
+      ? {
+          accessKeyId: ENV.s3AccessKeyId,
+          secretAccessKey: ENV.s3SecretAccessKey,
+        }
       : undefined,
   });
   return _s3;
@@ -91,13 +94,20 @@ const s3Backend: StorageBackend = {
     const { PutObjectCommand } = await import("@aws-sdk/client-s3");
     const client = await getS3Client();
     await client.send(
-      new PutObjectCommand({ Bucket: ENV.s3Bucket, Key: key, Body: buf, ContentType: contentType })
+      new PutObjectCommand({
+        Bucket: ENV.s3Bucket,
+        Key: key,
+        Body: buf,
+        ContentType: contentType,
+      })
     );
   },
   async getBuffer(key) {
     const { GetObjectCommand } = await import("@aws-sdk/client-s3");
     const client = await getS3Client();
-    const out = await client.send(new GetObjectCommand({ Bucket: ENV.s3Bucket, Key: key }));
+    const out = await client.send(
+      new GetObjectCommand({ Bucket: ENV.s3Bucket, Key: key })
+    );
     if (!out.Body) throw new Error(`S3 object has no body: ${key}`);
     const bytes = await out.Body.transformToByteArray();
     return Buffer.from(bytes);
@@ -109,9 +119,13 @@ const s3Backend: StorageBackend = {
     const { GetObjectCommand } = await import("@aws-sdk/client-s3");
     const { getSignedUrl } = await import("@aws-sdk/s3-request-presigner");
     const client = await getS3Client();
-    return getSignedUrl(client, new GetObjectCommand({ Bucket: ENV.s3Bucket, Key: key }), {
-      expiresIn: SIGNED_URL_TTL_SECONDS,
-    });
+    return getSignedUrl(
+      client,
+      new GetObjectCommand({ Bucket: ENV.s3Bucket, Key: key }),
+      {
+        expiresIn: SIGNED_URL_TTL_SECONDS,
+      }
+    );
   },
 };
 
@@ -139,7 +153,9 @@ export async function storagePut(
   return { key, url: await backend.url(key) };
 }
 
-export async function storageGet(relKey: string): Promise<{ key: string; url: string }> {
+export async function storageGet(
+  relKey: string
+): Promise<{ key: string; url: string }> {
   const key = normalizeKey(relKey);
   return { key, url: await backend.url(key) };
 }

@@ -14,7 +14,7 @@ export function registerStorageProxy(app: Express) {
   app.use(
     "/storage",
     express.static(STORAGE_ROOT, {
-      setHeaders: (res) => {
+      setHeaders: res => {
         res.setHeader("Cache-Control", "private, max-age=3600");
       },
     })

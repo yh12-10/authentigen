@@ -13,7 +13,8 @@ services:
       MYSQL_ROOT_PASSWORD: authgen
       MYSQL_DATABASE: authentigen
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pauthgen"]
+      test:
+        ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pauthgen"]
       interval: 5s
       timeout: 5s
       retries: 20

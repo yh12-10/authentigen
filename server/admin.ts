@@ -56,7 +56,11 @@ export async function getAdminStats() {
   };
 }
 
-export async function listAdminUsers(opts: { limit: number; offset: number; search?: string }) {
+export async function listAdminUsers(opts: {
+  limit: number;
+  offset: number;
+  search?: string;
+}) {
   const db = await getDb();
   if (!db) return [];
   const where = opts.search
@@ -85,7 +89,7 @@ export async function listAdminUsers(opts: { limit: number; offset: number; sear
 
   // Add jobs count per user
   const enriched = await Promise.all(
-    rows.map(async (u) => {
+    rows.map(async u => {
       const [r] = await db
         .select({ c: count() })
         .from(jobs)
@@ -109,7 +113,12 @@ export async function listAdminJobs(opts: {
   if (opts.status) conditions.push(eq(jobs.status, opts.status));
   if (opts.type) conditions.push(eq(jobs.type, opts.type));
 
-  const where = conditions.length === 0 ? undefined : conditions.length === 1 ? conditions[0] : and(...conditions);
+  const where =
+    conditions.length === 0
+      ? undefined
+      : conditions.length === 1
+        ? conditions[0]
+        : and(...conditions);
 
   const rows = await db
     .select({
@@ -136,10 +145,18 @@ export async function listAdminJobs(opts: {
   return rows;
 }
 
-export async function grantCreditsToUser(targetUserId: number, amount: number, adminUserId: number) {
+export async function grantCreditsToUser(
+  targetUserId: number,
+  amount: number,
+  adminUserId: number
+) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const target = await db.select().from(users).where(eq(users.id, targetUserId)).limit(1);
+  const target = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, targetUserId))
+    .limit(1);
   if (target.length === 0) throw new Error("Target user not found");
   // Whitelist: only update credits, NEVER role.
   await db
@@ -168,11 +185,16 @@ export async function getDailyRevenueLast30Days() {
       credits: sum(creditTransactions.amount),
     })
     .from(creditTransactions)
-    .where(and(eq(creditTransactions.type, "purchase"), gte(creditTransactions.createdAt, cutoff)))
+    .where(
+      and(
+        eq(creditTransactions.type, "purchase"),
+        gte(creditTransactions.createdAt, cutoff)
+      )
+    )
     .groupBy(sql`DATE(${creditTransactions.createdAt})`)
     .orderBy(sql`DATE(${creditTransactions.createdAt})`);
 
-  return rows.map((r) => ({
+  return rows.map(r => ({
     day: String(r.day),
     credits: Number(r.credits ?? 0),
     estimatedRevenueCents: Math.round(Number(r.credits ?? 0) * 7.5),

@@ -28,55 +28,74 @@ export const users = mysqlTable(
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
     lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
   },
-  (t) => ({
+  t => ({
     usersEmailUnique: uniqueIndex("users_email_unique").on(t.email),
-  }),
+  })
 );
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-export const jobs = mysqlTable("jobs", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  type: mysqlEnum("type", ["image", "video"]).notNull(),
-  status: mysqlEnum("status", ["pending", "processing", "completed", "failed"]).default("pending").notNull(),
-  intensity: mysqlEnum("intensity", ["light", "medium", "heavy"]).default("medium").notNull(),
-  originalKey: varchar("originalKey", { length: 512 }).notNull(),
-  originalUrl: varchar("originalUrl", { length: 1024 }).notNull(),
-  originalFilename: varchar("originalFilename", { length: 255 }).notNull(),
-  originalMimeType: varchar("originalMimeType", { length: 64 }).notNull(),
-  processedKey: varchar("processedKey", { length: 512 }),
-  processedUrl: varchar("processedUrl", { length: 1024 }),
-  progress: int("progress").default(0).notNull(),
-  creditsUsed: int("creditsUsed").default(0).notNull(),
-  errorMessage: text("errorMessage"),
-  batchId: varchar("batchId", { length: 36 }),
-  durationSeconds: float("durationSeconds"),
-  frameCount: int("frameCount"),
-  framesProcessed: int("framesProcessed").default(0).notNull(),
-  processingStartedAt: timestamp("processingStartedAt"),
-  completedAt: timestamp("completedAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-}, (t) => ({
-  jobsBatchIdIdx: index("jobs_batchId_idx").on(t.batchId),
-}));
+export const jobs = mysqlTable(
+  "jobs",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    type: mysqlEnum("type", ["image", "video"]).notNull(),
+    status: mysqlEnum("status", [
+      "pending",
+      "processing",
+      "completed",
+      "failed",
+    ])
+      .default("pending")
+      .notNull(),
+    intensity: mysqlEnum("intensity", ["light", "medium", "heavy"])
+      .default("medium")
+      .notNull(),
+    originalKey: varchar("originalKey", { length: 512 }).notNull(),
+    originalUrl: varchar("originalUrl", { length: 1024 }).notNull(),
+    originalFilename: varchar("originalFilename", { length: 255 }).notNull(),
+    originalMimeType: varchar("originalMimeType", { length: 64 }).notNull(),
+    processedKey: varchar("processedKey", { length: 512 }),
+    processedUrl: varchar("processedUrl", { length: 1024 }),
+    progress: int("progress").default(0).notNull(),
+    creditsUsed: int("creditsUsed").default(0).notNull(),
+    errorMessage: text("errorMessage"),
+    batchId: varchar("batchId", { length: 36 }),
+    durationSeconds: float("durationSeconds"),
+    frameCount: int("frameCount"),
+    framesProcessed: int("framesProcessed").default(0).notNull(),
+    processingStartedAt: timestamp("processingStartedAt"),
+    completedAt: timestamp("completedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  t => ({
+    jobsBatchIdIdx: index("jobs_batchId_idx").on(t.batchId),
+  })
+);
 
 export type Job = typeof jobs.$inferSelect;
 export type InsertJob = typeof jobs.$inferInsert;
 
-export const creditTransactions = mysqlTable("credit_transactions", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  jobId: int("jobId"),
-  amount: int("amount").notNull(),
-  type: mysqlEnum("type", ["purchase", "usage", "bonus", "refund"]).notNull(),
-  description: varchar("description", { length: 255 }),
-  stripeSessionId: varchar("stripeSessionId", { length: 128 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, (t) => ({
-  creditTxStripeSessionUnique: uniqueIndex("credit_tx_stripe_session_unique").on(t.stripeSessionId),
-}));
+export const creditTransactions = mysqlTable(
+  "credit_transactions",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    jobId: int("jobId"),
+    amount: int("amount").notNull(),
+    type: mysqlEnum("type", ["purchase", "usage", "bonus", "refund"]).notNull(),
+    description: varchar("description", { length: 255 }),
+    stripeSessionId: varchar("stripeSessionId", { length: 128 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  t => ({
+    creditTxStripeSessionUnique: uniqueIndex(
+      "credit_tx_stripe_session_unique"
+    ).on(t.stripeSessionId),
+  })
+);
 
 export type CreditTransaction = typeof creditTransactions.$inferSelect;

@@ -15,7 +15,9 @@ async function getTransport(): Promise<Transporter> {
     host: ENV.smtpHost,
     port: ENV.smtpPort,
     secure: ENV.smtpSecure,
-    auth: ENV.smtpUser ? { user: ENV.smtpUser, pass: ENV.smtpPassword } : undefined,
+    auth: ENV.smtpUser
+      ? { user: ENV.smtpUser, pass: ENV.smtpPassword }
+      : undefined,
   });
   return _transport;
 }

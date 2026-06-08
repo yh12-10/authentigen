@@ -38,7 +38,10 @@ import type { TrpcContext } from "./_core/context";
 type CookieCall = { name: string; options: Record<string, unknown> };
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
-function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] } {
+function createAuthContext(): {
+  ctx: TrpcContext;
+  clearedCookies: CookieCall[];
+} {
   const clearedCookies: CookieCall[] = [];
   const user: AuthenticatedUser = {
     id: 1,

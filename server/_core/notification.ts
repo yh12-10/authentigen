@@ -10,7 +10,9 @@ export type NotificationPayload = {
   content: string;
 };
 
-export async function notifyOwner(input: NotificationPayload): Promise<boolean> {
+export async function notifyOwner(
+  input: NotificationPayload
+): Promise<boolean> {
   if (isSmtpConfigured() && ENV.ownerEmail) {
     const sent = await sendMail({
       to: ENV.ownerEmail,

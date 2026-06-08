@@ -7,7 +7,11 @@ export interface UseCountUpOptions {
   decimals?: number;
 }
 
-export function useCountUp({ to, duration = 1600, decimals = 0 }: UseCountUpOptions) {
+export function useCountUp({
+  to,
+  duration = 1600,
+  decimals = 0,
+}: UseCountUpOptions) {
   const ref = useRef<HTMLSpanElement | null>(null);
   const [value, setValue] = useState<number>(0);
   const [started, setStarted] = useState(false);
@@ -18,7 +22,7 @@ export function useCountUp({ to, duration = 1600, decimals = 0 }: UseCountUpOpti
     if (!node) return;
     if (started) return;
     const obs = new IntersectionObserver(
-      (entries) => {
+      entries => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             setStarted(true);
@@ -53,6 +57,7 @@ export function useCountUp({ to, duration = 1600, decimals = 0 }: UseCountUpOpti
     return () => cancelAnimationFrame(raf);
   }, [started, to, duration, reduced]);
 
-  const display = decimals > 0 ? value.toFixed(decimals) : Math.round(value).toString();
+  const display =
+    decimals > 0 ? value.toFixed(decimals) : Math.round(value).toString();
   return { ref, value, display };
 }

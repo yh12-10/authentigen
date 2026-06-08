@@ -60,11 +60,16 @@ export function LoadingScreen() {
             <motion.div
               className="mx-auto mt-3 h-[2px] origin-left rounded-full"
               style={{
-                background: "linear-gradient(90deg, transparent, #F5A623, transparent)",
+                background:
+                  "linear-gradient(90deg, transparent, #F5A623, transparent)",
               }}
               initial={{ scaleX: 0, width: "100%" }}
               animate={{ scaleX: 1 }}
-              transition={{ duration: 0.6, delay: reduced ? 0 : 0.9, ease: "easeOut" }}
+              transition={{
+                duration: 0.6,
+                delay: reduced ? 0 : 0.9,
+                ease: "easeOut",
+              }}
             />
           </div>
         </motion.div>

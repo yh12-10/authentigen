@@ -54,7 +54,7 @@ export async function recoverOrphanedJobs(): Promise<void> {
     const action = classifyOrphan(job.status);
     if (action === "requeue") {
       const run = job.type === "image" ? processImageJob : processVideoJob;
-      run(job.id).catch((err) =>
+      run(job.id).catch(err =>
         console.error(`[recovery] re-queue of job ${job.id} failed:`, err)
       );
       console.log(`[recovery] re-queued pending ${job.type} job ${job.id}`);
@@ -64,7 +64,12 @@ export async function recoverOrphanedJobs(): Promise<void> {
       });
       const owed = await unrefundedUsageAmount(job.id);
       if (owed > 0) {
-        await addCredits(job.userId, owed, "refund", `Refund for interrupted job #${job.id}`);
+        await addCredits(
+          job.userId,
+          owed,
+          "refund",
+          `Refund for interrupted job #${job.id}`
+        );
       }
       console.log(
         `[recovery] failed interrupted job ${job.id}${owed > 0 ? `, refunded ${owed} credit(s)` : ""}`

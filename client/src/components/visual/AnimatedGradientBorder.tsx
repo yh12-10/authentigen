@@ -14,7 +14,10 @@ export function AnimatedGradientBorder({
 }: AnimatedGradientBorderProps) {
   return (
     <div
-      className={cn(active ? "gradient-border-animated" : "gradient-border", className)}
+      className={cn(
+        active ? "gradient-border-animated" : "gradient-border",
+        className
+      )}
       {...rest}
     >
       {children}

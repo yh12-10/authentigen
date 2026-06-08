@@ -3,7 +3,12 @@ import { TRPCError } from "@trpc/server";
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
+import {
+  publicProcedure,
+  protectedProcedure,
+  adminProcedure,
+  router,
+} from "./_core/trpc";
 import { signupUser, loginUser, signSessionToken } from "./_core/auth";
 import {
   createJob,
@@ -14,7 +19,11 @@ import {
   addCredits,
 } from "./db";
 import { storagePut } from "./storage";
-import { processImageJob, processVideoJob, getCreditsForJob } from "./humanizer";
+import {
+  processImageJob,
+  processVideoJob,
+  getCreditsForJob,
+} from "./humanizer";
 import { isStripeConfigured } from "./_core/env";
 import { PRICE_PACKS, createCheckoutSession, type PackKey } from "./payments";
 import {
@@ -33,7 +42,13 @@ const jobsRouter = router({
     .input(
       z.object({
         filename: z.string().min(1).max(255),
-        mimeType: z.enum(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]),
+        mimeType: z.enum([
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "video/mp4",
+          "video/webm",
+        ]),
         intensity: z.enum(["light", "medium", "heavy"]).default("medium"),
         fileDataBase64: z.string(),
         batchId: z.string().min(1).max(36).optional(),
@@ -46,7 +61,8 @@ const jobsRouter = router({
 
       // Check credits
       const user = await getUserById(userId);
-      if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      if (!user)
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
       if (user.credits < creditsNeeded) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -81,7 +97,7 @@ const jobsRouter = router({
 
       // Trigger processing asynchronously (fire and forget)
       const processFn = type === "image" ? processImageJob : processVideoJob;
-      processFn(jobId).catch((err) => {
+      processFn(jobId).catch(err => {
         console.error(`[Humanizer] Job ${jobId} failed:`, err);
       });
 
@@ -118,16 +134,27 @@ const creditsRouter = router({
   // One-time welcome bonus — guarded by durable bonusClaimed flag on user record
   claimBonus: protectedProcedure.mutation(async ({ ctx }) => {
     const user = await getUserById(ctx.user.id);
-    if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+    if (!user)
+      throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
     if (user.bonusClaimed) {
-      throw new TRPCError({ code: "BAD_REQUEST", message: "Welcome bonus already claimed" });
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Welcome bonus already claimed",
+      });
     }
     const { getDb } = await import("./db");
     const db = await getDb();
-    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+    if (!db)
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Database not available",
+      });
     const { users } = await import("../drizzle/schema");
     const { eq } = await import("drizzle-orm");
-    await db.update(users).set({ bonusClaimed: 1 }).where(eq(users.id, ctx.user.id));
+    await db
+      .update(users)
+      .set({ bonusClaimed: 1 })
+      .where(eq(users.id, ctx.user.id));
     await addCredits(ctx.user.id, 10, "bonus", "Welcome bonus credits");
     return { success: true };
   }),
@@ -136,7 +163,9 @@ const creditsRouter = router({
 // ─── Payments Router ──────────────────────────────────────────────────────────
 
 const paymentsRouter = router({
-  isConfigured: publicProcedure.query(() => ({ configured: isStripeConfigured() })),
+  isConfigured: publicProcedure.query(() => ({
+    configured: isStripeConfigured(),
+  })),
 
   packs: publicProcedure.query(() =>
     Object.entries(PRICE_PACKS).map(([key, pack]) => ({
@@ -166,21 +195,35 @@ const paymentsRouter = router({
 const adminRouter = router({
   stats: adminProcedure.query(() => getAdminStats()),
   users: adminProcedure
-    .input(z.object({ limit: z.number().min(1).max(100).default(50), offset: z.number().min(0).default(0) }))
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+      })
+    )
     .query(({ input }) => listAdminUsers(input)),
   jobs: adminProcedure
     .input(
       z.object({
         limit: z.number().min(1).max(100).default(50),
         offset: z.number().min(0).default(0),
-        status: z.enum(["pending", "processing", "completed", "failed"]).optional(),
+        status: z
+          .enum(["pending", "processing", "completed", "failed"])
+          .optional(),
         type: z.enum(["image", "video"]).optional(),
       })
     )
     .query(({ input }) => listAdminJobs(input)),
   grantCredits: adminProcedure
-    .input(z.object({ userId: z.number(), amount: z.number().int().min(1).max(10000) }))
-    .mutation(({ ctx, input }) => grantCreditsToUser(input.userId, input.amount, ctx.user.id)),
+    .input(
+      z.object({
+        userId: z.number(),
+        amount: z.number().int().min(1).max(10000),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      grantCreditsToUser(input.userId, input.amount, ctx.user.id)
+    ),
   dailyRevenue: adminProcedure.query(() => getDailyRevenueLast30Days()),
 });
 
@@ -188,7 +231,13 @@ const adminRouter = router({
 
 const fileSchema = z.object({
   filename: z.string().min(1).max(255),
-  mimeType: z.enum(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]),
+  mimeType: z.enum([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "video/mp4",
+    "video/webm",
+  ]),
   intensity: z.enum(["light", "medium", "heavy"]).default("medium"),
   fileDataBase64: z.string(),
 });
@@ -211,7 +260,7 @@ export const appRouter = router({
   system: systemRouter,
 
   auth: router({
-    me: publicProcedure.query((opts) => opts.ctx.user),
+    me: publicProcedure.query(opts => opts.ctx.user),
 
     signup: publicProcedure
       .input(
@@ -231,7 +280,10 @@ export const appRouter = router({
         }
         const token = await signSessionToken(user.id);
         const cookieOptions = getSessionCookieOptions(ctx.req);
-        ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        ctx.res.cookie(COOKIE_NAME, token, {
+          ...cookieOptions,
+          maxAge: ONE_YEAR_MS,
+        });
         return { success: true, user } as const;
       }),
 
@@ -252,7 +304,10 @@ export const appRouter = router({
         }
         const token = await signSessionToken(user.id);
         const cookieOptions = getSessionCookieOptions(ctx.req);
-        ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        ctx.res.cookie(COOKIE_NAME, token, {
+          ...cookieOptions,
+          maxAge: ONE_YEAR_MS,
+        });
         return { success: true, user } as const;
       }),
 

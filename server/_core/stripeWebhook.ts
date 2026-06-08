@@ -20,15 +20,22 @@ export function registerStripeWebhook(app: Express): void {
 
       const sig = req.headers["stripe-signature"];
       if (!sig || typeof sig !== "string") {
-        return res.status(400).json({ error: "Missing stripe-signature header" });
+        return res
+          .status(400)
+          .json({ error: "Missing stripe-signature header" });
       }
 
       let event;
       try {
         const stripe = getStripe();
-        event = stripe.webhooks.constructEvent(req.body, sig, ENV.stripeWebhookSecret);
+        event = stripe.webhooks.constructEvent(
+          req.body,
+          sig,
+          ENV.stripeWebhookSecret
+        );
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "signature verification failed";
+        const msg =
+          err instanceof Error ? err.message : "signature verification failed";
         console.error("[Stripe] webhook signature verification failed:", msg);
         return res.status(400).json({ error: "Invalid signature" });
       }

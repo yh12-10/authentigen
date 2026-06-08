@@ -85,13 +85,13 @@ async function startServer() {
 
   // Clean up orphan video temp dirs older than 1h on boot.
   import("../video")
-    .then((m) => m.sweepOldTempDirs())
-    .catch((err) => console.warn("[Startup] sweep failed:", err));
+    .then(m => m.sweepOldTempDirs())
+    .catch(err => console.warn("[Startup] sweep failed:", err));
 
   // Reconcile jobs left pending/processing after a crash or restart.
   import("../recovery")
-    .then((m) => m.recoverOrphanedJobs())
-    .catch((err) => console.warn("[Startup] job recovery failed:", err));
+    .then(m => m.recoverOrphanedJobs())
+    .catch(err => console.warn("[Startup] job recovery failed:", err));
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);

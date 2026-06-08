@@ -19,7 +19,10 @@ function ensureDevJwtSecret(): void {
     let contents = existsSync(envPath) ? readFileSync(envPath, "utf8") : "";
 
     if (/^\s*JWT_SECRET\s*=.*$/m.test(contents)) {
-      contents = contents.replace(/^\s*JWT_SECRET\s*=.*$/m, `JWT_SECRET=${secret}`);
+      contents = contents.replace(
+        /^\s*JWT_SECRET\s*=.*$/m,
+        `JWT_SECRET=${secret}`
+      );
     } else {
       if (contents.length > 0 && !contents.endsWith("\n")) contents += "\n";
       contents += `JWT_SECRET=${secret}\n`;
@@ -52,11 +55,15 @@ export const ENV = {
   videoMaxDurationSeconds: Number(process.env.VIDEO_MAX_DURATION_SECONDS ?? 30),
   videoFrameSampleEvery: Number(process.env.VIDEO_FRAME_SAMPLE_EVERY ?? 3),
   // Storage backend ("local" filesystem by default, or "s3")
-  storageBackend: (process.env.STORAGE_BACKEND ?? "local").toLowerCase() === "s3" ? "s3" : "local",
+  storageBackend:
+    (process.env.STORAGE_BACKEND ?? "local").toLowerCase() === "s3"
+      ? "s3"
+      : "local",
   s3Bucket: process.env.S3_BUCKET ?? "",
   s3Region: process.env.S3_REGION ?? "us-east-1",
   s3Endpoint: process.env.S3_ENDPOINT ?? "", // optional, for S3-compatible (R2/MinIO/B2)
-  s3ForcePathStyle: (process.env.S3_FORCE_PATH_STYLE ?? "false").toLowerCase() === "true",
+  s3ForcePathStyle:
+    (process.env.S3_FORCE_PATH_STYLE ?? "false").toLowerCase() === "true",
   s3PublicUrl: process.env.S3_PUBLIC_URL ?? "", // optional public/CDN base for long-lived URLs
   s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
   s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
@@ -79,10 +86,10 @@ export const ENV = {
 export function isStripeConfigured(): boolean {
   return Boolean(
     ENV.stripeSecretKey &&
-    ENV.stripeWebhookSecret &&
-    ENV.stripePriceStarter &&
-    ENV.stripePricePro &&
-    ENV.stripePriceStudio
+      ENV.stripeWebhookSecret &&
+      ENV.stripePriceStarter &&
+      ENV.stripePricePro &&
+      ENV.stripePriceStudio
   );
 }
 

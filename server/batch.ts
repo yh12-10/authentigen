@@ -3,21 +3,34 @@ import type { Response } from "express";
 import { jobs } from "../drizzle/schema";
 import { getDb, createJob, getUserById } from "./db";
 import { storagePut, storageGetBuffer } from "./storage";
-import { processImageJob, processVideoJob, getCreditsForJob } from "./humanizer";
+import {
+  processImageJob,
+  processVideoJob,
+  getCreditsForJob,
+} from "./humanizer";
 
 interface BatchFile {
   filename: string;
-  mimeType: "image/jpeg" | "image/png" | "image/webp" | "video/mp4" | "video/webm";
+  mimeType:
+    | "image/jpeg"
+    | "image/png"
+    | "image/webp"
+    | "video/mp4"
+    | "video/webm";
   intensity: "light" | "medium" | "heavy";
   fileDataBase64: string;
 }
 
 function uuid(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto)
+    return crypto.randomUUID();
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-export async function createBatch(userId: number, files: BatchFile[]): Promise<{ batchId: string; jobIds: number[] }> {
+export async function createBatch(
+  userId: number,
+  files: BatchFile[]
+): Promise<{ batchId: string; jobIds: number[] }> {
   const user = await getUserById(userId);
   if (!user) throw new Error("User not found");
 
@@ -27,7 +40,9 @@ export async function createBatch(userId: number, files: BatchFile[]): Promise<{
     return sum + getCreditsForJob(type, f.intensity);
   }, 0);
   if (user.credits < totalCredits) {
-    throw new Error(`Insufficient credits. Need ${totalCredits}, have ${user.credits}`);
+    throw new Error(
+      `Insufficient credits. Need ${totalCredits}, have ${user.credits}`
+    );
   }
 
   const batchId = uuid();
@@ -72,7 +87,7 @@ export async function createBatch(userId: number, files: BatchFile[]): Promise<{
         console.error(`[Batch] job ${jobId} failed:`, err);
       }
     }
-  })().catch((err) => console.error("[Batch] queue runner crashed:", err));
+  })().catch(err => console.error("[Batch] queue runner crashed:", err));
 
   return { batchId, jobIds };
 }
@@ -86,13 +101,19 @@ export async function listJobsByBatch(batchId: string, userId: number) {
     .where(and(eq(jobs.batchId, batchId), eq(jobs.userId, userId)));
 }
 
-export async function streamBatchZip(batchId: string, userId: number, res: Response): Promise<void> {
+export async function streamBatchZip(
+  batchId: string,
+  userId: number,
+  res: Response
+): Promise<void> {
   const rows = await listJobsByBatch(batchId, userId);
   if (rows.length === 0) {
     res.status(404).json({ error: "Batch not found" });
     return;
   }
-  const completed = rows.filter((r) => r.status === "completed" && r.processedKey);
+  const completed = rows.filter(
+    r => r.status === "completed" && r.processedKey
+  );
   if (completed.length === 0) {
     res.status(409).json({ error: "Batch not yet complete" });
     return;
@@ -107,7 +128,8 @@ export async function streamBatchZip(batchId: string, userId: number, res: Respo
       // Read the object directly from the storage backend (works for both the
       // local filesystem and S3 — no fetch of a possibly-relative/expiring URL).
       const buf = await storageGetBuffer(row.processedKey);
-      const ext = row.originalMimeType.split("/")[1]?.replace("jpeg", "jpg") ?? "bin";
+      const ext =
+        row.originalMimeType.split("/")[1]?.replace("jpeg", "jpg") ?? "bin";
       const name = `humanized-${row.id}-${row.originalFilename.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const finalName = name.includes(".") ? name : `${name}.${ext}`;
       zip.file(finalName, buf);
@@ -117,7 +139,13 @@ export async function streamBatchZip(batchId: string, userId: number, res: Respo
   }
 
   res.setHeader("Content-Type", "application/zip");
-  res.setHeader("Content-Disposition", `attachment; filename="authentigen-batch-${batchId}.zip"`);
-  const stream = zip.generateNodeStream({ streamFiles: true, compression: "DEFLATE" });
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="authentigen-batch-${batchId}.zip"`
+  );
+  const stream = zip.generateNodeStream({
+    streamFiles: true,
+    compression: "DEFLATE",
+  });
   stream.pipe(res);
 }

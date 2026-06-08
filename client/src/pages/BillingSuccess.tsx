@@ -10,7 +10,7 @@ export default function BillingSuccess() {
   const [creditedDelta, setCreditedDelta] = useState<number | null>(null);
 
   const balance = trpc.credits.balance.useQuery(undefined, {
-    refetchInterval: (query) => {
+    refetchInterval: query => {
       const data = query.state.data;
       if (!data) return 1500;
       if (startBalance.current === null) {
@@ -45,7 +45,9 @@ export default function BillingSuccess() {
       >
         <CheckCircle2 className="size-10 text-emerald-400" />
       </motion.div>
-      <h1 className="font-serif text-4xl mb-3">Payment <span className="text-gold">Successful</span></h1>
+      <h1 className="font-serif text-4xl mb-3">
+        Payment <span className="text-gold">Successful</span>
+      </h1>
       {creditedDelta === null ? (
         <p className="text-muted-foreground inline-flex items-center gap-2">
           <Loader2 className="size-4 animate-spin" />
@@ -53,12 +55,18 @@ export default function BillingSuccess() {
         </p>
       ) : (
         <p className="text-lg">
-          We've added <span className="text-gold font-semibold">{creditedDelta}</span> credits to your balance.
+          We've added{" "}
+          <span className="text-gold font-semibold">{creditedDelta}</span>{" "}
+          credits to your balance.
         </p>
       )}
       <div className="mt-8 flex justify-center gap-3">
-        <Link href="/dashboard"><Button variant="outline">View Dashboard</Button></Link>
-        <Link href="/upload"><Button>Start Humanizing</Button></Link>
+        <Link href="/dashboard">
+          <Button variant="outline">View Dashboard</Button>
+        </Link>
+        <Link href="/upload">
+          <Button>Start Humanizing</Button>
+        </Link>
       </div>
     </div>
   );

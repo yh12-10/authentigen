@@ -27,8 +27,14 @@ export function Hero3DShowcase({ src, alt }: Hero3DShowcaseProps) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  const rotateY = useSpring(useTransform(x, [-1, 1], [-10, 10]), { stiffness: 80, damping: 18 });
-  const rotateX = useSpring(useTransform(y, [-1, 1], [8, -8]), { stiffness: 80, damping: 18 });
+  const rotateY = useSpring(useTransform(x, [-1, 1], [-10, 10]), {
+    stiffness: 80,
+    damping: 18,
+  });
+  const rotateX = useSpring(useTransform(y, [-1, 1], [8, -8]), {
+    stiffness: 80,
+    damping: 18,
+  });
 
   function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
     if (!interactive || !ref.current) return;
@@ -48,12 +54,15 @@ export function Hero3DShowcase({ src, alt }: Hero3DShowcaseProps) {
   useEffect(() => {
     if (reduced) return;
     const id = setInterval(() => {
-      setActiveIdx((i) => (i + 1) % (DETECTORS.length + 1));
+      setActiveIdx(i => (i + 1) % (DETECTORS.length + 1));
     }, 900);
     return () => clearInterval(id);
   }, [reduced]);
 
-  const progressPct = Math.min(100, Math.round((activeIdx / DETECTORS.length) * 100));
+  const progressPct = Math.min(
+    100,
+    Math.round((activeIdx / DETECTORS.length) * 100)
+  );
 
   return (
     <motion.div
@@ -70,7 +79,9 @@ export function Hero3DShowcase({ src, alt }: Hero3DShowcaseProps) {
       <motion.div
         aria-hidden
         className="absolute pointer-events-none"
-        animate={reduced ? {} : { scale: [1, 1.08, 1], opacity: [0.45, 0.7, 0.45] }}
+        animate={
+          reduced ? {} : { scale: [1, 1.08, 1], opacity: [0.45, 0.7, 0.45] }
+        }
         transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
         style={{
           inset: "-8%",
@@ -83,7 +94,9 @@ export function Hero3DShowcase({ src, alt }: Hero3DShowcaseProps) {
       <motion.div
         aria-hidden
         className="absolute pointer-events-none"
-        animate={reduced ? {} : { scale: [1.08, 1, 1.08], opacity: [0.25, 0.55, 0.25] }}
+        animate={
+          reduced ? {} : { scale: [1.08, 1, 1.08], opacity: [0.25, 0.55, 0.25] }
+        }
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
         style={{
           inset: "10%",
@@ -148,7 +161,11 @@ export function Hero3DShowcase({ src, alt }: Hero3DShowcaseProps) {
                     "0 0 24px rgba(245,166,35,0.9), 0 0 48px rgba(245,166,35,0.5)",
                 }}
                 animate={{ top: ["0%", "100%", "0%"] }}
-                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 4.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               />
             ) : null}
 
@@ -171,9 +188,16 @@ export function Hero3DShowcase({ src, alt }: Hero3DShowcaseProps) {
                 boxShadow: "0 0 20px rgba(52,211,153,0.35)",
               }}
               animate={reduced ? {} : { scale: [1, 1.05, 1] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+              transition={{
+                duration: 2.4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             >
-              <ShieldCheck className="w-4 h-4 text-emerald-400" strokeWidth={2.5} />
+              <ShieldCheck
+                className="w-4 h-4 text-emerald-400"
+                strokeWidth={2.5}
+              />
               <span className="text-[11px] font-semibold text-emerald-400 tracking-wide">
                 Camera-Real
               </span>
@@ -240,7 +264,9 @@ export function Hero3DShowcase({ src, alt }: Hero3DShowcaseProps) {
                     key={d}
                     initial={false}
                     animate={
-                      active && !reduced ? { scale: [1, 1.08, 1] } : { scale: 1 }
+                      active && !reduced
+                        ? { scale: [1, 1.08, 1] }
+                        : { scale: 1 }
                     }
                     transition={{ duration: 0.35 }}
                     className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium border transition-colors"
@@ -271,7 +297,9 @@ export function Hero3DShowcase({ src, alt }: Hero3DShowcaseProps) {
                           style={{
                             width: 4,
                             height: 4,
-                            background: active ? "#F5A623" : "rgba(255,255,255,0.3)",
+                            background: active
+                              ? "#F5A623"
+                              : "rgba(255,255,255,0.3)",
                           }}
                         />
                       </span>
@@ -296,11 +324,16 @@ export function Hero3DShowcase({ src, alt }: Hero3DShowcaseProps) {
                 top: "8%",
                 right: "-3%",
                 background: "#F5A623",
-                boxShadow: "0 0 16px rgba(245,166,35,0.95), 0 0 32px rgba(245,166,35,0.6)",
+                boxShadow:
+                  "0 0 16px rgba(245,166,35,0.95), 0 0 32px rgba(245,166,35,0.6)",
                 transform: "translateZ(40px)",
               }}
               animate={{ y: [0, -8, 0], opacity: [0.85, 1, 0.85] }}
-              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+              transition={{
+                duration: 3.2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             />
             <motion.div
               aria-hidden
@@ -315,7 +348,12 @@ export function Hero3DShowcase({ src, alt }: Hero3DShowcaseProps) {
                 transform: "translateZ(40px)",
               }}
               animate={{ y: [0, 6, 0], opacity: [0.7, 1, 0.7] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1,
+              }}
             />
           </>
         ) : null}
