@@ -15,7 +15,8 @@ import ffmpegPath from "ffmpeg-static";
 import * as ffprobeStatic from "ffprobe-static";
 import { ENV } from "./_core/env";
 import { storageGetBuffer, storagePut } from "./storage";
-import { addCredits, deductCredits, getJobById, updateJobProgress, updateJobStatus, getDb } from "./db";
+import { addCredits, deductCredits, getJobById, getUserById, updateJobProgress, updateJobStatus, getDb } from "./db";
+import { sendJobCompletionEmail } from "./_core/email";
 import { jobs as jobsTable } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { generateImage } from "./_core/imageGeneration";
@@ -306,6 +307,16 @@ async function processVideoOnce(jobId: number): Promise<void> {
       completedAt: new Date(),
       creditsUsed: creditsNeeded,
     });
+
+    // Best-effort completion email (no-op unless SMTP is configured).
+    try {
+      const user = await getUserById(job.userId);
+      if (user?.email) {
+        await sendJobCompletionEmail({ to: user.email, jobId, type: "video" });
+      }
+    } catch (err) {
+      console.warn(`[email] job ${jobId} completion notice failed:`, err);
+    }
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown video processing error";
     console.error(`[Video] job ${jobId} failed:`, msg);

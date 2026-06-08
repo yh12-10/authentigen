@@ -32,8 +32,10 @@ import {
   updateJobStatus,
   deductCredits,
   getJobById,
+  getUserById,
   addCredits,
 } from "./db";
+import { sendJobCompletionEmail } from "./_core/email";
 
 export type IntensityLevel = "light" | "medium" | "heavy";
 export type MediaType = "image" | "video";
@@ -985,6 +987,16 @@ export async function processImageJob(jobId: number): Promise<void> {
       progress: 100, completedAt: new Date(),
       creditsUsed: creditsNeeded,
     });
+
+    // Best-effort completion email (no-op unless SMTP is configured).
+    try {
+      const user = await getUserById(job.userId);
+      if (user?.email) {
+        await sendJobCompletionEmail({ to: user.email, jobId, type: "image" });
+      }
+    } catch (err) {
+      console.warn(`[email] job ${jobId} completion notice failed:`, err);
+    }
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown processing error";
     await updateJobStatus(jobId, "failed", { errorMessage: msg.slice(0, 500) });
