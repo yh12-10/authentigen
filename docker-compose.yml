@@ -1,0 +1,52 @@
+# Local one-command stack: MySQL + AuthentiGen.
+#   docker compose up --build
+# Then open http://localhost:3000
+#
+# The default DB credentials below are for LOCAL DEVELOPMENT ONLY.
+# Set real secrets via a .env file or your environment before deploying.
+
+services:
+  db:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: authgen
+      MYSQL_DATABASE: authentigen
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pauthgen"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - db_data:/var/lib/mysql
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql://root:authgen@db:3306/authentigen
+      NODE_ENV: production
+      PORT: 3000
+      # Leave JWT_SECRET unset to auto-generate one persisted in the storage
+      # volume, or set your own here / via a .env file.
+      JWT_SECRET: ${JWT_SECRET:-}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      # Stripe is optional — leave blank to disable paid checkout.
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_STARTER: ${STRIPE_PRICE_STARTER:-}
+      STRIPE_PRICE_PRO: ${STRIPE_PRICE_PRO:-}
+      STRIPE_PRICE_STUDIO: ${STRIPE_PRICE_STUDIO:-}
+      VIDEO_MAX_DURATION_SECONDS: ${VIDEO_MAX_DURATION_SECONDS:-30}
+      VIDEO_FRAME_SAMPLE_EVERY: ${VIDEO_FRAME_SAMPLE_EVERY:-3}
+    ports:
+      - "3000:3000"
+    volumes:
+      - storage_data:/app/storage
+
+volumes:
+  db_data:
+  storage_data:
