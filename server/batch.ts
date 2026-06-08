@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import type { Response } from "express";
 import { jobs } from "../drizzle/schema";
 import { getDb, createJob, getUserById } from "./db";
-import { storagePut, storageGetSignedUrl } from "./storage";
+import { storagePut, storageGetBuffer } from "./storage";
 import { processImageJob, processVideoJob, getCreditsForJob } from "./humanizer";
 
 interface BatchFile {
@@ -104,13 +104,9 @@ export async function streamBatchZip(batchId: string, userId: number, res: Respo
   for (const row of completed) {
     if (!row.processedKey) continue;
     try {
-      const signedUrl = await storageGetSignedUrl(row.processedKey);
-      const resp = await fetch(signedUrl);
-      if (!resp.ok) {
-        console.warn(`[BatchZip] failed to fetch ${row.processedKey}: ${resp.status}`);
-        continue;
-      }
-      const buf = Buffer.from(await resp.arrayBuffer());
+      // Read the object directly from the storage backend (works for both the
+      // local filesystem and S3 — no fetch of a possibly-relative/expiring URL).
+      const buf = await storageGetBuffer(row.processedKey);
       const ext = row.originalMimeType.split("/")[1]?.replace("jpeg", "jpg") ?? "bin";
       const name = `humanized-${row.id}-${row.originalFilename.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const finalName = name.includes(".") ? name : `${name}.${ext}`;

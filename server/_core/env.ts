@@ -51,6 +51,29 @@ export const ENV = {
   // Video pipeline
   videoMaxDurationSeconds: Number(process.env.VIDEO_MAX_DURATION_SECONDS ?? 30),
   videoFrameSampleEvery: Number(process.env.VIDEO_FRAME_SAMPLE_EVERY ?? 3),
+  // Storage backend ("local" filesystem by default, or "s3")
+  storageBackend: (process.env.STORAGE_BACKEND ?? "local").toLowerCase() === "s3" ? "s3" : "local",
+  s3Bucket: process.env.S3_BUCKET ?? "",
+  s3Region: process.env.S3_REGION ?? "us-east-1",
+  s3Endpoint: process.env.S3_ENDPOINT ?? "", // optional, for S3-compatible (R2/MinIO/B2)
+  s3ForcePathStyle: (process.env.S3_FORCE_PATH_STYLE ?? "false").toLowerCase() === "true",
+  s3PublicUrl: process.env.S3_PUBLIC_URL ?? "", // optional public/CDN base for long-lived URLs
+  s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
+  s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
+  // SMTP email (optional — falls back to console logging when unset)
+  smtpHost: process.env.SMTP_HOST ?? "",
+  smtpPort: Number(process.env.SMTP_PORT ?? 587),
+  smtpUser: process.env.SMTP_USER ?? "",
+  smtpPassword: process.env.SMTP_PASSWORD ?? "",
+  smtpFrom: process.env.SMTP_FROM ?? "",
+  smtpSecure: (process.env.SMTP_SECURE ?? "false").toLowerCase() === "true",
+  ownerEmail: process.env.OWNER_EMAIL ?? "",
+  // Rate limiting (applied to /api/trpc)
+  rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS ?? 60_000),
+  rateLimitMax: Number(process.env.RATE_LIMIT_MAX ?? 100),
+  trustProxy: process.env.TRUST_PROXY ?? "", // e.g. "1" or "loopback" when behind a reverse proxy
+  // Job processing
+  maxConcurrentImageJobs: Number(process.env.MAX_CONCURRENT_IMAGE_JOBS ?? 4),
 };
 
 export function isStripeConfigured(): boolean {
@@ -61,4 +84,12 @@ export function isStripeConfigured(): boolean {
     ENV.stripePricePro &&
     ENV.stripePriceStudio
   );
+}
+
+export function isS3Configured(): boolean {
+  return Boolean(ENV.s3Bucket && ENV.s3AccessKeyId && ENV.s3SecretAccessKey);
+}
+
+export function isSmtpConfigured(): boolean {
+  return Boolean(ENV.smtpHost && ENV.smtpFrom);
 }
