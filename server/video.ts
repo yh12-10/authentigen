@@ -3,7 +3,7 @@
  *
  * Sample-every-N frames + 30s cap + audio passthrough.
  *
- * Per-user concurrency: 1 (a small in-process semaphore guards the Forge spend).
+ * Per-user concurrency: 1 (a small in-process semaphore guards CPU-heavy frame processing).
  * Temp directory: os.tmpdir()/authentigen/<jobId>/, always cleaned in `finally`.
  * Sweep at startup removes orphans older than 1 hour.
  */
@@ -235,7 +235,7 @@ async function processVideoOnce(jobId: number): Promise<void> {
     const frameNames = await readDirSorted(framesDir);
     const frameTotal = frameNames.length || sampledFrames;
 
-    // 5. Humanize each frame via Forge
+    // 5. Humanize each frame via the image pipeline
     for (let i = 0; i < frameNames.length; i++) {
       const name = frameNames[i];
       const inFramePath = path.join(framesDir, name);

@@ -11,7 +11,7 @@ function makeCtx(role: "user" | "admin"): TrpcContext {
     openId: "x",
     email: "u@example.com",
     name: "U",
-    loginMethod: "manus",
+    loginMethod: "email",
     role,
     credits: 0,
     bonusClaimed: 0,

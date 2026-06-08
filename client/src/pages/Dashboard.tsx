@@ -408,7 +408,7 @@ export default function Dashboard() {
             <Card className="glass">
               <CardHeader>
                 <CardTitle className="font-serif">Profile</CardTitle>
-                <CardDescription>Information from your Manus account.</CardDescription>
+                <CardDescription>Your account information.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-3 text-sm">

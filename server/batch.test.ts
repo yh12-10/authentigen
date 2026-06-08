@@ -11,7 +11,7 @@ function makeCtx(): TrpcContext {
     openId: "batch-user",
     email: "b@example.com",
     name: "Batch User",
-    loginMethod: "manus",
+    loginMethod: "email",
     role: "user",
     credits: 0,
     bonusClaimed: 0,

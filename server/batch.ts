@@ -59,7 +59,7 @@ export async function createBatch(userId: number, files: BatchFile[]): Promise<{
     jobIds.push(jobId);
   }
 
-  // Process sequentially to respect concurrency on Forge.
+  // Process sequentially to respect per-user processing concurrency.
   (async () => {
     for (const jobId of jobIds) {
       try {
