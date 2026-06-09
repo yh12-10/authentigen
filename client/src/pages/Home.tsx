@@ -4,11 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { useState } from "react";
 import {
-<<<<<<< Updated upstream
   Sparkles,
   Shield,
   Zap,
   Eye,
+  Image,
+  Video,
   ChevronRight,
   Crosshair,
   Check,
@@ -19,10 +20,6 @@ import {
   Github,
   Twitter,
   Linkedin,
-=======
-  Sparkles, Shield, Zap, Eye, Image, Video, ChevronRight,
-  Check, Star, ArrowRight, Layers, Cpu, Lock, ChevronDown
->>>>>>> Stashed changes
 } from "lucide-react";
 import { type ComponentType } from "react";
 import { Reveal } from "@/components/visual/Reveal";
@@ -59,6 +56,10 @@ const IMAGES = {
   dashboardPreview:
     "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/dashboard_preview-UpA6PRuPsRJrDctDkypkhD.webp",
 } as const;
+
+// ── Before/After showcase images (uploaded to Manus CDN) ─────────────────────
+const BEFORE_IMAGE = "/manus-storage/showcase_before_c38ddd90.jpg";
+const AFTER_IMAGE = "/manus-storage/showcase_after_dd02d650.png";
 
 type Feature = {
   icon: ComponentType<{ className?: string }>;
@@ -167,7 +168,6 @@ const STATS: {
   { value: 100, suffix: "%", label: "Open-source & self-hosted" },
 ];
 
-<<<<<<< Updated upstream
 // Reusable fade-in-up + viewport variants for image reveals
 const fadeInUp = {
   initial: { opacity: 0, y: 40 },
@@ -175,12 +175,6 @@ const fadeInUp = {
   viewport: { once: true, margin: "-80px" },
   transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const },
 };
-=======
-const DETECTORS = ["GPTZero", "Originality.ai", "Hive Moderation", "Winston AI", "Copyleaks", "Turnitin", "ZeroGPT", "Sapling", "Writer", "Content at Scale", "Illuminarty", "AI or Not"];
-
-const BEFORE_IMAGE = "/manus-storage/showcase_before_c38ddd90.jpg";
-const AFTER_IMAGE = "/manus-storage/showcase_after_dd02d650.png";
->>>>>>> Stashed changes
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -196,11 +190,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-<<<<<<< Updated upstream
       {/* Navigation */}
-=======
-      {/* ── Navigation ─────────────────────────────────────────── */}
->>>>>>> Stashed changes
       <nav className="fixed top-0 left-0 right-0 z-50 glass-strong">
         <div className="container flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
@@ -212,34 +202,11 @@ export default function Home() {
             </span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-<<<<<<< Updated upstream
-            <a
-              href="#features"
-              className="hover:text-foreground transition-colors"
-            >
-              Features
-            </a>
-            <a
-              href="#pricing"
-              className="hover:text-foreground transition-colors"
-            >
-              Pricing
-            </a>
-            <a
-              href="#how-it-works"
-              className="hover:text-foreground transition-colors"
-            >
-              How It Works
-            </a>
-            <a href="#faq" className="hover:text-foreground transition-colors">
-              FAQ
-            </a>
-=======
             <a href="#preview" className="hover:text-foreground transition-colors">Preview</a>
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
             <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
             <a href="#how-it-works" className="hover:text-foreground transition-colors">How It Works</a>
->>>>>>> Stashed changes
+            <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
           </div>
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
@@ -273,7 +240,6 @@ export default function Home() {
         </div>
       </nav>
 
-<<<<<<< Updated upstream
       {/* ─────────────────────────── Hero ─────────────────────────── */}
       <section className="relative min-h-screen overflow-hidden pt-24">
         {/* Full-bleed background image */}
@@ -291,15 +257,6 @@ export default function Home() {
               "linear-gradient(to bottom, rgba(8,8,8,0.30) 0%, rgba(8,8,8,0.85) 100%)",
           }}
         />
-=======
-      {/* ── Hero ─────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden hero-gradient pt-16">
-        {/* Decorative orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full orb pointer-events-none"
-          style={{ background: "radial-gradient(circle, oklch(0.82 0.12 85 / 0.08) 0%, transparent 70%)" }} />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full orb orb-delay pointer-events-none"
-          style={{ background: "radial-gradient(circle, oklch(0.6 0.15 280 / 0.08) 0%, transparent 70%)" }} />
->>>>>>> Stashed changes
 
         <div className="container relative z-10 grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-6rem)] py-12">
           <div className="page-enter text-center lg:text-left">
@@ -346,7 +303,6 @@ export default function Home() {
               </Button>
             </div>
 
-<<<<<<< Updated upstream
             {/* Trust pill row: 4 icon-label pairs */}
             <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-6 max-w-xl mx-auto lg:mx-0">
               {[
@@ -374,39 +330,9 @@ export default function Home() {
             src={IMAGES.heroMain}
             alt="AuthentiGen humanization in action"
           />
-=======
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Button size="lg" onClick={handleCTA}
-              className="h-14 px-8 text-base font-semibold glow-gold gradient-border group">
-              Start Humanizing
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-muted-foreground hover:text-foreground"
-              onClick={() => document.getElementById("preview")?.scrollIntoView({ behavior: "smooth" })}>
-              See It In Action
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-
-          {/* Stats row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-3xl mx-auto">
-            {STATS.map((stat) => (
-              <div key={stat.label} className="glass rounded-2xl p-4 text-center">
-                <div className="text-2xl font-bold text-gold mb-1">{stat.value}</div>
-                <div className="text-xs text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Scroll hint */}
-          <div className="mt-16 flex justify-center animate-bounce opacity-40">
-            <ChevronDown className="w-5 h-5 text-muted-foreground" />
-          </div>
->>>>>>> Stashed changes
         </div>
       </section>
 
-<<<<<<< Updated upstream
       {/* ────────────────────────── Stats ──────────────────────────── */}
       <section className="relative -mt-16 pb-16">
         <div className="container">
@@ -447,30 +373,36 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─────────────────── How It Works ────────────────────────── */}
-=======
       {/* ── Humanization Preview ─────────────────────────────────── */}
       <section id="preview" className="py-28 relative overflow-hidden">
         {/* Ambient glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full opacity-10"
-            style={{ background: "radial-gradient(ellipse, oklch(0.82 0.12 85) 0%, transparent 70%)" }} />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full opacity-10"
+            style={{ background: "radial-gradient(ellipse, oklch(0.82 0.12 85) 0%, transparent 70%)" }}
+          />
         </div>
 
         <div className="container relative z-10">
           {/* Section header */}
-          <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-4 border-primary/30 text-primary bg-primary/5 text-xs tracking-widest uppercase">
-              Live Demo
-            </Badge>
-            <h2 className="font-serif text-4xl sm:text-5xl font-normal mb-4">
-              Humanization{" "}
-              <span className="text-gold italic">Preview</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              See the power of AuthentiGen — the same image, transformed from obviously AI-generated to authentically human.
-            </p>
-          </div>
+          <Reveal>
+            <div className="text-center mb-16">
+              <Badge
+                variant="outline"
+                className="mb-4 border-primary/30 text-primary bg-primary/5 text-xs tracking-widest uppercase"
+              >
+                Live Demo
+              </Badge>
+              <h2 className="font-serif text-4xl sm:text-5xl font-normal mb-4">
+                Humanization{" "}
+                <span className="text-gold italic">Preview</span>
+              </h2>
+              <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+                See the power of AuthentiGen — the same image, transformed from
+                obviously AI-generated to authentically human.
+              </p>
+            </div>
+          </Reveal>
 
           {/* Tab selector */}
           <div className="flex justify-center mb-10">
@@ -505,8 +437,14 @@ export default function Home() {
               {/* Before / After side by side */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {/* Before */}
-                <div className="group relative">
-                  <div className="glass rounded-2xl overflow-hidden gradient-border">
+                <motion.div
+                  className="group relative"
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-60px" }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <div className="glass rounded-2xl overflow-hidden gradient-border relative">
                     {/* Label */}
                     <div className="absolute top-4 left-4 z-10">
                       <span className="flex items-center gap-1.5 bg-red-500/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
@@ -526,19 +464,39 @@ export default function Home() {
                       className="w-full aspect-[3/4] object-cover object-top"
                     />
                     {/* Bottom overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4"
-                      style={{ background: "linear-gradient(to top, oklch(0.09 0.015 265 / 0.95), transparent)" }}>
+                    <div
+                      className="absolute bottom-0 left-0 right-0 p-4"
+                      style={{
+                        background:
+                          "linear-gradient(to top, oklch(0.09 0.015 265 / 0.95), transparent)",
+                      }}
+                    >
                       <p className="text-xs text-muted-foreground">
-                        Uncanny perfection, zero texture, sterile lighting — flagged instantly by detectors.
+                        Uncanny perfection, zero texture, sterile lighting —
+                        flagged instantly by detectors.
                       </p>
                     </div>
                   </div>
-                  <p className="text-center text-sm font-medium text-muted-foreground mt-3">Before</p>
-                </div>
+                  <p className="text-center text-sm font-medium text-muted-foreground mt-3">
+                    Before
+                  </p>
+                </motion.div>
 
                 {/* After */}
-                <div className="group relative">
-                  <div className="glass rounded-2xl overflow-hidden" style={{ boxShadow: "0 0 40px oklch(0.82 0.12 85 / 0.15), inset 0 0 0 1px oklch(0.82 0.12 85 / 0.2)" }}>
+                <motion.div
+                  className="group relative"
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-60px" }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
+                >
+                  <div
+                    className="glass rounded-2xl overflow-hidden relative"
+                    style={{
+                      boxShadow:
+                        "0 0 40px oklch(0.82 0.12 85 / 0.15), inset 0 0 0 1px oklch(0.82 0.12 85 / 0.2)",
+                    }}
+                  >
                     {/* Label */}
                     <div className="absolute top-4 left-4 z-10">
                       <span className="flex items-center gap-1.5 bg-emerald-500/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
@@ -558,45 +516,63 @@ export default function Home() {
                       className="w-full aspect-[3/4] object-cover object-top"
                     />
                     {/* Bottom overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4"
-                      style={{ background: "linear-gradient(to top, oklch(0.09 0.015 265 / 0.95), transparent)" }}>
+                    <div
+                      className="absolute bottom-0 left-0 right-0 p-4"
+                      style={{
+                        background:
+                          "linear-gradient(to top, oklch(0.09 0.015 265 / 0.95), transparent)",
+                      }}
+                    >
                       <p className="text-xs text-muted-foreground">
-                        Natural film grain, warm tones, organic skin texture — passes every detector.
+                        Natural film grain, warm tones, organic skin texture —
+                        passes every detector.
                       </p>
                     </div>
                   </div>
-                  <p className="text-center text-sm font-medium text-gold mt-3">After — AuthentiGen Heavy</p>
-                </div>
+                  <p className="text-center text-sm font-medium text-gold mt-3">
+                    After — AuthentiGen Heavy
+                  </p>
+                </motion.div>
               </div>
 
               {/* Detection probability bar */}
-              <div className="glass rounded-2xl p-6 max-w-2xl mx-auto gradient-border">
-                <h3 className="text-sm font-semibold text-center mb-5 text-foreground">Detection Probability</h3>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-xs text-muted-foreground mb-2">
-                      <span>Before (AI Generated)</span>
-                      <span className="text-red-400 font-semibold">94%</span>
+              <Reveal>
+                <div className="glass rounded-2xl p-6 max-w-2xl mx-auto gradient-border">
+                  <h3 className="text-sm font-semibold text-center mb-5 text-foreground">
+                    Detection Probability
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                        <span>Before (AI Generated)</span>
+                        <span className="text-red-400 font-semibold">94%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-1000"
+                          style={{ width: "94%" }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                      <div className="h-full rounded-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-1000" style={{ width: "94%" }} />
+                    <div>
+                      <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                        <span>After (Humanized)</span>
+                        <span className="text-emerald-400 font-semibold">8%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-1000"
+                          style={{ width: "8%" }}
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <div className="flex justify-between text-xs text-muted-foreground mb-2">
-                      <span>After (Humanized)</span>
-                      <span className="text-emerald-400 font-semibold">8%</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                      <div className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-1000" style={{ width: "8%" }} />
-                    </div>
-                  </div>
+                  <p className="text-center text-xs text-muted-foreground mt-5 flex items-center justify-center gap-1.5">
+                    <Shield className="w-3 h-3 text-primary" />
+                    Powered by a deterministic, pixel-level realism pipeline
+                  </p>
                 </div>
-                <p className="text-center text-xs text-muted-foreground mt-5 flex items-center justify-center gap-1.5">
-                  <Shield className="w-3 h-3 text-primary" />
-                  Powered by a deterministic, pixel-level realism pipeline
-                </p>
-              </div>
+              </Reveal>
             </div>
           ) : (
             <div className="max-w-2xl mx-auto">
@@ -604,9 +580,12 @@ export default function Home() {
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
                   <Video className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Video Humanization</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  Video Humanization
+                </h3>
                 <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
-                  Upload your AI-generated video and we'll apply frame-by-frame humanization — grain, motion blur, color grading, and more.
+                  Upload your AI-generated video and we'll apply frame-by-frame
+                  humanization — grain, motion blur, color grading, and more.
                 </p>
                 <Button onClick={handleCTA} className="glow-gold-sm">
                   Try With Your Video
@@ -618,25 +597,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Detectors Ticker ─────────────────────────────────────── */}
-      <section className="py-10 border-y border-border overflow-hidden">
-        <div className="container mb-4 text-center">
-          <p className="text-xs text-muted-foreground tracking-widest uppercase">Defeats all major AI detectors</p>
-        </div>
-        <div className="relative flex overflow-hidden">
-          <div className="flex gap-8 animate-marquee whitespace-nowrap">
-            {[...DETECTORS, ...DETECTORS].map((d, i) => (
-              <span key={i} className="flex items-center gap-2 text-sm text-muted-foreground px-4">
-                <Check className="w-3 h-3 text-primary flex-shrink-0" />
-                {d}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── How It Works ─────────────────────────────────────────── */}
->>>>>>> Stashed changes
+      {/* ─────────────────── How It Works ────────────────────────── */}
       <section id="how-it-works" className="py-24">
         <div className="container">
           <Reveal>
@@ -711,11 +672,7 @@ export default function Home() {
         </div>
       </section>
 
-<<<<<<< Updated upstream
       {/* ────────────────────── Features ─────────────────────────── */}
-=======
-      {/* ── Features ─────────────────────────────────────────────── */}
->>>>>>> Stashed changes
       <section id="features" className="py-24">
         <div className="container">
           <Reveal>
@@ -798,13 +755,8 @@ export default function Home() {
         </div>
       </section>
 
-<<<<<<< Updated upstream
       {/* ───────────────── Dashboard Showcase ────────────────────── */}
       <section id="dashboard" className="py-24">
-=======
-      {/* ── Pricing ──────────────────────────────────────────────── */}
-      <section id="pricing" className="py-24">
->>>>>>> Stashed changes
         <div className="container">
           <Reveal>
             <div className="text-center mb-12 max-w-2xl mx-auto">
@@ -842,7 +794,6 @@ export default function Home() {
         </div>
       </section>
 
-<<<<<<< Updated upstream
       {/* ─────────────────────── Pricing ─────────────────────────── */}
       <section id="pricing" className="relative py-24 overflow-hidden">
         {/* Full-bleed background image with uniform 70% dark overlay */}
@@ -970,9 +921,6 @@ export default function Home() {
       </section>
 
       {/* ───────────────────── Testimonials ──────────────────────── */}
-=======
-      {/* ── CTA Banner ───────────────────────────────────────────── */}
->>>>>>> Stashed changes
       <section className="py-24">
         <div className="container">
           <Reveal>
@@ -992,7 +940,6 @@ export default function Home() {
         </div>
       </section>
 
-<<<<<<< Updated upstream
       {/* ─────────────────────── FAQ ─────────────────────────────── */}
       <section id="faq" className="py-24">
         <div className="container max-w-3xl mx-auto">
@@ -1007,14 +954,6 @@ export default function Home() {
               <h2 className="font-serif text-4xl sm:text-5xl font-normal mb-4">
                 Questions, <span className="text-gold italic">answered</span>
               </h2>
-=======
-      {/* ── Footer ───────────────────────────────────────────────── */}
-      <footer className="border-t border-border py-10">
-        <div className="container flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-primary-foreground" />
->>>>>>> Stashed changes
             </div>
           </Reveal>
           <Reveal>
@@ -1088,36 +1027,13 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <a
-              href="#features"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Features
-            </a>
-            <a
-              href="#pricing"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Pricing
-            </a>
-            <a
-              href="#how-it-works"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              How It Works
-            </a>
-            <a
-              href="#faq"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              FAQ
-            </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground">
-              Privacy
-            </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground">
-              Terms
-            </a>
+            <a href="#preview" className="text-muted-foreground hover:text-foreground">Preview</a>
+            <a href="#features" className="text-muted-foreground hover:text-foreground">Features</a>
+            <a href="#pricing" className="text-muted-foreground hover:text-foreground">Pricing</a>
+            <a href="#how-it-works" className="text-muted-foreground hover:text-foreground">How It Works</a>
+            <a href="#faq" className="text-muted-foreground hover:text-foreground">FAQ</a>
+            <a href="#" className="text-muted-foreground hover:text-foreground">Privacy</a>
+            <a href="#" className="text-muted-foreground hover:text-foreground">Terms</a>
           </div>
           <div className="flex flex-col gap-3 sm:items-end">
             <div className="flex gap-3">
