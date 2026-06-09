@@ -33,7 +33,7 @@ export const TESTIMONIALS = [
     role: "E-commerce, Lumière",
     initials: "MT",
     quote:
-      "We humanize lookbook shots in batches of 10. The credit system makes the cost predictable and the results look genuinely camera-shot.",
+      "We humanize lookbook shots in batches of 10, and the results look genuinely camera-shot.",
     rating: 5,
   },
   {
@@ -80,45 +80,15 @@ export const FAQ_ITEMS = [
     a: "AuthentiGen is self-hosted: originals and humanized outputs are stored on the server you deploy to (local filesystem by default), under per-user keys. Nothing is sent to a third party, indexed, or used as training data. You can remove a job from the dashboard at any time.",
   },
   {
-    q: "What credits cost what?",
-    a: "Image: Light 1, Medium 2, Heavy 3. Video: Light 3, Medium 6, Heavy 9. Credits are deducted at job start and refunded automatically if processing fails.",
+    q: "How much does it cost?",
+    a: "Nothing — AuthentiGen is open-source and self-hosted. There are no credits, usage limits, or fees. You run it on your own server and process as much as you like.",
   },
   {
     q: "Do you offer an API?",
     a: "The whole app runs on a typed tRPC API, so an authenticated endpoint is available today. A REST/GraphQL bridge is on the roadmap — contributions welcome, since the project is open-source.",
   },
   {
-    q: "Can I refund unused credits?",
-    a: "Credits don't expire. Failed jobs auto-refund. We don't process partial refunds for unused balances — we'd rather you keep them and humanize something later.",
-  },
-  {
     q: "Will detectors update to catch this?",
     a: "Detectors evolve, and no realism technique stays ahead forever. Because AuthentiGen is open-source, the pipeline is fully inspectable and you (or the community) can tune and extend it over time. There are no guarantees about any specific detector.",
   },
 ];
-
-export const PRICING_BACK_BULLETS: Record<string, string[]> = {
-  Free: [
-    "10 welcome credits",
-    "Image humanization (Light/Medium/Heavy)",
-    "Single video preview",
-    "Standard processing queue",
-    "Community support",
-  ],
-  Pro: [
-    "Everything in Free",
-    "Real frame-by-frame video",
-    "Batch upload (up to 10)",
-    "Priority Forge queue",
-    "Email support",
-    "Detector update channel",
-  ],
-  Studio: [
-    "Everything in Pro",
-    "Highest priority processing",
-    "Concurrent video jobs",
-    "Custom intensity prompts",
-    "Dedicated success manager",
-    "Onboarding & training",
-  ],
-};

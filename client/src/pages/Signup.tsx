@@ -24,7 +24,7 @@ export default function Signup() {
   const signup = trpc.auth.signup.useMutation({
     onSuccess: async () => {
       await utils.auth.me.invalidate();
-      toast.success("Account created — 10 free credits added");
+      toast.success("Account created — welcome to AuthentiGen");
       navigate("/dashboard");
     },
     onError: err => toast.error(err.message),
@@ -57,7 +57,7 @@ export default function Signup() {
               Create your <span className="text-gold italic">account</span>
             </CardTitle>
             <CardDescription>
-              10 free credits on signup. No credit card required.
+              Free and unlimited. No credit card required.
             </CardDescription>
           </CardHeader>
           <CardContent>

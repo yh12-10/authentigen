@@ -391,13 +391,6 @@ export default function Process() {
                     job.intensity.charAt(0).toUpperCase() +
                     job.intensity.slice(1),
                 },
-                {
-                  label: "Credits Used",
-                  value:
-                    job.status === "completed"
-                      ? `${job.creditsUsed} credits`
-                      : "Pending",
-                },
               ].map(item => (
                 <div
                   key={item.label}

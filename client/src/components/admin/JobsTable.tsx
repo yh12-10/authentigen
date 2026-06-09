@@ -85,7 +85,6 @@ export function JobsTable() {
               <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Intensity</TableHead>
-              <TableHead className="text-right">Credits</TableHead>
               <TableHead>Filename</TableHead>
               <TableHead>Created</TableHead>
             </TableRow>
@@ -108,9 +107,6 @@ export function JobsTable() {
                 </TableCell>
                 <TableCell>
                   <Badge variant="secondary">{j.intensity}</Badge>
-                </TableCell>
-                <TableCell className="text-right font-mono">
-                  {j.creditsUsed}
                 </TableCell>
                 <TableCell
                   className="max-w-[180px] truncate text-sm"

@@ -9,8 +9,6 @@ import {
   Eye,
   ChevronRight,
   Crosshair,
-  Check,
-  Star,
   ArrowRight,
   Layers,
   Lock,
@@ -26,20 +24,18 @@ import { TrustedByBadge } from "@/components/visual/TrustedByBadge";
 import { DetectorLogos } from "@/components/visual/DetectorLogos";
 import { Testimonials } from "@/components/visual/Testimonials";
 import { FAQAccordion } from "@/components/visual/FAQAccordion";
-import { PricingCardFlip } from "@/components/visual/PricingCardFlip";
 import { RippleButton } from "@/components/visual/RippleButton";
 import { MagneticButton } from "@/components/visual/MagneticButton";
 import { FloatCard } from "@/components/visual/FloatCard";
-import { Hero3DShowcase } from "@/components/visual/Hero3DShowcase";
-import { PRICING_BACK_BULLETS } from "@/components/visual/_data";
 import { motion } from "framer-motion";
+
+const REPO_URL = "https://github.com/yh12-10/authentigen";
 
 // ── CDN-hosted brand imagery ──────────────────────────────────────────────────
 const IMAGES = {
   heroBg:
     "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/hero_bg-kcR6dzewB9D3GtidFycy7U.webp",
-  heroMain:
-    "/storage/originals/1/hf_20260430_115238_af044ea3-5047-4709-972a-82a3ea5dcaa9.png",
+  heroWave6: "/hero_wave6.png",
   howItWorks:
     "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/how_it_works-GzWpzzK3RGiWrDaZ3XnWxV.webp",
   featureShield:
@@ -97,57 +93,6 @@ const FEATURES: Feature[] = [
   },
 ];
 
-const PRICING = [
-  {
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    credits: "10 credits",
-    description: "Perfect for trying out the platform",
-    features: [
-      "10 free credits on signup",
-      "Image humanization",
-      "Light & Medium intensity",
-      "Standard processing speed",
-    ],
-    cta: "Get Started Free",
-    highlight: false,
-  },
-  {
-    name: "Pro",
-    price: "$14.99",
-    period: "200 credits",
-    credits: "200 credits",
-    description: "For creators and marketers",
-    features: [
-      "200 credits",
-      "Image & video humanization",
-      "All intensity levels",
-      "Priority processing",
-      "Batch upload (10 files)",
-    ],
-    cta: "Buy Pro Pack",
-    highlight: true,
-  },
-  {
-    name: "Studio",
-    price: "$29.99",
-    period: "500 credits",
-    credits: "500 credits",
-    description: "For agencies and studios",
-    features: [
-      "500 credits",
-      "Bulk processing",
-      "All intensity levels",
-      "Highest priority queue",
-      "Concurrent video jobs",
-      "Priority support",
-    ],
-    cta: "Buy Studio Pack",
-    highlight: false,
-  },
-];
-
 const STATS: {
   value: number;
   label: string;
@@ -201,10 +146,10 @@ export default function Home() {
               Features
             </a>
             <a
-              href="#pricing"
+              href="#open-source"
               className="hover:text-foreground transition-colors"
             >
-              Pricing
+              Open Source
             </a>
             <a
               href="#how-it-works"
@@ -333,11 +278,27 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Hero main visual: 3D-tilted, floating, glow-haloed showcase */}
-          <Hero3DShowcase
-            src={IMAGES.heroMain}
-            alt="AuthentiGen humanization in action"
-          />
+          {/* Hero main visual: the composed showcase image */}
+          <FloatCard amplitude={6} className="w-full">
+            <div className="relative rounded-2xl overflow-hidden border border-[#F5A623]/25 glow-gold shadow-2xl">
+              <img
+                src={IMAGES.heroWave6}
+                alt="AuthentiGen — AI image humanizer: before, after, and processing results"
+                loading="eager"
+                fetchPriority="high"
+                draggable={false}
+                className="w-full h-auto select-none"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(160deg, rgba(255,255,255,0.06), transparent 40%)",
+                }}
+              />
+            </div>
+          </FloatCard>
         </div>
       </section>
 
@@ -578,9 +539,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─────────────────────── Pricing ─────────────────────────── */}
-      <section id="pricing" className="relative py-24 overflow-hidden">
-        {/* Full-bleed background image with uniform 70% dark overlay */}
+      {/* ─────────────────────── Open source ─────────────────────── */}
+      <section id="open-source" className="relative py-24 overflow-hidden">
+        {/* Full-bleed background image with uniform dark overlay */}
         <div
           aria-hidden
           className="absolute inset-0 bg-cover bg-center"
@@ -591,116 +552,83 @@ export default function Home() {
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to bottom, rgba(8,8,8,0.7) 0%, rgba(8,8,8,0.7) 100%)",
+              "linear-gradient(to bottom, rgba(8,8,8,0.78) 0%, rgba(8,8,8,0.78) 100%)",
           }}
         />
 
         <div className="container relative z-10">
           <Reveal>
-            <div className="text-center mb-16">
+            <div className="max-w-3xl mx-auto text-center">
               <Badge
                 variant="outline"
                 className="mb-4 border-[#F5A623]/30 text-[#F5A623] bg-[#F5A623]/5 text-xs tracking-widest uppercase"
               >
-                Pricing
+                Open Source
               </Badge>
               <h2 className="font-serif text-4xl sm:text-5xl font-normal mb-4">
-                Simple, <span className="text-gold italic">Transparent</span>{" "}
-                Pricing
+                Free Forever.{" "}
+                <span className="text-gold italic">Self-Hosted.</span>
               </h2>
-              <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-                Start free. Pay only when you need more credits.
+              <p className="text-muted-foreground text-lg mb-10">
+                AuthentiGen is open-source under the MIT license. No credits, no
+                usage limits, no subscriptions — clone it, run it on your own
+                server, and humanize as much as you want.
               </p>
+
+              <div className="grid sm:grid-cols-3 gap-4 mb-10 text-left">
+                {[
+                  {
+                    icon: Lock,
+                    title: "Your data, your server",
+                    desc: "Files never leave the infrastructure you control.",
+                  },
+                  {
+                    icon: Zap,
+                    title: "No credits or limits",
+                    desc: "Process unlimited images and video for free.",
+                  },
+                  {
+                    icon: Github,
+                    title: "Inspectable & extensible",
+                    desc: "Read every line of the pipeline and make it yours.",
+                  },
+                ].map(({ icon: Icon, title, desc }) => (
+                  <div
+                    key={title}
+                    className="glass rounded-2xl p-5 gradient-border"
+                  >
+                    <Icon
+                      className="w-6 h-6 text-[#F5A623] mb-3"
+                      strokeWidth={1.5}
+                    />
+                    <div className="font-semibold mb-1">{title}</div>
+                    <div className="text-sm text-muted-foreground">{desc}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <MagneticButton strength={14} radius={140}>
+                  <RippleButton
+                    size="lg"
+                    onClick={() => window.open(REPO_URL, "_blank")}
+                    className="h-14 px-8 text-base font-semibold glow-gold gradient-border-animated group"
+                  >
+                    <Github className="w-4 h-4 mr-2" /> Star on GitHub
+                  </RippleButton>
+                </MagneticButton>
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="h-14 px-8 text-base text-muted-foreground hover:text-foreground"
+                  onClick={handleCTA}
+                >
+                  Start Humanizing
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
             </div>
           </Reveal>
-
-          <StaggerGroup className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {PRICING.map((plan, i) => {
-              const front = (
-                <div
-                  className={`rounded-2xl p-8 flex flex-col h-full relative ${plan.highlight ? "gradient-border-animated glow-gold" : "glass gradient-border"}`}
-                  style={{
-                    background: plan.highlight
-                      ? "rgba(20,20,20,0.92)"
-                      : undefined,
-                  }}
-                >
-                  {plan.highlight && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-[#F5A623] text-black px-4 py-1 text-xs font-semibold">
-                        <Star className="w-3 h-3 mr-1" /> Most Popular
-                      </Badge>
-                    </div>
-                  )}
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold mb-1">{plan.name}</h3>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      {plan.description}
-                    </p>
-                    <div className="flex items-end gap-1 mb-1">
-                      <span className="text-4xl font-serif">{plan.price}</span>
-                      <span className="text-muted-foreground text-sm mb-1">
-                        {plan.period === "forever"
-                          ? `/${plan.period}`
-                          : ` · ${plan.period}`}
-                      </span>
-                    </div>
-                    <div className="text-[#F5A623] text-sm font-medium">
-                      {plan.credits}
-                    </div>
-                  </div>
-                  <ul className="space-y-3 mb-6 flex-1">
-                    {plan.features.map((feat, j) => (
-                      <li
-                        key={j}
-                        className="flex items-center gap-2 text-sm text-muted-foreground"
-                      >
-                        <Check className="w-4 h-4 text-[#F5A623] flex-shrink-0" />
-                        {feat}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className={plan.highlight ? "glow-gold-sm" : ""}
-                    variant={plan.highlight ? "default" : "outline"}
-                    onClick={handleCTA}
-                  >
-                    {plan.cta}
-                  </Button>
-                </div>
-              );
-
-              const back = (
-                <div className="rounded-2xl p-8 flex flex-col h-full glass gradient-border-animated">
-                  <h3 className="font-serif text-2xl text-gold mb-3">
-                    {plan.name} — what's inside
-                  </h3>
-                  <ul className="space-y-2 flex-1">
-                    {(PRICING_BACK_BULLETS[plan.name] ?? []).map((b, j) => (
-                      <li key={j} className="flex items-start gap-2 text-sm">
-                        <Check className="w-4 h-4 text-[#F5A623] flex-shrink-0 mt-0.5" />
-                        <span>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-xs text-muted-foreground italic mt-4">
-                    "Pricing is honest, the queue is fast, and the result is the
-                    result."
-                  </p>
-                </div>
-              );
-
-              return (
-                <StaggerChild key={i}>
-                  <PricingCardFlip
-                    front={front}
-                    back={back}
-                    popular={plan.highlight}
-                  />
-                </StaggerChild>
-              );
-            })}
-          </StaggerGroup>
         </div>
       </section>
 
@@ -818,10 +746,10 @@ export default function Home() {
               Features
             </a>
             <a
-              href="#pricing"
+              href="#open-source"
               className="text-muted-foreground hover:text-foreground"
             >
-              Pricing
+              Open Source
             </a>
             <a
               href="#how-it-works"
@@ -852,7 +780,9 @@ export default function Home() {
                 <Twitter className="size-4" />
               </a>
               <a
-                href="#"
+                href={REPO_URL}
+                target="_blank"
+                rel="noreferrer"
                 aria-label="GitHub"
                 className="size-9 rounded-full glass flex items-center justify-center hover:text-[#F5A623]"
               >

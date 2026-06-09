@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatsCards } from "@/components/admin/StatsCards";
 import { UsersTable } from "@/components/admin/UsersTable";
 import { JobsTable } from "@/components/admin/JobsTable";
-import { RevenueChart } from "@/components/admin/RevenueChart";
 import { Loader2, ShieldAlert } from "lucide-react";
 
 export default function Admin() {
@@ -51,7 +50,7 @@ export default function Admin() {
             <span className="text-gold">Admin</span> Dashboard
           </h1>
           <p className="text-muted-foreground mt-2">
-            System-wide statistics, user management, and revenue.
+            System-wide statistics, user management, and job activity.
           </p>
         </div>
 
@@ -60,7 +59,6 @@ export default function Admin() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="jobs">Jobs</TabsTrigger>
-            <TabsTrigger value="revenue">Revenue</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -83,9 +81,6 @@ export default function Admin() {
           </TabsContent>
           <TabsContent value="jobs">
             <JobsTable />
-          </TabsContent>
-          <TabsContent value="revenue">
-            <RevenueChart />
           </TabsContent>
         </Tabs>
       </div>

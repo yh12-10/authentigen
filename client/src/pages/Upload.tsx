@@ -23,7 +23,6 @@ import {
   Settings,
   Code2,
   ArrowDown,
-  Crown,
   Info,
   LogOut,
   LayoutDashboard,
@@ -72,25 +71,21 @@ const INTENSITY_OPTIONS: {
   value: Intensity;
   label: string;
   desc: string;
-  credits: string;
 }[] = [
   {
     value: "light",
     label: "Light",
     desc: "Subtle, minimal adjustments. Nearly identical to original.",
-    credits: "1× credits",
   },
   {
     value: "medium",
     label: "Medium",
     desc: "Balanced humanization with organic imperfections.",
-    credits: "2× credits",
   },
   {
     value: "heavy",
     label: "Heavy",
     desc: "Maximum transformation. Unmistakably human-made.",
-    credits: "3× credits",
   },
 ];
 
@@ -135,9 +130,7 @@ function initials(
 
 function TopNav() {
   const { user, logout } = useAuth();
-  const credits = trpc.credits.balance.useQuery(undefined, { enabled: !!user });
   const [, navigate] = useLocation();
-  const creditCount = credits.data?.credits ?? user?.credits ?? 0;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-strong h-16 border-b border-border/40">
@@ -162,12 +155,6 @@ function TopNav() {
             Features
           </a>
           <a
-            href="/#pricing"
-            className="hover:text-foreground transition-colors"
-          >
-            Pricing
-          </a>
-          <a
             href="/#how-it-works"
             className="hover:text-foreground transition-colors"
           >
@@ -179,23 +166,6 @@ function TopNav() {
         </div>
 
         <div className="flex items-center gap-4">
-          <motion.div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full glass border border-[#F5A623]/30"
-            animate={{
-              boxShadow: [
-                "0 0 0 rgba(245,166,35,0)",
-                "0 0 14px rgba(245,166,35,0.25)",
-                "0 0 0 rgba(245,166,35,0)",
-              ],
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <Zap className="size-4 text-[#F5A623]" />
-            <span className="text-sm font-semibold text-[#F5A623]">
-              {creditCount.toLocaleString()} Credits
-            </span>
-          </motion.div>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-secondary/40 transition-colors">
@@ -311,29 +281,6 @@ function Sidebar() {
           label="Settings"
           onClick={() => navigate("/dashboard")}
         />
-      </div>
-
-      <div className="p-4">
-        <Card className="glass gradient-border-animated relative overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2 text-[#F5A623]">
-              <Crown className="size-4" />
-              <CardTitle className="text-sm">Upgrade Plan</CardTitle>
-            </div>
-            <CardDescription className="text-xs">
-              Get more credits & unlock premium features.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <Button
-              size="sm"
-              className="w-full bg-[#F5A623] hover:bg-[#F5A623]/90 text-black glow-gold-sm"
-              onClick={() => navigate("/dashboard")}
-            >
-              Upgrade Now
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     </aside>
   );
@@ -539,17 +486,9 @@ function IntensityCards({
               </motion.span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed mb-2 relative">
+          <p className="text-xs text-muted-foreground leading-relaxed relative">
             {opt.desc}
           </p>
-          <span
-            className={cn(
-              "text-xs font-medium relative",
-              value === opt.value ? "text-[#F5A623]" : "text-muted-foreground"
-            )}
-          >
-            {opt.credits}
-          </span>
         </motion.button>
       ))}
     </div>
@@ -921,7 +860,7 @@ export default function Upload() {
                   <div>
                     <div className="font-medium text-sm">Images</div>
                     <div className="text-xs text-muted-foreground">
-                      JPG, PNG, WEBP · Up to 20 MB · 1–3 credits
+                      JPG, PNG, WEBP · Up to 20 MB
                     </div>
                   </div>
                 </div>
@@ -932,7 +871,7 @@ export default function Upload() {
                   <div>
                     <div className="font-medium text-sm">Videos</div>
                     <div className="text-xs text-muted-foreground">
-                      MP4, WEBM · Up to 100 MB · 3–9 credits
+                      MP4, WEBM · Up to 100 MB
                     </div>
                   </div>
                 </div>

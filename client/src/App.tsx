@@ -14,8 +14,6 @@ import Upload from "./pages/Upload";
 import Dashboard from "./pages/Dashboard";
 import Process from "./pages/Process";
 import Admin from "./pages/Admin";
-import BillingSuccess from "./pages/BillingSuccess";
-import BillingCancel from "./pages/BillingCancel";
 import BatchUpload from "./pages/BatchUpload";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -31,8 +29,6 @@ function Router() {
       <Route path="/process/:jobId" component={Process} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/admin" component={Admin} />
-      <Route path="/billing/success" component={BillingSuccess} />
-      <Route path="/billing/cancel" component={BillingCancel} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

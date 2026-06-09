@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import {
@@ -15,20 +14,16 @@ import {
   Loader2,
   Image,
   Video,
-  Coins,
   LayoutGrid,
   LogOut,
   Zap,
   ArrowRight,
   RefreshCw,
   Settings,
-  Receipt,
-  Gift,
 } from "lucide-react";
 import { Counter } from "@/components/visual/Counter";
 import { Reveal } from "@/components/visual/Reveal";
 import { EmptyState } from "@/components/process/EmptyState";
-import { BuyCreditsCards } from "@/components/BuyCreditsCards";
 import {
   Card,
   CardContent,
@@ -115,23 +110,6 @@ export default function Dashboard() {
     }
   );
 
-  const { data: creditsData } = trpc.credits.balance.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
-  const { data: txns } = trpc.credits.transactions.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
-  const utils = trpc.useUtils();
-
-  const claimBonus = trpc.credits.claimBonus.useMutation({
-    onSuccess: () => {
-      utils.auth.me.invalidate();
-      utils.credits.balance.invalidate();
-      utils.credits.transactions.invalidate();
-      refetchJobs();
-    },
-  });
-
   const [statusFilter, setStatusFilter] = useState<"all" | JobStatus>("all");
   const [typeFilter, setTypeFilter] = useState<"all" | JobType>("all");
 
@@ -168,13 +146,11 @@ export default function Dashboard() {
   const activeJobs =
     jobs?.filter(j => j.status === "pending" || j.status === "processing") ??
     [];
-  const credits = creditsData?.credits ?? user?.credits ?? 0;
   const filteredJobs = (jobs ?? []).filter(
     j =>
       (statusFilter === "all" || j.status === statusFilter) &&
       (typeFilter === "all" || j.type === typeFilter)
   );
-  const showBonusButton = user && user.bonusClaimed === 0;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -225,7 +201,7 @@ export default function Dashboard() {
               </span>
             </h1>
             <p className="text-muted-foreground">
-              Manage your humanization jobs and credits.
+              Manage your humanization jobs.
             </p>
           </div>
           <div className="flex gap-2">
@@ -251,10 +227,6 @@ export default function Dashboard() {
               <Video className="size-4 mr-1.5" />
               Jobs
             </TabsTrigger>
-            <TabsTrigger value="credits">
-              <Coins className="size-4 mr-1.5" />
-              Credits
-            </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="size-4 mr-1.5" />
               Settings
@@ -268,30 +240,16 @@ export default function Dashboard() {
                 <Card className="glass">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Credits Available
+                      Total Jobs
                     </CardTitle>
                     <div className="w-9 h-9 rounded-xl bg-[#F5A623]/15 flex items-center justify-center text-[#F5A623]">
-                      <Coins className="w-5 h-5" />
+                      <LayoutGrid className="w-5 h-5" />
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-serif">
-                      <Counter to={credits} />
+                      <Counter to={jobs?.length ?? 0} />
                     </div>
-                    {showBonusButton && (
-                      <button
-                        onClick={() => claimBonus.mutate()}
-                        disabled={claimBonus.isPending}
-                        className="mt-2 inline-flex items-center gap-1 text-xs text-[#F5A623] hover:opacity-80"
-                      >
-                        {claimBonus.isPending ? (
-                          <Loader2 className="size-3 animate-spin" />
-                        ) : (
-                          <Gift className="size-3" />
-                        )}
-                        Claim 10-credit welcome bonus
-                      </button>
-                    )}
                   </CardContent>
                 </Card>
               </Reveal>
@@ -529,81 +487,6 @@ export default function Dashboard() {
             )}
           </TabsContent>
 
-          {/* Credits */}
-          <TabsContent value="credits" className="space-y-6">
-            <Card className="glass gradient-border-animated">
-              <CardHeader>
-                <CardDescription>Current balance</CardDescription>
-                <CardTitle className="font-serif text-5xl">
-                  <Counter to={credits} />{" "}
-                  <span className="text-base text-muted-foreground">
-                    credits
-                  </span>
-                </CardTitle>
-              </CardHeader>
-            </Card>
-
-            <div>
-              <h3 className="font-serif text-xl mb-3">Buy more credits</h3>
-              <BuyCreditsCards />
-            </div>
-
-            <Card className="glass">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Receipt className="size-4 text-[#F5A623]" /> Transaction
-                  history
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {!txns || txns.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-6 text-center">
-                    No transactions yet.
-                  </p>
-                ) : (
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-border text-muted-foreground text-xs">
-                        <th className="text-left pb-3 font-medium">Type</th>
-                        <th className="text-left pb-3 font-medium">
-                          Description
-                        </th>
-                        <th className="text-right pb-3 font-medium">Amount</th>
-                        <th className="text-right pb-3 font-medium">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {txns.map(t => (
-                        <tr
-                          key={t.id}
-                          className="hover:bg-secondary/20 transition-colors"
-                        >
-                          <td className="py-3 pr-4">
-                            <Badge variant="outline" className="capitalize">
-                              {t.type}
-                            </Badge>
-                          </td>
-                          <td className="py-3 pr-4 text-muted-foreground">
-                            {t.description ?? "—"}
-                          </td>
-                          <td
-                            className={`py-3 pr-4 text-right font-mono ${t.amount > 0 ? "text-emerald-400" : "text-muted-foreground"}`}
-                          >
-                            {t.amount > 0 ? "+" : ""}
-                            {t.amount}
-                          </td>
-                          <td className="py-3 text-right text-xs text-muted-foreground">
-                            {format(new Date(t.createdAt), "MMM d, HH:mm")}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
           {/* Settings */}
           <TabsContent value="settings" className="space-y-4">
             <Card className="glass">
@@ -640,15 +523,6 @@ export default function Dashboard() {
                     </p>
                   </div>
                   <Switch id="notif-jobs" defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="notif-credits">Low-credit alerts</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Toast when balance drops below 5 credits.
-                    </p>
-                  </div>
-                  <Switch id="notif-credits" defaultChecked />
                 </div>
               </CardContent>
             </Card>

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Counter } from "@/components/visual/Counter";
 import { Reveal } from "@/components/visual/Reveal";
-import { Users, FileImage, DollarSign, Activity, UserPlus } from "lucide-react";
+import { Users, FileImage, Activity, UserPlus } from "lucide-react";
 import type { ReactNode } from "react";
 
 interface Stat {
@@ -18,7 +18,6 @@ interface StatsCardsProps {
     | {
         totalUsers: number;
         totalJobs: number;
-        totalRevenueCents: number;
         jobsToday: number;
         newUsersToday: number;
       }
@@ -37,13 +36,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
       label: "Total Jobs",
       value: stats.totalJobs,
       icon: <FileImage className="size-5 text-[#4F8EF7]" />,
-    },
-    {
-      label: "Total Revenue",
-      value: stats.totalRevenueCents / 100,
-      icon: <DollarSign className="size-5 text-emerald-400" />,
-      prefix: "$",
-      decimals: 2,
     },
     {
       label: "Jobs Today",
