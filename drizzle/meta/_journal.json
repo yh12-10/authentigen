@@ -36,6 +36,13 @@
       "when": 1777527868374,
       "tag": "0004_damp_firebrand",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1780991605619,
+      "tag": "0005_short_guardian",
+      "breakpoints": true
     }
   ]
 }

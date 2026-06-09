@@ -16,8 +16,6 @@ import * as ffprobeStatic from "ffprobe-static";
 import { ENV } from "./_core/env";
 import { storageGetBuffer, storagePut } from "./storage";
 import {
-  addCredits,
-  deductCredits,
   getJobById,
   getUserById,
   updateJobProgress,
@@ -163,10 +161,6 @@ function buildVideoFramePrompt(
     .trim();
 }
 
-function getCreditsForVideo(intensity: IntensityLevel): number {
-  return 3 * (intensity === "light" ? 1 : intensity === "medium" ? 2 : 3);
-}
-
 async function readDirSorted(dir: string): Promise<string[]> {
   const names = await fs.readdir(dir);
   return names.filter(n => n.endsWith(".png") || n.endsWith(".jpg")).sort();
@@ -206,7 +200,6 @@ async function processVideoOnce(jobId: number): Promise<void> {
   if (!job) throw new Error(`Job ${jobId} not found`);
 
   const intensity = job.intensity as IntensityLevel;
-  const creditsNeeded = getCreditsForVideo(intensity);
   const tmpDir = path.join(ROOT_TMP, String(jobId));
   const framesDir = path.join(tmpDir, "frames");
   const outFramesDir = path.join(tmpDir, "out");
@@ -217,19 +210,6 @@ async function processVideoOnce(jobId: number): Promise<void> {
   });
 
   try {
-    const deducted = await deductCredits(
-      job.userId,
-      creditsNeeded,
-      jobId,
-      `Video humanization (${intensity})`
-    );
-    if (!deducted) {
-      await updateJobStatus(jobId, "failed", {
-        errorMessage: "Insufficient credits",
-      });
-      return;
-    }
-
     await fs.mkdir(framesDir, { recursive: true });
     await fs.mkdir(outFramesDir, { recursive: true });
 
@@ -247,12 +227,6 @@ async function processVideoOnce(jobId: number): Promise<void> {
       await updateJobStatus(jobId, "failed", {
         errorMessage: `Video duration ${info.durationSeconds.toFixed(1)}s exceeds ${cap}s limit`,
       });
-      await addCredits(
-        job.userId,
-        creditsNeeded,
-        "refund",
-        `Refund for over-limit video #${jobId}`
-      );
       return;
     }
 
@@ -387,7 +361,6 @@ async function processVideoOnce(jobId: number): Promise<void> {
       processedUrl,
       progress: 100,
       completedAt: new Date(),
-      creditsUsed: creditsNeeded,
     });
 
     // Best-effort completion email (no-op unless SMTP is configured).
@@ -404,12 +377,6 @@ async function processVideoOnce(jobId: number): Promise<void> {
       error instanceof Error ? error.message : "Unknown video processing error";
     console.error(`[Video] job ${jobId} failed:`, msg);
     await updateJobStatus(jobId, "failed", { errorMessage: msg.slice(0, 500) });
-    await addCredits(
-      job.userId,
-      creditsNeeded,
-      "refund",
-      `Refund for failed video job #${jobId}`
-    );
     throw error;
   } finally {
     await fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {});

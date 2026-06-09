@@ -44,12 +44,6 @@ export const ENV = {
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
   isProduction: process.env.NODE_ENV === "production",
-  // Stripe
-  stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
-  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
-  stripePriceStarter: process.env.STRIPE_PRICE_STARTER ?? "",
-  stripePricePro: process.env.STRIPE_PRICE_PRO ?? "",
-  stripePriceStudio: process.env.STRIPE_PRICE_STUDIO ?? "",
   appBaseUrl: process.env.APP_BASE_URL ?? "http://localhost:3000",
   // Video pipeline
   videoMaxDurationSeconds: Number(process.env.VIDEO_MAX_DURATION_SECONDS ?? 30),
@@ -82,16 +76,6 @@ export const ENV = {
   // Job processing
   maxConcurrentImageJobs: Number(process.env.MAX_CONCURRENT_IMAGE_JOBS ?? 4),
 };
-
-export function isStripeConfigured(): boolean {
-  return Boolean(
-    ENV.stripeSecretKey &&
-      ENV.stripeWebhookSecret &&
-      ENV.stripePriceStarter &&
-      ENV.stripePricePro &&
-      ENV.stripePriceStudio
-  );
-}
 
 export function isS3Configured(): boolean {
   return Boolean(ENV.s3Bucket && ENV.s3AccessKeyId && ENV.s3SecretAccessKey);

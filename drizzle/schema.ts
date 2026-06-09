@@ -21,9 +21,6 @@ export const users = mysqlTable(
     passwordHash: varchar("passwordHash", { length: 255 }),
     loginMethod: varchar("loginMethod", { length: 64 }),
     role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-    credits: int("credits").default(10).notNull(),
-    bonusClaimed: int("bonusClaimed").default(0).notNull(),
-    stripeCustomerId: varchar("stripeCustomerId", { length: 64 }),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
     lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -60,7 +57,6 @@ export const jobs = mysqlTable(
     processedKey: varchar("processedKey", { length: 512 }),
     processedUrl: varchar("processedUrl", { length: 1024 }),
     progress: int("progress").default(0).notNull(),
-    creditsUsed: int("creditsUsed").default(0).notNull(),
     errorMessage: text("errorMessage"),
     batchId: varchar("batchId", { length: 36 }),
     durationSeconds: float("durationSeconds"),
@@ -78,24 +74,3 @@ export const jobs = mysqlTable(
 
 export type Job = typeof jobs.$inferSelect;
 export type InsertJob = typeof jobs.$inferInsert;
-
-export const creditTransactions = mysqlTable(
-  "credit_transactions",
-  {
-    id: int("id").autoincrement().primaryKey(),
-    userId: int("userId").notNull(),
-    jobId: int("jobId"),
-    amount: int("amount").notNull(),
-    type: mysqlEnum("type", ["purchase", "usage", "bonus", "refund"]).notNull(),
-    description: varchar("description", { length: 255 }),
-    stripeSessionId: varchar("stripeSessionId", { length: 128 }),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
-  },
-  t => ({
-    creditTxStripeSessionUnique: uniqueIndex(
-      "credit_tx_stripe_session_unique"
-    ).on(t.stripeSessionId),
-  })
-);
-
-export type CreditTransaction = typeof creditTransactions.$inferSelect;

@@ -6,8 +6,8 @@ describe("classifyOrphan", () => {
     expect(classifyOrphan("pending")).toBe("requeue");
   });
 
-  it("fails and refunds jobs interrupted mid-processing", () => {
-    expect(classifyOrphan("processing")).toBe("fail-refund");
+  it("fails jobs interrupted mid-processing", () => {
+    expect(classifyOrphan("processing")).toBe("fail");
   });
 
   it("skips terminal states", () => {

@@ -6,7 +6,6 @@ import rateLimit from "express-rate-limit";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { ENV } from "./env";
 import { registerStorageProxy } from "./storageProxy";
-import { registerStripeWebhook } from "./stripeWebhook";
 import { registerBatchDownload } from "./batchDownload";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -41,17 +40,14 @@ async function startServer() {
     app.set("trust proxy", Number.isNaN(n) ? ENV.trustProxy : n);
   }
 
-  // Stripe webhook MUST be registered with raw body BEFORE express.json
-  registerStripeWebhook(app);
-
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerBatchDownload(app);
 
-  // Rate limit the API surface (storage proxy, Stripe webhook, and batch
-  // download are intentionally exempt — they are separate routes).
+  // Rate limit the API surface (the storage proxy and batch download are
+  // intentionally exempt — they are separate routes).
   const apiLimiter = rateLimit({
     windowMs: ENV.rateLimitWindowMs,
     limit: ENV.rateLimitMax,

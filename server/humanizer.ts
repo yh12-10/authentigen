@@ -30,10 +30,8 @@ import { storagePut, storageGetBuffer } from "./storage";
 import {
   updateJobProgress,
   updateJobStatus,
-  deductCredits,
   getJobById,
   getUserById,
-  addCredits,
 } from "./db";
 import { sendJobCompletionEmail } from "./_core/email";
 import { ENV } from "./_core/env";
@@ -1051,21 +1049,6 @@ export async function humanizeImageBuffer(
   return final;
 }
 
-// ─── Credit pricing ───────────────────────────────────────────────────────────
-
-export function getCreditsForJob(
-  type: MediaType,
-  intensity: IntensityLevel
-): number {
-  const base = type === "image" ? 1 : 3;
-  const multiplier: Record<IntensityLevel, number> = {
-    light: 1,
-    medium: 2,
-    heavy: 3,
-  };
-  return base * multiplier[intensity];
-}
-
 // ─── Job orchestration ───────────────────────────────────────────────────────
 
 async function downloadOriginal(
@@ -1118,26 +1101,12 @@ export async function processImageJob(jobId: number): Promise<void> {
   const job = await getJobById(jobId);
   if (!job) throw new Error(`Job ${jobId} not found`);
 
-  const creditsNeeded = getCreditsForJob("image", job.intensity);
   await updateJobStatus(jobId, "processing", {
     processingStartedAt: new Date(),
     progress: 5,
   });
 
   try {
-    const deducted = await deductCredits(
-      job.userId,
-      creditsNeeded,
-      jobId,
-      `Image humanization (${job.intensity})`
-    );
-    if (!deducted) {
-      await updateJobStatus(jobId, "failed", {
-        errorMessage: "Insufficient credits",
-      });
-      return;
-    }
-
     await withImageSlot(async () => {
       await updateJobProgress(jobId, 15);
       const originalBuf = await downloadOriginal(
@@ -1161,7 +1130,6 @@ export async function processImageJob(jobId: number): Promise<void> {
         processedUrl,
         progress: 100,
         completedAt: new Date(),
-        creditsUsed: creditsNeeded,
       });
     });
 
@@ -1178,12 +1146,6 @@ export async function processImageJob(jobId: number): Promise<void> {
     const msg =
       error instanceof Error ? error.message : "Unknown processing error";
     await updateJobStatus(jobId, "failed", { errorMessage: msg.slice(0, 500) });
-    await addCredits(
-      job.userId,
-      creditsNeeded,
-      "refund",
-      `Refund for failed job #${jobId}`
-    );
     throw error;
   }
 }

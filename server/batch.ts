@@ -3,11 +3,7 @@ import type { Response } from "express";
 import { jobs } from "../drizzle/schema";
 import { getDb, createJob, getUserById } from "./db";
 import { storagePut, storageGetBuffer } from "./storage";
-import {
-  processImageJob,
-  processVideoJob,
-  getCreditsForJob,
-} from "./humanizer";
+import { processImageJob, processVideoJob } from "./humanizer";
 
 interface BatchFile {
   filename: string;
@@ -34,17 +30,6 @@ export async function createBatch(
   const user = await getUserById(userId);
   if (!user) throw new Error("User not found");
 
-  // Pre-flight: total credits across files
-  const totalCredits = files.reduce((sum, f) => {
-    const type = f.mimeType.startsWith("image/") ? "image" : "video";
-    return sum + getCreditsForJob(type, f.intensity);
-  }, 0);
-  if (user.credits < totalCredits) {
-    throw new Error(
-      `Insufficient credits. Need ${totalCredits}, have ${user.credits}`
-    );
-  }
-
   const batchId = uuid();
   const jobIds: number[] = [];
 
@@ -68,7 +53,6 @@ export async function createBatch(
       originalMimeType: file.mimeType,
       status: "pending",
       progress: 0,
-      creditsUsed: 0,
       batchId,
     });
     jobIds.push(jobId);

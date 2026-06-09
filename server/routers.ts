@@ -10,29 +10,10 @@ import {
   router,
 } from "./_core/trpc";
 import { signupUser, loginUser, signSessionToken } from "./_core/auth";
-import {
-  createJob,
-  getJobById,
-  getJobsByUserId,
-  getUserById,
-  getCreditTransactions,
-  addCredits,
-} from "./db";
+import { createJob, getJobById, getJobsByUserId } from "./db";
 import { storagePut } from "./storage";
-import {
-  processImageJob,
-  processVideoJob,
-  getCreditsForJob,
-} from "./humanizer";
-import { isStripeConfigured } from "./_core/env";
-import { PRICE_PACKS, createCheckoutSession, type PackKey } from "./payments";
-import {
-  getAdminStats,
-  listAdminUsers,
-  listAdminJobs,
-  grantCreditsToUser,
-  getDailyRevenueLast30Days,
-} from "./admin";
+import { processImageJob, processVideoJob } from "./humanizer";
+import { getAdminStats, listAdminUsers, listAdminJobs } from "./admin";
 import { createBatch, listJobsByBatch } from "./batch";
 
 // ─── Jobs Router ──────────────────────────────────────────────────────────────
@@ -57,18 +38,6 @@ const jobsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
       const type = input.mimeType.startsWith("image/") ? "image" : "video";
-      const creditsNeeded = getCreditsForJob(type, input.intensity);
-
-      // Check credits
-      const user = await getUserById(userId);
-      if (!user)
-        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-      if (user.credits < creditsNeeded) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: `Insufficient credits. Need ${creditsNeeded}, have ${user.credits}`,
-        });
-      }
 
       // Upload original file to storage. storagePut returns the actual key
       // (with a unique hash suffix) — store THAT in the DB so subsequent reads find the file.
@@ -91,7 +60,6 @@ const jobsRouter = router({
         originalMimeType: input.mimeType,
         status: "pending",
         progress: 0,
-        creditsUsed: 0,
         batchId: input.batchId ?? null,
       });
 
@@ -101,7 +69,7 @@ const jobsRouter = router({
         console.error(`[Humanizer] Job ${jobId} failed:`, err);
       });
 
-      return { jobId, creditsNeeded };
+      return { jobId };
     }),
 
   status: protectedProcedure
@@ -117,77 +85,6 @@ const jobsRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
     return getJobsByUserId(ctx.user.id);
   }),
-});
-
-// ─── Credits Router ───────────────────────────────────────────────────────────
-
-const creditsRouter = router({
-  balance: protectedProcedure.query(async ({ ctx }) => {
-    const user = await getUserById(ctx.user.id);
-    return { credits: user?.credits ?? 0 };
-  }),
-
-  transactions: protectedProcedure.query(async ({ ctx }) => {
-    return getCreditTransactions(ctx.user.id);
-  }),
-
-  // One-time welcome bonus — guarded by durable bonusClaimed flag on user record
-  claimBonus: protectedProcedure.mutation(async ({ ctx }) => {
-    const user = await getUserById(ctx.user.id);
-    if (!user)
-      throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-    if (user.bonusClaimed) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Welcome bonus already claimed",
-      });
-    }
-    const { getDb } = await import("./db");
-    const db = await getDb();
-    if (!db)
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Database not available",
-      });
-    const { users } = await import("../drizzle/schema");
-    const { eq } = await import("drizzle-orm");
-    await db
-      .update(users)
-      .set({ bonusClaimed: 1 })
-      .where(eq(users.id, ctx.user.id));
-    await addCredits(ctx.user.id, 10, "bonus", "Welcome bonus credits");
-    return { success: true };
-  }),
-});
-
-// ─── Payments Router ──────────────────────────────────────────────────────────
-
-const paymentsRouter = router({
-  isConfigured: publicProcedure.query(() => ({
-    configured: isStripeConfigured(),
-  })),
-
-  packs: publicProcedure.query(() =>
-    Object.entries(PRICE_PACKS).map(([key, pack]) => ({
-      key: key as PackKey,
-      label: pack.label,
-      credits: pack.credits,
-      priceCents: pack.priceCents,
-    }))
-  ),
-
-  createCheckoutSession: protectedProcedure
-    .input(z.object({ pack: z.enum(["starter", "pro", "studio"]) }))
-    .mutation(async ({ ctx, input }) => {
-      if (!isStripeConfigured()) {
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Stripe is not configured. Contact the administrator.",
-        });
-      }
-      const url = await createCheckoutSession(ctx.user.id, input.pack);
-      return { url };
-    }),
 });
 
 // ─── Admin Router ─────────────────────────────────────────────────────────────
@@ -214,17 +111,6 @@ const adminRouter = router({
       })
     )
     .query(({ input }) => listAdminJobs(input)),
-  grantCredits: adminProcedure
-    .input(
-      z.object({
-        userId: z.number(),
-        amount: z.number().int().min(1).max(10000),
-      })
-    )
-    .mutation(({ ctx, input }) =>
-      grantCreditsToUser(input.userId, input.amount, ctx.user.id)
-    ),
-  dailyRevenue: adminProcedure.query(() => getDailyRevenueLast30Days()),
 });
 
 // ─── Batch Router ─────────────────────────────────────────────────────────────
@@ -319,8 +205,6 @@ export const appRouter = router({
   }),
 
   jobs: jobsRouter,
-  credits: creditsRouter,
-  payments: paymentsRouter,
   admin: adminRouter,
   batch: batchRouter,
 });

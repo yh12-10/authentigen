@@ -15,13 +15,6 @@ describe("video frame math", () => {
     const total = Math.floor(10 * 24);
     expect(Math.ceil(total / 2)).toBe(120);
   });
-
-  it("video credits respect the documented L=3 / M=6 / H=9 schedule", async () => {
-    const { getCreditsForJob } = await import("./humanizer");
-    expect(getCreditsForJob("video", "light")).toBe(3);
-    expect(getCreditsForJob("video", "medium")).toBe(6);
-    expect(getCreditsForJob("video", "heavy")).toBe(9);
-  });
 });
 
 describe("video config", () => {
