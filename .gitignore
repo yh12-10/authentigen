@@ -107,6 +107,15 @@ temp/
 *.sqlite
 *.sqlite3
 
+<<<<<<< Updated upstream
 # Local file storage: user uploads + humanized outputs (keep the dir, ignore contents)
 storage/*
 !storage/.gitkeep
+=======
+# Webdev artifacts (checkpoint zips, migrations, etc.)
+.webdev/
+
+# Manus version file (auto-generated, not part of source)
+client/public/__manus__/version.json
+.project-config.json
+>>>>>>> Stashed changes

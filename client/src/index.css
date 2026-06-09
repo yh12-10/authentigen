@@ -428,6 +428,7 @@
   background: rgb(245 166 35 / 0.6);
 }
 
+<<<<<<< Updated upstream
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -439,6 +440,20 @@
 .page-enter {
   animation: pageEnter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+=======
+/* ── Marquee animation ─────────────────────────────────────── */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+/* ── Page enter animation ───────────────────────────────────── */
+.page-enter { animation: pageEnter 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+>>>>>>> Stashed changes
 @keyframes pageEnter {
   from {
     opacity: 0;
