@@ -35,12 +35,6 @@ services:
       # volume, or set your own here / via a .env file.
       JWT_SECRET: ${JWT_SECRET:-}
       APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
-      # Stripe is optional — leave blank to disable paid checkout.
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
-      STRIPE_PRICE_STARTER: ${STRIPE_PRICE_STARTER:-}
-      STRIPE_PRICE_PRO: ${STRIPE_PRICE_PRO:-}
-      STRIPE_PRICE_STUDIO: ${STRIPE_PRICE_STUDIO:-}
       VIDEO_MAX_DURATION_SECONDS: ${VIDEO_MAX_DURATION_SECONDS:-30}
       VIDEO_FRAME_SAMPLE_EVERY: ${VIDEO_FRAME_SAMPLE_EVERY:-3}
       # Storage: "local" (default) or "s3". For the dev MinIO below, set

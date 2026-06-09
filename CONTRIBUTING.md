@@ -36,8 +36,8 @@ for how the pieces fit together.
 ## Before opening a PR
 
 1. `pnpm check` passes (no TypeScript errors).
-2. `pnpm test` passes. Add or update tests for behavior you change — credit math, job lifecycle,
-   and payments are the most valuable to cover.
+2. `pnpm test` passes. Add or update tests for behavior you change — the job lifecycle and the
+   humanization pipeline are the most valuable to cover.
 3. `pnpm format` (or `prettier --check .`) leaves the tree clean.
 4. If you changed the API surface, the front end still builds (`pnpm build`).
 

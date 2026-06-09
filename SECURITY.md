@@ -24,8 +24,7 @@ If you self-host AuthentiGen, please:
   `.env`; in production you must set it yourself. Never commit your real `.env` (it is gitignored).
 - **Use HTTPS** in front of the app so session cookies are sent with `Secure` + `SameSite`.
 - **Lock down the database** — the default `.env.example` credentials are for local development only.
-- **Set real Stripe keys and webhook secret** only on a trusted host, and verify the webhook endpoint.
-- Restrict who can reach the admin panel; the `admin` role can grant credits.
+- Restrict who can reach the admin panel.
 
 ## Known limitations (current hardening gaps)
 
@@ -34,7 +33,7 @@ them are welcome (see the [Roadmap](README.md#roadmap)):
 
 - **Rate limiting** is applied to the `/api/trpc` surface (configurable via `RATE_LIMIT_WINDOW_MS` /
   `RATE_LIMIT_MAX`). Set `TRUST_PROXY` when running behind a reverse proxy so client IPs are correct.
-  The `/storage` route, Stripe webhook, and batch download are intentionally exempt.
+  The `/storage` route and batch download are intentionally exempt.
 - **Single-instance design.** Jobs run in-process (with a per-user video semaphore and a global image
   concurrency cap) and are recovered on restart, but there is no distributed queue — horizontal
   scaling across multiple app instances needs additional work (e.g. Redis/BullMQ).
