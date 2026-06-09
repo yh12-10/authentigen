@@ -139,8 +139,8 @@ function TopNav() {
           onClick={() => navigate("/")}
           className="flex items-center gap-2 group"
         >
-          <div className="size-9 rounded-xl bg-[#F5A623] flex items-center justify-center glow-gold-sm transition-transform group-hover:scale-105">
-            <Sparkles className="size-5 text-black" />
+          <div className="size-8 rounded-lg bg-[#F5A623] flex items-center justify-center glow-gold-sm transition-transform group-hover:scale-105">
+            <Sparkles className="size-4 text-black" />
           </div>
           <span className="font-semibold text-lg tracking-tight">
             AuthentiGen
@@ -223,9 +223,9 @@ function SidebarItem({ icon, label, active, onClick }: SidebarItemProps) {
       whileHover={{ x: 2 }}
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative",
+        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative outline-none focus-visible:ring-1 focus-visible:ring-[#F5A623]/40",
         active
-          ? "bg-[#F5A623]/10 text-[#F5A623] border border-[#F5A623]/30"
+          ? "bg-[#F5A623]/[0.08] text-[#F5A623] border border-[#F5A623]/25"
           : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
       )}
     >
@@ -310,10 +310,10 @@ function DropZone({
   return (
     <div
       className={cn(
-        "drop-zone relative rounded-2xl border-2 border-dashed p-12 cursor-pointer transition-all glass overflow-hidden",
+        "drop-zone relative rounded-2xl border-2 border-dashed p-12 cursor-pointer transition-all bg-secondary/20 overflow-hidden",
         isDragOver
           ? "border-[#F5A623] bg-[#F5A623]/5 glow-gold"
-          : "border-border/60"
+          : "border-border/60 hover:border-[#F5A623]/40"
       )}
       onDragOver={e => {
         e.preventDefault();
@@ -455,7 +455,7 @@ function IntensityCards({
             "rounded-xl p-4 text-left transition-all border relative overflow-hidden",
             value === opt.value
               ? "border-[#F5A623] bg-[#F5A623]/5 glow-gold-sm"
-              : "border-border/60 bg-secondary/30 hover:border-[#F5A623]/40"
+              : "border-border/50 bg-secondary/30 hover:border-[#F5A623]/40"
           )}
         >
           {value === opt.value && (
@@ -809,8 +809,8 @@ export default function Upload() {
 
       <main className="pt-20 pb-12 px-6 lg:pl-72 xl:pr-[24rem] page-enter">
         <div className="max-w-3xl mx-auto">
-          <Card className="glass border-border/40">
-            <CardContent className="p-8 space-y-7">
+          <div className="card-premium gradient-border rounded-2xl">
+            <div className="p-8 space-y-7">
               {/* Header */}
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -853,7 +853,7 @@ export default function Upload() {
 
               {/* File type info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="rounded-xl p-4 flex items-start gap-3 bg-secondary/30 border border-border/40">
+                <div className="rounded-xl p-4 flex items-start gap-3 bg-secondary/30 border border-border/50">
                   <div className="size-10 rounded-lg bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] flex-shrink-0">
                     <ImageIcon className="size-5" />
                   </div>
@@ -864,7 +864,7 @@ export default function Upload() {
                     </div>
                   </div>
                 </div>
-                <div className="rounded-xl p-4 flex items-start gap-3 bg-secondary/30 border border-border/40">
+                <div className="rounded-xl p-4 flex items-start gap-3 bg-secondary/30 border border-border/50">
                   <div className="size-10 rounded-lg bg-[#4F8EF7]/10 flex items-center justify-center text-[#4F8EF7] flex-shrink-0">
                     <VideoIcon className="size-5" />
                   </div>
@@ -905,8 +905,8 @@ export default function Upload() {
                   passthrough · 30 s max.
                 </p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </main>
     </div>

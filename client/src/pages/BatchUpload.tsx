@@ -194,7 +194,7 @@ export default function BatchUpload() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <nav className="fixed top-0 left-0 right-0 z-50 glass-strong">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass-strong border-b border-border/40">
         <div className="container flex items-center justify-between h-16">
           <button
             onClick={() => navigate("/")}
@@ -238,7 +238,7 @@ export default function BatchUpload() {
         {!batchId && (
           <>
             <div
-              className="drop-zone glass rounded-3xl border-2 border-dashed border-border p-10 text-center cursor-pointer mb-6"
+              className="drop-zone bg-secondary/20 rounded-2xl border-2 border-dashed border-border/60 p-10 text-center cursor-pointer mb-6 transition-colors hover:border-[#F5A623]/40"
               onDragOver={e => e.preventDefault()}
               onDrop={onDrop}
               onClick={() => fileInputRef.current?.click()}
@@ -272,9 +272,9 @@ export default function BatchUpload() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="light">Light · 1×</SelectItem>
-                  <SelectItem value="medium">Medium · 2×</SelectItem>
-                  <SelectItem value="heavy">Heavy · 3×</SelectItem>
+                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="heavy">Heavy</SelectItem>
                 </SelectContent>
               </Select>
               <Button
@@ -294,7 +294,7 @@ export default function BatchUpload() {
                 return (
                   <div
                     key={i}
-                    className="glass rounded-xl p-3 flex items-center gap-3"
+                    className="bg-secondary/30 border border-border/50 rounded-xl p-3 flex items-center gap-3"
                   >
                     <div className="size-10 rounded-lg bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] flex-shrink-0">
                       {isImg ? (
@@ -345,7 +345,7 @@ export default function BatchUpload() {
 
             <RippleButton
               size="lg"
-              className="w-full h-14 glow-gold"
+              className="w-full h-14 glow-gold disabled:opacity-50 disabled:shadow-none disabled:saturate-50 disabled:cursor-not-allowed"
               disabled={items.length === 0 || submitting}
               onClick={submitAll}
             >

@@ -25,7 +25,6 @@ import { Counter } from "@/components/visual/Counter";
 import { Reveal } from "@/components/visual/Reveal";
 import { EmptyState } from "@/components/process/EmptyState";
 import {
-  Card,
   CardContent,
   CardHeader,
   CardTitle,
@@ -110,6 +109,7 @@ export default function Dashboard() {
     }
   );
 
+  const [tab, setTab] = useState("overview");
   const [statusFilter, setStatusFilter] = useState<"all" | JobStatus>("all");
   const [typeFilter, setTypeFilter] = useState<"all" | JobType>("all");
 
@@ -154,7 +154,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <nav className="fixed top-0 left-0 right-0 z-50 glass-strong">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass-strong border-b border-border/40">
         <div className="container flex items-center justify-between h-16">
           <button
             onClick={() => navigate("/")}
@@ -217,7 +217,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs value={tab} onValueChange={setTab} className="space-y-6">
           <TabsList className="glass">
             <TabsTrigger value="overview">
               <LayoutGrid className="size-4 mr-1.5" />
@@ -237,7 +237,7 @@ export default function Dashboard() {
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Reveal>
-                <Card className="glass">
+                <div className="card-premium rounded-2xl">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                       Total Jobs
@@ -251,10 +251,10 @@ export default function Dashboard() {
                       <Counter to={jobs?.length ?? 0} />
                     </div>
                   </CardContent>
-                </Card>
+                </div>
               </Reveal>
               <Reveal delay={0.06}>
-                <Card className="glass">
+                <div className="card-premium rounded-2xl">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                       Files Humanized
@@ -268,10 +268,10 @@ export default function Dashboard() {
                       <Counter to={completedJobs.length} />
                     </div>
                   </CardContent>
-                </Card>
+                </div>
               </Reveal>
               <Reveal delay={0.12}>
-                <Card className="glass">
+                <div className="card-premium rounded-2xl">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                       Active Jobs
@@ -285,12 +285,12 @@ export default function Dashboard() {
                       <Counter to={activeJobs.length} />
                     </div>
                   </CardContent>
-                </Card>
+                </div>
               </Reveal>
             </div>
 
             {activeJobs.length > 0 && (
-              <Card className="glass">
+              <div className="card-premium rounded-2xl">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 text-[#F5A623] animate-spin" />
@@ -337,7 +337,71 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </CardContent>
-              </Card>
+              </div>
+            )}
+
+            {/* Recent activity (real jobs) or empty state */}
+            {jobs && jobs.length > 0 ? (
+              <div className="card-premium rounded-2xl">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Clock className="w-4 h-4 text-[#F5A623]" />
+                    Recent activity
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setTab("jobs")}
+                    className="text-muted-foreground"
+                  >
+                    View all <ArrowRight className="w-4 h-4 ml-1.5" />
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {jobs.slice(0, 5).map(job => (
+                    <button
+                      key={job.id}
+                      onClick={() => navigate(`/process/${job.id}`)}
+                      className="w-full flex items-center gap-4 p-3 rounded-xl bg-secondary/30 border border-border/50 text-left transition-colors hover:border-[#F5A623]/30 hover:bg-secondary/40"
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] flex-shrink-0">
+                        {job.type === "image" ? (
+                          <Image className="w-4 h-4" />
+                        ) : (
+                          <Video className="w-4 h-4" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm truncate">
+                          {formatFile(job.originalFilename)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {format(new Date(job.createdAt), "MMM d, HH:mm")}
+                        </div>
+                      </div>
+                      <StatusBadge status={job.status} />
+                      <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    </button>
+                  ))}
+                </CardContent>
+              </div>
+            ) : (
+              <div className="card-premium rounded-2xl">
+                <CardContent className="pt-6">
+                  <EmptyState
+                    title="No jobs yet"
+                    description="Upload your first AI-generated content to get started."
+                    action={
+                      <Button
+                        onClick={() => navigate("/upload")}
+                        className="glow-gold-sm"
+                      >
+                        <Plus className="w-4 h-4 mr-2" /> New Upload
+                      </Button>
+                    }
+                  />
+                </CardContent>
+              </div>
             )}
           </TabsContent>
 
@@ -383,7 +447,7 @@ export default function Dashboard() {
             </div>
 
             {!jobs || jobs.length === 0 ? (
-              <Card className="glass">
+              <div className="card-premium rounded-2xl">
                 <CardContent className="pt-6">
                   <EmptyState
                     title="No jobs yet"
@@ -398,9 +462,9 @@ export default function Dashboard() {
                     }
                   />
                 </CardContent>
-              </Card>
+              </div>
             ) : (
-              <Card className="glass">
+              <div className="card-premium rounded-2xl">
                 <CardContent className="overflow-x-auto pt-6">
                   <table className="w-full text-sm">
                     <thead>
@@ -483,13 +547,13 @@ export default function Dashboard() {
                     </tbody>
                   </table>
                 </CardContent>
-              </Card>
+              </div>
             )}
           </TabsContent>
 
           {/* Settings */}
           <TabsContent value="settings" className="space-y-4">
-            <Card className="glass">
+            <div className="card-premium rounded-2xl">
               <CardHeader>
                 <CardTitle className="font-serif">Profile</CardTitle>
                 <CardDescription>Your account information.</CardDescription>
@@ -506,9 +570,9 @@ export default function Dashboard() {
                   <div>{user?.loginMethod ?? "—"}</div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
 
-            <Card className="glass">
+            <div className="card-premium rounded-2xl">
               <CardHeader>
                 <CardTitle className="font-serif">
                   Notification preferences
@@ -525,9 +589,9 @@ export default function Dashboard() {
                   <Switch id="notif-jobs" defaultChecked />
                 </div>
               </CardContent>
-            </Card>
+            </div>
 
-            <Card className="glass">
+            <div className="card-premium rounded-2xl">
               <CardHeader>
                 <CardTitle className="font-serif">Cursor</CardTitle>
                 <CardDescription>
@@ -554,7 +618,7 @@ export default function Dashboard() {
                   />
                 </div>
               </CardContent>
-            </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </main>
