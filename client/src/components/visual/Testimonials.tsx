@@ -5,7 +5,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
 import { Star, Quote } from "lucide-react";
 import Autoplay from "embla-carousel-autoplay";
 import { TESTIMONIALS } from "./_data";
@@ -35,7 +34,7 @@ export function Testimonials() {
             key={t.name}
             className="pl-4 sm:basis-2/3 md:basis-1/2 lg:basis-1/3"
           >
-            <Card className="glass h-full relative overflow-hidden">
+            <div className="card-premium gradient-border rounded-2xl h-full relative overflow-hidden transition-transform duration-300 hover:-translate-y-1">
               <motion.div
                 className="absolute -top-4 -left-2 text-[120px] leading-none font-serif text-[#F5A623]/15 select-none"
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -45,7 +44,7 @@ export function Testimonials() {
               >
                 <Quote />
               </motion.div>
-              <CardContent className="pt-6 pb-5 relative">
+              <div className="px-6 pt-6 pb-5 relative">
                 <div className="flex gap-0.5 mb-3">
                   {Array.from({ length: t.rating }).map((_, j) => (
                     <Star
@@ -73,8 +72,8 @@ export function Testimonials() {
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </CarouselItem>
         ))}
       </CarouselContent>

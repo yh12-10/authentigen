@@ -172,20 +172,24 @@
   background-clip: text;
 }
 
-/* ── Glow effects ───────────────────────────────────────────── */
-.glow-gold {
-  box-shadow:
-    0 0 30px rgb(245 166 35 / 0.25),
-    0 0 60px rgb(245 166 35 / 0.1);
+/* ── Glow effects (one gold ramp: sm → md → lg) ─────────────── */
+.glow-gold-sm {
+  box-shadow: 0 0 16px rgb(245 166 35 / 0.18);
 }
 
-.glow-gold-sm {
-  box-shadow: 0 0 15px rgb(245 166 35 / 0.2);
+.glow-gold-md {
+  box-shadow: 0 0 24px rgb(245 166 35 / 0.22);
+}
+
+.glow-gold {
+  box-shadow:
+    0 0 30px rgb(245 166 35 / 0.22),
+    0 0 60px rgb(245 166 35 / 0.1);
 }
 
 .glow-blue {
   box-shadow:
-    0 0 30px rgb(79 142 247 / 0.25),
+    0 0 30px rgb(79 142 247 / 0.22),
     0 0 60px rgb(79 142 247 / 0.1);
 }
 
@@ -275,6 +279,102 @@
   mask-composite: exclude;
   pointer-events: none;
   animation: gradientHueRotate 6s linear infinite;
+}
+
+/* ── Premium card surface (one treatment for all cards) ─────── */
+/* Compose with `gradient-border rounded-2xl` for the gold accent line. */
+.card-premium {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.045), transparent 42%),
+    oklch(0.16 0.005 265 / 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid oklch(0.3 0.01 265 / 0.4);
+  box-shadow: 0 16px 40px -28px rgb(0 0 0 / 0.75);
+  /* Transform is left to JS (Framer) or `hover:-translate-y-1`; we only
+     transition shadow + border here so it never fights a motion hover. */
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+.card-premium:hover {
+  border-color: rgb(245 166 35 / 0.3);
+  box-shadow:
+    0 24px 50px -28px rgb(0 0 0 / 0.85),
+    0 0 24px rgb(245 166 35 / 0.16);
+}
+
+/* ── Cinematic image frame (blends edges into the section) ───── */
+.cinematic-frame {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgb(245 166 35 / 0.18);
+  box-shadow:
+    0 30px 80px -40px rgb(0 0 0 / 0.85),
+    0 0 50px -10px rgb(245 166 35 / 0.12);
+}
+.cinematic-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(to top, rgb(8 8 8 / 0.55), transparent 22%),
+    linear-gradient(to bottom, rgb(8 8 8 / 0.3), transparent 16%),
+    radial-gradient(120% 100% at 50% 0%, transparent 72%, rgb(8 8 8 / 0.4));
+}
+
+/* ── Hero full-bleed overlay (controlled left→right + vignette) ── */
+.hero-overlay {
+  background:
+    linear-gradient(
+      to right,
+      rgb(8 8 8 / 0.97) 0%,
+      rgb(8 8 8 / 0.9) 30%,
+      rgb(8 8 8 / 0.55) 60%,
+      rgb(8 8 8 / 0.25) 100%
+    ),
+    linear-gradient(to bottom, transparent 55%, rgb(8 8 8 / 0.95) 100%),
+    radial-gradient(90% 70% at 78% 35%, rgb(245 166 35 / 0.1), transparent 60%);
+}
+
+/* ── Soft top glow to connect a section to the one above ────── */
+.section-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    60% 45% at 50% 0%,
+    rgb(245 166 35 / 0.05),
+    transparent 60%
+  );
+}
+
+/* ── Extracted decorative gradients (were inline) ───────────── */
+.image-fade-bottom {
+  background: linear-gradient(to top, rgb(20 20 20 / 0.9) 0%, transparent 55%);
+}
+.cta-shimmer {
+  background: linear-gradient(
+    120deg,
+    rgb(245 166 35 / 0.16),
+    rgb(79 142 247 / 0.1),
+    rgb(245 166 35 / 0.16)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 6s ease-in-out infinite;
+}
+.divider-gold {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(245 166 35 / 0.5),
+    transparent
+  );
 }
 
 /* ── Animated hero gradient background ──────────────────────── */

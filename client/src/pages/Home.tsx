@@ -193,22 +193,27 @@ export default function Home() {
 
       {/* ─────────────────────────── Hero ─────────────────────────── */}
       <section className="relative min-h-screen overflow-hidden pt-24">
-        {/* Ambient backdrop: dark base + a soft gold glow toward the top-right */}
+        {/* Full-bleed product image as the cinematic background (focal right) */}
         <div
           aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(80% 60% at 75% 30%, rgba(245,166,35,0.1), transparent 60%), linear-gradient(to bottom, #0a0a0a, #080808)",
-          }}
+          className="absolute inset-0 bg-cover bg-center lg:bg-right"
+          style={{ backgroundImage: `url(${IMAGES.heroWave6})` }}
+        />
+        {/* Controlled left→right dark gradient + bottom fade + gold vignette */}
+        <div aria-hidden className="hero-overlay absolute inset-0" />
+        {/* Stronger uniform darken below lg so centered text reads on the image */}
+        <div
+          aria-hidden
+          className="absolute inset-0 lg:hidden"
+          style={{ background: "rgba(8,8,8,0.6)" }}
         />
 
-        <div className="container relative z-10 grid lg:grid-cols-2 gap-10 lg:gap-12 items-center min-h-[calc(100vh-6rem)] py-12">
-          <div className="page-enter text-center lg:text-left">
+        <div className="container relative z-10 flex items-center min-h-[calc(100vh-6rem)] py-12">
+          <div className="page-enter text-center lg:text-left max-w-xl lg:max-w-2xl mx-auto lg:mx-0">
             <div className="mb-6 inline-block">
               <TrustedByBadge />
             </div>
-            <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-normal leading-[1.05] tracking-tight mb-6 text-balance">
+            <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-normal leading-[1.05] tracking-tight mb-6 text-balance">
               Make AI <span className="text-gold">Image</span>
               <span className="block">
                 <span className="text-gold italic">|</span>{" "}
@@ -269,32 +274,18 @@ export default function Home() {
               ))}
             </div>
           </div>
-
-          {/* Right column — framed product showcase */}
-          <FloatCard amplitude={6} className="w-full">
-            <div className="relative rounded-2xl overflow-hidden border border-[#F5A623]/25 glow-gold shadow-2xl">
-              <img
-                src={IMAGES.heroWave6}
-                alt="AuthentiGen — AI image humanizer: before, after, and processing results"
-                loading="eager"
-                fetchPriority="high"
-                draggable={false}
-                className="w-full h-auto select-none"
-              />
-            </div>
-          </FloatCard>
         </div>
       </section>
 
       {/* ────────────────────────── Stats ──────────────────────────── */}
-      <section className="relative -mt-16 pb-16">
+      <section className="relative z-10 -mt-12 pb-16 sm:pb-20">
         <div className="container">
           <Reveal>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-5xl mx-auto">
               {STATS.map(stat => (
                 <div
                   key={stat.label}
-                  className="glass rounded-2xl p-5 text-center gradient-border"
+                  className="card-premium rounded-2xl p-5 text-center gradient-border"
                 >
                   <div className="text-3xl font-serif text-gold mb-1">
                     <Counter
@@ -315,7 +306,7 @@ export default function Home() {
       </section>
 
       {/* ─────────────────── Detector logos ──────────────────────── */}
-      <section className="py-12">
+      <section className="py-12 sm:py-16">
         <div className="container max-w-6xl mx-auto">
           <Reveal>
             <p className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground mb-6">
@@ -327,7 +318,10 @@ export default function Home() {
       </section>
 
       {/* ─────────────────── How It Works ────────────────────────── */}
-      <section id="how-it-works" className="py-24">
+      <section
+        id="how-it-works"
+        className="section-glow relative scroll-mt-24 py-20 lg:py-28"
+      >
         <div className="container">
           <Reveal>
             <div className="text-center mb-12">
@@ -353,21 +347,17 @@ export default function Home() {
             whileInView={fadeInUp.whileInView}
             viewport={fadeInUp.viewport}
             transition={fadeInUp.transition}
-            className="mb-16 mx-auto max-w-[900px]"
+            className="cinematic-frame mb-14 mx-auto max-w-5xl"
           >
             <img
               src={IMAGES.howItWorks}
               alt="AuthentiGen humanization pipeline"
               loading="lazy"
-              className="w-full h-auto rounded-2xl"
-              style={{
-                boxShadow:
-                  "0 0 40px rgba(245,166,35,0.15), 0 10px 40px rgba(0,0,0,0.4)",
-              }}
+              className="w-full h-auto"
             />
           </motion.div>
 
-          <StaggerGroup className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <StaggerGroup className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
               {
                 step: "01",
@@ -386,7 +376,7 @@ export default function Home() {
               },
             ].map((item, i) => (
               <StaggerChild key={i}>
-                <div className="glass rounded-2xl p-8 gradient-border group hover:glow-gold-sm transition-all duration-300 hover:-translate-y-1 h-full">
+                <div className="card-premium rounded-2xl p-6 gradient-border h-full transition-transform duration-300 hover:-translate-y-1">
                   <div className="text-6xl font-bold text-gold opacity-20 mb-4 font-serif">
                     {item.step}
                   </div>
@@ -402,10 +392,13 @@ export default function Home() {
       </section>
 
       {/* ────────────────────── Features ─────────────────────────── */}
-      <section id="features" className="py-24">
+      <section
+        id="features"
+        className="section-glow relative scroll-mt-24 py-20 lg:py-28"
+      >
         <div className="container">
           <Reveal>
-            <div className="text-center mb-16">
+            <div className="text-center mb-14">
               <Badge
                 variant="outline"
                 className="mb-4 border-[#F5A623]/30 text-[#F5A623] bg-[#F5A623]/5 text-xs tracking-widest uppercase"
@@ -419,7 +412,7 @@ export default function Home() {
             </div>
           </Reveal>
 
-          <StaggerGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <StaggerGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {FEATURES.map((f, i) => {
               const Icon = f.icon;
               return (
@@ -436,7 +429,7 @@ export default function Home() {
                         transformStyle: "preserve-3d",
                         transformPerspective: 800,
                       }}
-                      className="glass rounded-2xl group hover:glow-gold-sm transition-all duration-300 hover:border-[#F5A623]/30 h-full overflow-hidden flex flex-col"
+                      className="card-premium rounded-2xl group h-full overflow-hidden flex flex-col"
                     >
                       {f.image ? (
                         <motion.div
@@ -452,13 +445,7 @@ export default function Home() {
                             loading="lazy"
                             className="w-full h-48 object-cover rounded-t-2xl transition-transform duration-700 group-hover:scale-105"
                           />
-                          <div
-                            className="absolute inset-0 pointer-events-none"
-                            style={{
-                              background:
-                                "linear-gradient(to top, rgba(20,20,20,0.85) 0%, rgba(20,20,20,0) 50%)",
-                            }}
-                          />
+                          <div className="image-fade-bottom absolute inset-0 pointer-events-none" />
                         </motion.div>
                       ) : (
                         <div className="p-6 pb-0">
@@ -485,13 +472,13 @@ export default function Home() {
       </section>
 
       {/* ───────────────── Dashboard Showcase ────────────────────── */}
-      <section id="dashboard" className="py-24">
+      <section id="dashboard" className="scroll-mt-24 py-20 lg:py-28">
         <div className="container">
           <Reveal>
             <div className="text-center mb-12 max-w-2xl mx-auto">
               <Badge
                 variant="outline"
-                className="mb-4 border-[#4F8EF7]/30 text-[#4F8EF7] bg-[#4F8EF7]/5 text-xs tracking-widest uppercase"
+                className="mb-4 border-[#F5A623]/30 text-[#F5A623] bg-[#F5A623]/5 text-xs tracking-widest uppercase"
               >
                 Your Command Center
               </Badge>
@@ -500,8 +487,8 @@ export default function Home() {
                 <span className="text-gold italic">In One Place</span>
               </h2>
               <p className="text-muted-foreground text-lg">
-                Track every job, manage your credits, and download humanized
-                files — all from your sleek dashboard.
+                Track every job and download your humanized files — all from
+                your sleek dashboard.
               </p>
             </div>
           </Reveal>
@@ -511,20 +498,23 @@ export default function Home() {
             whileInView={fadeInUp.whileInView}
             viewport={fadeInUp.viewport}
             transition={fadeInUp.transition}
-            className="dashboard-tilt mx-auto w-full max-w-[900px] cursor-default"
+            className="cinematic-frame mx-auto w-full max-w-5xl"
           >
             <img
               src={IMAGES.dashboardPreview}
               alt="AuthentiGen dashboard"
               loading="lazy"
-              className="w-full h-auto rounded-2xl"
+              className="w-full h-auto"
             />
           </motion.div>
         </div>
       </section>
 
       {/* ─────────────────────── Open source ─────────────────────── */}
-      <section id="open-source" className="relative py-24 overflow-hidden">
+      <section
+        id="open-source"
+        className="relative scroll-mt-24 py-20 lg:py-28 overflow-hidden"
+      >
         {/* Full-bleed background image with uniform dark overlay */}
         <div
           aria-hidden
@@ -559,7 +549,7 @@ export default function Home() {
                 server, and humanize as much as you want.
               </p>
 
-              <div className="grid sm:grid-cols-3 gap-4 mb-10 text-left">
+              <div className="grid sm:grid-cols-3 gap-6 mb-10 text-left">
                 {[
                   {
                     icon: Lock,
@@ -579,7 +569,7 @@ export default function Home() {
                 ].map(({ icon: Icon, title, desc }) => (
                   <div
                     key={title}
-                    className="glass rounded-2xl p-5 gradient-border"
+                    className="card-premium rounded-2xl p-6 gradient-border"
                   >
                     <Icon
                       className="w-6 h-6 text-[#F5A623] mb-3"
@@ -617,13 +607,13 @@ export default function Home() {
       </section>
 
       {/* ───────────────────── Testimonials ──────────────────────── */}
-      <section className="py-24">
-        <div className="container">
+      <section className="section-glow relative py-20 lg:py-28">
+        <div className="container max-w-6xl mx-auto">
           <Reveal>
             <div className="text-center mb-12">
               <Badge
                 variant="outline"
-                className="mb-4 border-[#4F8EF7]/30 text-[#4F8EF7] bg-[#4F8EF7]/5 text-xs tracking-widest uppercase"
+                className="mb-4 border-[#F5A623]/30 text-[#F5A623] bg-[#F5A623]/5 text-xs tracking-widest uppercase"
               >
                 Testimonials
               </Badge>
@@ -637,7 +627,7 @@ export default function Home() {
       </section>
 
       {/* ─────────────────────── FAQ ─────────────────────────────── */}
-      <section id="faq" className="py-24">
+      <section id="faq" className="scroll-mt-24 py-20 lg:py-28">
         <div className="container max-w-3xl mx-auto">
           <Reveal>
             <div className="text-center mb-12">
@@ -659,19 +649,11 @@ export default function Home() {
       </section>
 
       {/* ───────────────────── CTA Banner ────────────────────────── */}
-      <section className="py-24">
+      <section className="py-20 lg:py-28">
         <div className="container">
           <Reveal>
-            <div className="glass rounded-3xl p-12 text-center gradient-border-animated max-w-3xl mx-auto relative overflow-hidden">
-              <div
-                className="absolute inset-0 opacity-30 pointer-events-none"
-                style={{
-                  background:
-                    "linear-gradient(120deg, rgba(245,166,35,0.18), rgba(79,142,247,0.12), rgba(245,166,35,0.18))",
-                  backgroundSize: "200% 100%",
-                  animation: "shimmer 6s ease-in-out infinite",
-                }}
-              />
+            <div className="card-premium rounded-3xl p-10 sm:p-12 text-center gradient-border-animated max-w-3xl mx-auto relative overflow-hidden">
+              <div className="cta-shimmer absolute inset-0 opacity-30 pointer-events-none" />
               <div className="relative">
                 <div className="w-16 h-16 rounded-2xl bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] mx-auto mb-6 glow-gold-sm">
                   <Shield className="w-8 h-8" />
@@ -690,7 +672,7 @@ export default function Home() {
                     onClick={handleCTA}
                     className="h-14 px-10 text-base font-semibold glow-gold"
                   >
-                    Start Free — 10 Credits Included
+                    Start Humanizing — Free &amp; Unlimited
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </RippleButton>
                 </MagneticButton>
@@ -701,14 +683,8 @@ export default function Home() {
       </section>
 
       {/* ─────────────────────── Footer ─────────────────────────── */}
-      <footer className="border-t border-border/40 py-10 relative">
-        <div
-          className="absolute inset-x-0 -top-px h-px"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, rgba(245,166,35,0.5), transparent)",
-          }}
-        />
+      <footer className="border-t border-border/40 py-12 relative">
+        <div className="divider-gold absolute inset-x-0 -top-px h-px" />
         <div className="container grid sm:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
