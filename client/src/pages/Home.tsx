@@ -193,39 +193,18 @@ export default function Home() {
 
       {/* ─────────────────────────── Hero ─────────────────────────── */}
       <section className="relative min-h-screen overflow-hidden pt-24">
-        {/* Full-bleed product image owns the whole hero (focal right/center) */}
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-cover bg-center lg:bg-right"
-          style={{ backgroundImage: `url(${IMAGES.heroWave6})` }}
-        />
-        {/* Left→right dark gradient so the left-side content stays readable */}
+        {/* Ambient backdrop: dark base + a soft gold glow toward the top-right */}
         <div
           aria-hidden
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to right, rgba(8,8,8,0.96) 0%, rgba(8,8,8,0.82) 38%, rgba(8,8,8,0.45) 65%, rgba(8,8,8,0.2) 100%)",
+              "radial-gradient(80% 60% at 75% 30%, rgba(245,166,35,0.1), transparent 60%), linear-gradient(to bottom, #0a0a0a, #080808)",
           }}
-        />
-        {/* Bottom fade into the page + faint gold vignette for the luxury feel */}
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to bottom, transparent 55%, rgba(8,8,8,0.9) 100%), radial-gradient(120% 80% at 80% 38%, rgba(245,166,35,0.1), transparent 60%)",
-          }}
-        />
-        {/* Extra darken below lg so centered mobile/tablet text reads over the cropped image */}
-        <div
-          aria-hidden
-          className="absolute inset-0 lg:hidden"
-          style={{ background: "rgba(8,8,8,0.62)" }}
         />
 
-        <div className="container relative z-10 flex items-center min-h-[calc(100vh-6rem)] py-12">
-          <div className="page-enter text-center lg:text-left max-w-xl lg:max-w-2xl mx-auto lg:mx-0">
+        <div className="container relative z-10 grid lg:grid-cols-2 gap-10 lg:gap-12 items-center min-h-[calc(100vh-6rem)] py-12">
+          <div className="page-enter text-center lg:text-left">
             <div className="mb-6 inline-block">
               <TrustedByBadge />
             </div>
@@ -290,6 +269,20 @@ export default function Home() {
               ))}
             </div>
           </div>
+
+          {/* Right column — framed product showcase */}
+          <FloatCard amplitude={6} className="w-full">
+            <div className="relative rounded-2xl overflow-hidden border border-[#F5A623]/25 glow-gold shadow-2xl">
+              <img
+                src={IMAGES.heroWave6}
+                alt="AuthentiGen — AI image humanizer: before, after, and processing results"
+                loading="eager"
+                fetchPriority="high"
+                draggable={false}
+                className="w-full h-auto select-none"
+              />
+            </div>
+          </FloatCard>
         </div>
       </section>
 
