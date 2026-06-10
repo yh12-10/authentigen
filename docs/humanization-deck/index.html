@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AuthentiGen — Light vs Medium vs Heavy Humanization Results</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  /* ---- Brand tokens (mirrored from client/src/index.css) ---- */
+  :root{
+    --ag-bg:#080808; --ag-charcoal:#141414; --ag-gold:#f5a623; --ag-blue:#4f8ef7;
+    --ag-text:oklch(0.97 0.005 265);
+    --ag-muted:oklch(0.65 0.01 265);
+    --ag-faint:oklch(0.78 0.01 265);
+    --ag-border:oklch(0.30 0.01 265 / .42);
+    --font-serif:"DM Serif Display", Georgia, serif;
+    --font-sans:"Inter", system-ui, -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--ag-bg); color:var(--ag-text); font-family:var(--font-sans);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---- Viewport + 16:9 scaled stage ---- */
+  .viewport{
+    position:fixed; inset:0; display:grid; place-items:center; overflow:hidden;
+    background:
+      radial-gradient(120% 90% at 82% 6%, rgb(245 166 35 / .07), transparent 52%),
+      radial-gradient(110% 80% at 2% 102%, rgb(79 142 247 / .055), transparent 52%),
+      var(--ag-bg);
+  }
+  .grain{
+    position:fixed; inset:0; pointer-events:none; opacity:.05; z-index:0; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .stage{position:relative; width:1280px; height:720px; transform-origin:center center; z-index:1}
+
+  /* ---- Slides ---- */
+  .slide{
+    position:absolute; inset:0; padding:54px 72px; display:none;
+    flex-direction:column;
+  }
+  .slide.is-active{display:flex; animation:slidein .45s ease both}
+  @keyframes slidein{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+
+  /* ---- Chrome ---- */
+  .brand{position:absolute; top:30px; left:72px; display:flex; align-items:center; gap:10px;
+    font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--ag-muted); z-index:5}
+  .brand .mk{width:11px; height:11px; border-radius:3px; background:var(--ag-gold);
+    box-shadow:0 0 16px rgb(245 166 35 / .55)}
+  .brand b{color:var(--ag-faint); font-weight:600}
+  .pageno{position:absolute; bottom:26px; right:72px; font-size:11px; letter-spacing:.24em; color:var(--ag-muted); z-index:5}
+
+  .kicker{font-size:12px; letter-spacing:.32em; text-transform:uppercase; color:var(--ag-gold); font-weight:600}
+  h1,h2{font-family:var(--font-serif); font-weight:400; line-height:1.04; letter-spacing:.005em}
+  .slide h2{font-size:38px; margin-top:6px}
+  .lead{color:var(--ag-faint); font-size:15px; line-height:1.5; max-width:62ch}
+  .muted{color:var(--ag-muted)}
+  .gold{color:var(--ag-gold)}
+  .divider{height:1px; background:linear-gradient(90deg, transparent, rgb(245 166 35 / .5), transparent)}
+
+  /* ---- Card / frame / glow ---- */
+  .card{
+    position:relative; border-radius:16px;
+    background:linear-gradient(180deg, rgb(255 255 255 / .045), transparent 42%), oklch(0.16 0.005 265 / .62);
+    border:1px solid var(--ag-border);
+    box-shadow:0 16px 40px -28px rgb(0 0 0 / .8);
+  }
+  .frame{position:relative; border-radius:12px; overflow:hidden; border:1px solid rgb(245 166 35 / .18);
+    box-shadow:0 26px 70px -42px rgb(0 0 0 / .9), 0 0 38px -12px rgb(245 166 35 / .12); flex:0 0 auto}
+  .frame img{display:block; width:100%; height:100%; object-fit:cover; position:relative; z-index:0}
+  .frame::after{content:""; position:absolute; inset:0; z-index:1; pointer-events:none; border-radius:inherit;
+    background:linear-gradient(to top, rgb(8 8 8 / .42), transparent 22%),
+      radial-gradient(120% 100% at 50% 0%, transparent 74%, rgb(8 8 8 / .34))}
+  .frame.win{border-color:rgb(245 166 35 / .55); box-shadow:0 26px 70px -42px rgb(0 0 0 / .9), 0 0 24px rgb(245 166 35 / .22)}
+
+  /* ---- Animated gradient border (title) ---- */
+  @property --ag-angle{syntax:"<angle>"; inherits:false; initial-value:0deg}
+  @keyframes hue{to{--ag-angle:360deg}}
+  .gborder{position:relative}
+  .gborder::before{content:""; position:absolute; inset:0; border-radius:inherit; padding:1.5px;
+    background:conic-gradient(from var(--ag-angle), rgb(245 166 35 / .85), rgb(79 142 247 / .6), rgb(245 166 35 / .85));
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor; mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite:exclude; pointer-events:none; animation:hue 6s linear infinite}
+
+  /* ---- Comparison rows ---- */
+  .cmp{display:flex; justify-content:center; align-items:flex-end; gap:24px}
+  .col{display:flex; flex-direction:column; align-items:center; gap:9px}
+  .cap{font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--ag-muted)}
+  .cap.is-win{color:var(--ag-gold); font-weight:600}
+  .cmp.portrait .frame{width:262px; height:350px}
+  .cmp.product  .frame{width:260px; height:260px}
+  .cmp.land     .frame{width:263px; height:148px}
+
+  /* ---- Annotation pins + legend ---- */
+  .pin{position:absolute; z-index:4; width:24px; height:24px; border-radius:50%;
+    background:rgb(245 166 35 / .94); color:#080808; font-weight:700; font-size:12px;
+    display:grid; place-items:center; transform:translate(-50%,-50%);
+    box-shadow:0 0 0 3px rgb(8 8 8 / .55), 0 0 14px rgb(245 166 35 / .65)}
+  .pin.warn{background:rgb(8 8 8 / .82); color:var(--ag-gold); border:1.5px solid var(--ag-gold)}
+  .legend{display:flex; justify-content:center; flex-wrap:wrap; gap:10px 22px; max-width:1040px; margin:0 auto}
+  .legend .it{display:flex; align-items:flex-start; gap:9px; font-size:12.5px; color:var(--ag-faint); max-width:240px}
+  .legend .n{flex:0 0 auto; width:19px; height:19px; border-radius:50%; background:rgb(245 166 35 / .16);
+    color:var(--ag-gold); font-weight:700; font-size:11px; display:grid; place-items:center; margin-top:1px}
+  .legend .it.warn .n{background:transparent; border:1.5px solid var(--ag-gold)}
+  .legend .it b{color:var(--ag-text); font-weight:600}
+
+  /* ---- Effect grid (slide 2) ---- */
+  .fx{display:grid; grid-template-columns:repeat(4,1fr); gap:14px}
+  .fx .cell{padding:16px 16px 14px; border-radius:13px}
+  .fx .cell h3{font-family:var(--font-sans); font-size:14px; font-weight:600; letter-spacing:.01em}
+  .fx .cell .vals{margin-top:9px; font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px; color:var(--ag-gold); letter-spacing:.02em}
+  .fx .cell .sub{margin-top:5px; font-size:11.5px; color:var(--ag-muted); line-height:1.35}
+
+  /* ---- Scoring table ---- */
+  .scwrap{padding:8px 6px}
+  table.score{width:100%; border-collapse:collapse}
+  table.score th,table.score td{text-align:left; padding:14px 18px}
+  table.score thead th{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ag-muted); font-weight:600; border-bottom:1px solid var(--ag-border)}
+  table.score tbody tr{border-bottom:1px solid rgb(255 255 255 / .05)}
+  table.score tbody tr:last-child{border-bottom:0}
+  table.score .lvl{font-family:var(--font-serif); font-size:19px; color:var(--ag-faint)}
+  table.score .metric b{font-size:15px; font-weight:600}
+  .bar{margin-top:6px; width:104px; height:5px; border-radius:3px; background:rgb(255 255 255 / .08); overflow:hidden}
+  .bar>span{display:block; height:100%; background:var(--ag-gold); border-radius:3px}
+  table.score td.avg b{font-size:24px; font-family:var(--font-serif); font-weight:400}
+  table.score tr.win{background:linear-gradient(90deg, rgb(245 166 35 / .12), rgb(245 166 35 / .02))}
+  table.score tr.win td{box-shadow:inset 3px 0 0 var(--ag-gold)}
+  table.score tr.win .lvl,table.score tr.win .avg b{color:var(--ag-gold)}
+  table.score tr.base{opacity:.62}
+  table.score tr.base .bar>span{background:var(--ag-muted)}
+  .pill{display:inline-block; font-size:11px; font-weight:600; letter-spacing:.04em; padding:2px 9px; border-radius:999px;
+    background:rgb(245 166 35 / .16); color:var(--ag-gold); margin-left:9px; vertical-align:middle}
+
+  /* ---- Findings ---- */
+  .verdicts{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+  .verdicts .v{padding:20px 20px 18px; border-radius:14px}
+  .verdicts .v .who{font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--ag-muted)}
+  .verdicts .v .win{font-family:var(--font-serif); font-size:30px; color:var(--ag-gold); margin:6px 0 8px}
+  .verdicts .v p{font-size:13px; line-height:1.5; color:var(--ag-faint)}
+  .limits{padding:18px 22px; border-radius:14px}
+  .limits h3{font-family:var(--font-sans); font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--ag-gold); font-weight:600; margin-bottom:10px}
+  .limits ul{list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:8px 28px}
+  .limits li{position:relative; padding-left:20px; font-size:12.5px; line-height:1.45; color:var(--ag-faint)}
+  .limits li::before{content:"—"; position:absolute; left:0; color:var(--ag-gold)}
+
+  /* ---- Checklist (slide 10) ---- */
+  .two{display:grid; grid-template-columns:1.05fr .95fr; gap:28px; align-items:start}
+  .checklist{list-style:none; display:flex; flex-direction:column; gap:11px}
+  .checklist li{display:flex; align-items:flex-start; gap:12px; font-size:14px; color:var(--ag-faint)}
+  .checklist .ck{flex:0 0 auto; width:22px; height:22px; border-radius:7px; background:rgb(245 166 35 / .14);
+    color:var(--ag-gold); display:grid; place-items:center; font-size:12px; margin-top:1px;
+    box-shadow:inset 0 0 0 1px rgb(245 166 35 / .35)}
+  .checklist li b{color:var(--ag-text); font-weight:600}
+  .verdictbox{padding:22px 24px; border-radius:16px}
+  .verdictbox .k{font-size:12px; letter-spacing:.28em; text-transform:uppercase; color:var(--ag-gold); font-weight:600}
+  .verdictbox h3{font-family:var(--font-serif); font-size:27px; margin:8px 0 12px; line-height:1.15}
+  .verdictbox p{font-size:13.5px; line-height:1.55; color:var(--ag-faint)}
+  .repo{margin-top:16px; font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--ag-muted)}
+
+  /* ---- Title slide ---- */
+  .title-wrap{flex:1; display:grid; place-items:center; text-align:center}
+  .title-card{padding:54px 64px; border-radius:24px; max-width:880px}
+  .title-card .kicker{display:block; margin-bottom:18px}
+  .title-card h1{font-size:58px}
+  .title-card h1 .em{font-style:italic; color:var(--ag-gold)}
+  .title-card .sub{margin:22px auto 0; max-width:60ch; color:var(--ag-faint); font-size:16px; line-height:1.55}
+  .title-meta{margin-top:26px; display:flex; gap:10px; justify-content:center; align-items:center;
+    font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--ag-muted)}
+  .title-meta .sep{width:4px; height:4px; border-radius:50%; background:var(--ag-gold); opacity:.6}
+  .orb{position:absolute; border-radius:50%; filter:blur(60px); z-index:0; pointer-events:none}
+  .orb.a{width:320px; height:320px; background:rgb(245 166 35 / .14); top:-40px; right:90px; animation:drift 14s ease-in-out infinite}
+  .orb.b{width:280px; height:280px; background:rgb(79 142 247 / .12); bottom:-30px; left:60px; animation:drift 18s ease-in-out infinite reverse}
+  @keyframes drift{0%,100%{transform:translate(0,0)} 50%{transform:translate(26px,-20px)}}
+
+  /* ---- Nav controls ---- */
+  .nav{position:fixed; bottom:0; left:0; right:0; height:3px; background:rgb(255 255 255 / .06); z-index:6}
+  .nav .fill{height:100%; background:linear-gradient(90deg, var(--ag-gold), rgb(245 166 35 / .55)); width:10%; transition:width .35s ease}
+  .arrow{position:fixed; top:50%; transform:translateY(-50%); z-index:6; width:44px; height:44px; border-radius:50%;
+    display:grid; place-items:center; cursor:pointer; color:var(--ag-faint);
+    background:rgb(20 20 20 / .55); border:1px solid var(--ag-border); backdrop-filter:blur(8px);
+    transition:color .2s, border-color .2s, background .2s; user-select:none}
+  .arrow:hover{color:var(--ag-gold); border-color:rgb(245 166 35 / .5); background:rgb(20 20 20 / .8)}
+  .arrow.prev{left:18px} .arrow.next{right:18px}
+  .hint{position:fixed; bottom:14px; left:72px; z-index:6; font-size:11px; letter-spacing:.1em; color:var(--ag-muted)}
+  .hint kbd{font-family:var(--font-sans); background:rgb(255 255 255 / .06); border:1px solid var(--ag-border);
+    border-radius:5px; padding:1px 6px; font-size:10px; color:var(--ag-faint)}
+
+  /* ---- Print: one 16:9 page per slide ---- */
+  @media print{
+    @page{size:13.333in 7.5in; margin:0}
+    html,body{height:auto; overflow:visible; background:#080808 !important}
+    .viewport{position:static; display:block; overflow:visible; background:#080808 !important}
+    .grain,.nav,.arrow,.hint{display:none !important}
+    .stage{transform:none !important; width:1280px; height:auto; overflow:visible}
+    .slide{position:relative !important; inset:auto; display:flex !important; width:1280px; height:720px;
+      page-break-after:always; break-after:page; animation:none !important}
+    *{-webkit-print-color-adjust:exact !important; print-color-adjust:exact !important}
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="viewport">
+  <div class="stage" id="stage">
+
+    <!-- 1 · TITLE -->
+    <section class="slide is-active">
+      <div class="brand"><span class="mk"></span> Authenti<b>Gen</b></div>
+      <div class="orb a"></div><div class="orb b"></div>
+      <div class="title-wrap">
+        <div class="title-card card gborder">
+          <span class="kicker">Pipeline Evaluation · Image Humanization</span>
+          <h1>Light <span class="muted">vs</span> Medium <span class="muted">vs</span> <span class="em">Heavy</span><br/>Humanization Results</h1>
+          <p class="sub">A side-by-side look at what AuthentiGen's humanizer actually does to three real test subjects — a portrait, a product shot, and a landscape — scored honestly, with the pipeline's limits stated plainly.</p>
+          <div class="title-meta"><span>Portrait</span><span class="sep"></span><span>Product</span><span class="sep"></span><span>Landscape</span><span class="sep"></span><span class="gold">v2.1</span></div>
+        </div>
+      </div>
+      <div class="pageno">01 / 10</div>
+    </section>
+
+    <!-- 2 · HOW IT WORKS -->
+    <section class="slide">
+      <div class="brand"><span class="mk"></span> Authenti<b>Gen</b></div>
+      <span class="kicker">What the intensities mean</span>
+      <h2>How humanization works <span class="muted">— Light · Medium · Heavy</span></h2>
+      <p class="lead" style="margin:8px 0 18px">Real, deterministic pixel processing that layers in camera &amp; film characteristics — <b class="gold">not</b> AI regeneration. Each effect scales with intensity. Values below are the actual pipeline parameters.</p>
+      <div class="fx">
+        <div class="cell card"><h3>Film grain</h3><div class="vals">σ 4 · 10 · 14</div><div class="sub">Gaussian sensor noise, overlay-blended</div></div>
+        <div class="cell card"><h3>Chromatic aberration</h3><div class="vals">1 · 2 · 3 px</div><div class="sub">Edge-aware; eased to 20% on skin</div></div>
+        <div class="cell card"><h3>Lens vignette</h3><div class="vals">0.10 · 0.20 · 0.22</div><div class="sub">Radial corner falloff, multiply</div></div>
+        <div class="cell card"><h3>Color warmth</h3><div class="vals">R +4·+8·+14 / B −3·−6·−10</div><div class="sub">Per-channel temperature drift</div></div>
+        <div class="cell card"><h3>Halation bloom</h3><div class="vals">0.08 · 0.18 · 0.32</div><div class="sub">Warm glow off bright highlights</div></div>
+        <div class="cell card"><h3>Barrel distortion</h3><div class="vals">k 0.0005 · 0.001 · 0.002</div><div class="sub">Subtle lens curvature</div></div>
+        <div class="cell card"><h3>JPEG re-encode</h3><div class="vals">q 88 · 82 · 75</div><div class="sub">mozjpeg, 4:2:0 chroma</div></div>
+        <div class="cell card"><h3>Fake camera EXIF</h3><div class="vals">iPhone 14 · 13 Pro · Canon R5</div><div class="sub">Plausible capture metadata</div></div>
+      </div>
+      <div class="pageno">02 / 10</div>
+    </section>
+
+    <!-- 3 · PORTRAIT COMPARISON -->
+    <section class="slide">
+      <div class="brand"><span class="mk"></span> Authenti<b>Gen</b></div>
+      <span class="kicker">Subject 01 · Portrait</span>
+      <h2>Original vs Light · Medium · Heavy</h2>
+      <div class="cmp portrait" style="margin:16px 0 14px">
+        <div class="col"><div class="frame"><img src="images/portrait-original.jpg" alt="Portrait original"/></div><div class="cap">Original</div></div>
+        <div class="col"><div class="frame"><img src="images/portrait-light.jpg" alt="Portrait light"/></div><div class="cap">Light</div></div>
+        <div class="col"><div class="frame"><img src="images/portrait-medium.jpg" alt="Portrait medium"/></div><div class="cap">Medium</div></div>
+        <div class="col">
+          <div class="frame win">
+            <img src="images/portrait-heavy.jpg" alt="Portrait heavy"/>
+            <span class="pin" style="left:42%; top:33%">1</span>
+            <span class="pin" style="left:84%; top:16%">2</span>
+            <span class="pin" style="left:19%; top:29%">3</span>
+            <span class="pin" style="left:13%; top:84%">4</span>
+          </div>
+          <div class="cap is-win">Heavy ✦</div>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="it"><span class="n">1</span><span><b>Skin texture.</b> Film grain breaks the plastic, pore-less AI smoothness.</span></div>
+        <div class="it"><span class="n">2</span><span><b>Background warmth.</b> Cold white turns to a warm, graded cream.</span></div>
+        <div class="it"><span class="n">3</span><span><b>Chromatic aberration.</b> Faint color fringing on the hair edges.</span></div>
+        <div class="it"><span class="n">4</span><span><b>Grain &amp; vignette.</b> Corner falloff + visible grain read as a real lens.</span></div>
+      </div>
+      <div class="pageno">03 / 10</div>
+    </section>
+
+    <!-- 4 · PORTRAIT SCORING -->
+    <section class="slide">
+      <div class="brand"><span class="mk"></span> Authenti<b>Gen</b></div>
+      <span class="kicker">Subject 01 · Portrait</span>
+      <h2>Scoring <span class="muted">— 1–10, relative judgment</span></h2>
+      <div class="card scwrap" style="margin:16px 0 14px">
+        <table class="score">
+          <thead><tr><th style="width:170px">Level</th><th>Skin realism</th><th>Background naturalness</th><th>Overall camera feel</th><th style="width:90px">Avg</th></tr></thead>
+          <tbody>
+            <tr class="base"><td class="lvl">Original</td>
+              <td class="metric"><b>3</b><div class="bar"><span style="width:30%"></span></div></td>
+              <td class="metric"><b>2</b><div class="bar"><span style="width:20%"></span></div></td>
+              <td class="metric"><b>2</b><div class="bar"><span style="width:20%"></span></div></td>
+              <td class="avg"><b>2.3</b></td></tr>
+            <tr><td class="lvl">Light</td>
+              <td class="metric"><b>5</b><div class="bar"><span style="width:50%"></span></div></td>
+              <td class="metric"><b>6</b><div class="bar"><span style="width:60%"></span></div></td>
+              <td class="metric"><b>5</b><div class="bar"><span style="width:50%"></span></div></td>
+              <td class="avg"><b>5.3</b></td></tr>
+            <tr><td class="lvl">Medium</td>
+              <td class="metric"><b>7</b><div class="bar"><span style="width:70%"></span></div></td>
+              <td class="metric"><b>7</b><div class="bar"><span style="width:70%"></span></div></td>
+              <td class="metric"><b>7</b><div class="bar"><span style="width:70%"></span></div></td>
+              <td class="avg"><b>7.0</b></td></tr>
+            <tr class="win"><td class="lvl">Heavy <span class="pill">Winner</span></td>
+              <td class="metric"><b>8</b><div class="bar"><span style="width:80%"></span></div></td>
+              <td class="metric"><b>8</b><div class="bar"><span style="width:80%"></span></div></td>
+              <td class="metric"><b>9</b><div class="bar"><span style="width:90%"></span></div></td>
+              <td class="avg"><b>8.3</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="lead"><b class="gold">Heavy wins.</b> Filmic grain and warmth flatter skin and the 35 mm bloom suits faces — and a portrait has no crisp type or hard edges for the aberration to spoil.</p>
+      <div class="pageno">04 / 10</div>
+    </section>
+
+    <!-- 5 · PRODUCT COMPARISON -->
+    <section class="slide">
+      <div class="brand"><span class="mk"></span> Authenti<b>Gen</b></div>
+      <span class="kicker">Subject 02 · Product shot</span>
+      <h2>Original vs Light · Medium · Heavy</h2>
+      <div class="cmp product" style="margin:16px 0 14px">
+        <div class="col"><div class="frame"><img src="images/product-original.jpg" alt="Product original"/></div><div class="cap">Original</div></div>
+        <div class="col"><div class="frame"><img src="images/product-light.jpg" alt="Product light"/></div><div class="cap">Light</div></div>
+        <div class="col">
+          <div class="frame win">
+            <img src="images/product-medium.jpg" alt="Product medium"/>
+            <span class="pin" style="left:24%; top:84%">1</span>
+            <span class="pin" style="left:11%; top:12%">2</span>
+            <span class="pin" style="left:56%; top:54%">3</span>
+            <span class="pin" style="left:85%; top:17%">4</span>
+          </div>
+          <div class="cap is-win">Medium ✦</div>
+        </div>
+        <div class="col">
+          <div class="frame">
+            <img src="images/product-heavy.jpg" alt="Product heavy"/>
+            <span class="pin warn" style="left:50%; top:46%">!</span>
+          </div>
+          <div class="cap">Heavy</div>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="it"><span class="n">1</span><span><b>Marble micro-texture.</b> Grain adds tooth to the too-clean surface.</span></div>
+        <div class="it"><span class="n">2</span><span><b>Lens vignette.</b> Gentle corner falloff frames the bottle.</span></div>
+        <div class="it"><span class="n">3</span><span><b>Glass surface grain.</b> Sensor noise over the flawless render.</span></div>
+        <div class="it"><span class="n">4</span><span><b>Background warmth.</b> Flat white becomes a warm gradient.</span></div>
+        <div class="it warn"><span class="n">!</span><span><b>Heavy overshoots.</b> 3 px aberration fringes the crisp label type.</span></div>
+      </div>
+      <div class="pageno">05 / 10</div>
+    </section>
+
+    <!-- 6 · PRODUCT SCORING -->
+    <section class="slide">
+      <div class="brand"><span class="mk"></span> Authenti<b>Gen</b></div>
+      <span class="kicker">Subject 02 · Product shot</span>
+      <h2>Scoring <span class="muted">— 1–10, relative judgment</span></h2>
+      <div class="card scwrap" style="margin:16px 0 14px">
+        <table class="score">
+          <thead><tr><th style="width:170px">Level</th><th>Surface realism</th><th>Background naturalness</th><th>Overall camera feel</th><th style="width:90px">Avg</th></tr></thead>
+          <tbody>
+            <tr class="base"><td class="lvl">Original</td>
+              <td class="metric"><b>3</b><div class="bar"><span style="width:30%"></span></div></td>
+              <td class="metric"><b>3</b><div class="bar"><span style="width:30%"></span></div></td>
+              <td class="metric"><b>3</b><div class="bar"><span style="width:30%"></span></div></td>
+              <td class="avg"><b>3.0</b></td></tr>
+            <tr><td class="lvl">Light</td>
+              <td class="metric"><b>6</b><div class="bar"><span style="width:60%"></span></div></td>
+              <td class="metric"><b>6</b><div class="bar"><span style="width:60%"></span></div></td>
+              <td class="metric"><b>6</b><div class="bar"><span style="width:60%"></span></div></td>
+              <td class="avg"><b>6.0</b></td></tr>
+            <tr class="win"><td class="lvl">Medium <span class="pill">Winner</span></td>
+              <td class="metric"><b>8</b><div class="bar"><span style="width:80%"></span></div></td>
+              <td class="metric"><b>8</b><div class="bar"><span style="width:80%"></span></div></td>
+              <td class="metric"><b>8</b><div class="bar"><span style="width:80%"></span></div></td>
+              <td class="avg"><b>8.0</b></td></tr>
+            <tr><td class="lvl">Heavy</td>
+              <td class="metric"><b>6</b><div class="bar"><span style="width:60%"></span></div></td>
+              <td class="metric"><b>7</b><div class="bar"><span style="width:70%"></span></div></td>
+              <td class="metric"><b>6</b><div class="bar"><span style="width:60%"></span></div></td>
+              <td class="avg"><b>6.3</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="lead"><b class="gold">Medium is the sweet spot.</b> It adds believable warmth, vignette and grain without damage — while Heavy's chromatic aberration visibly fringes the crisp label type and reads as degraded.</p>
+      <div class="pageno">06 / 10</div>
+    </section>
+
+    <!-- 7 · LANDSCAPE COMPARISON -->
+    <section class="slide">
+      <div class="brand"><span class="mk"></span> Authenti<b>Gen</b></div>
+      <span class="kicker">Subject 03 · Landscape</span>
+      <h2>Original vs Light · Medium · Heavy</h2>
+      <div class="cmp land" style="margin:18px 0 16px">
+        <div class="col"><div class="frame"><img src="images/landscape-original.jpg" alt="Landscape original"/></div><div class="cap">Original</div></div>
+        <div class="col"><div class="frame"><img src="images/landscape-light.jpg" alt="Landscape light"/></div><div class="cap">Light</div></div>
+        <div class="col"><div class="frame"><img src="images/landscape-medium.jpg" alt="Landscape medium"/></div><div class="cap">Medium</div></div>
+        <div class="col">
+          <div class="frame win">
+            <img src="images/landscape-heavy.jpg" alt="Landscape heavy"/>
+            <span class="pin" style="left:32%; top:20%">1</span>
+            <span class="pin" style="left:90%; top:12%">2</span>
+            <span class="pin" style="left:11%; top:42%">3</span>
+            <span class="pin" style="left:30%; top:84%">4</span>
+          </div>
+          <div class="cap is-win">Heavy ✦</div>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="it"><span class="n">1</span><span><b>Grain in the sky.</b> Smooth gradients gain photographic texture.</span></div>
+        <div class="it"><span class="n">2</span><span><b>Corner vignette.</b> Tames the flat, over-even digital exposure.</span></div>
+        <div class="it"><span class="n">3</span><span><b>Warmth in the sunlight.</b> Halation blooms the low sun.</span></div>
+        <div class="it"><span class="n">4</span><span><b>Foreground micro-texture.</b> Tooth on the rock &amp; water surface.</span></div>
+      </div>
+      <div class="pageno">07 / 10</div>
+    </section>
+
+    <!-- 8 · LANDSCAPE SCORING -->
+    <section class="slide">
+      <div class="brand"><span class="mk"></span> Authenti<b>Gen</b></div>
+      <span class="kicker">Subject 03 · Landscape</span>
+      <h2>Scoring <span class="muted">— 1–10, relative judgment</span></h2>
+      <div class="card scwrap" style="margin:16px 0 14px">
+        <table class="score">
+          <thead><tr><th style="width:170px">Level</th><th>Texture realism</th><th>Atmosphere naturalness</th><th>Overall camera feel</th><th style="width:90px">Avg</th></tr></thead>
+          <tbody>
+            <tr class="base"><td class="lvl">Original</td>
+              <td class="metric"><b>4</b><div class="bar"><span style="width:40%"></span></div></td>
+              <td class="metric"><b>4</b><div class="bar"><span style="width:40%"></span></div></td>
+              <td class="metric"><b>3</b><div class="bar"><span style="width:30%"></span></div></td>
+              <td class="avg"><b>3.7</b></td></tr>
+            <tr><td class="lvl">Light</td>
+              <td class="metric"><b>6</b><div class="bar"><span style="width:60%"></span></div></td>
+              <td class="metric"><b>6</b><div class="bar"><span style="width:60%"></span></div></td>
+              <td class="metric"><b>6</b><div class="bar"><span style="width:60%"></span></div></td>
+              <td class="avg"><b>6.0</b></td></tr>
+            <tr><td class="lvl">Medium</td>
+              <td class="metric"><b>7</b><div class="bar"><span style="width:70%"></span></div></td>
+              <td class="metric"><b>8</b><div class="bar"><span style="width:80%"></span></div></td>
+              <td class="metric"><b>7</b><div class="bar"><span style="width:70%"></span></div></td>
+              <td class="avg"><b>7.3</b></td></tr>
+            <tr class="win"><td class="lvl">Heavy <span class="pill">Winner</span></td>
+              <td class="metric"><b>8</b><div class="bar"><span style="width:80%"></span></div></td>
+              <td class="metric"><b>8</b><div class="bar"><span style="width:80%"></span></div></td>
+              <td class="metric"><b>9</b><div class="bar"><span style="width:90%"></span></div></td>
+              <td class="avg"><b>8.3</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="lead"><b class="gold">Heavy wins again.</b> Like the portrait, this is an organic subject with no crisp type — so the heavier grain and warm bloom add the most convincing filmic character without a downside.</p>
+      <div class="pageno">08 / 10</div>
+    </section>
+
+    <!-- 9 · KEY FINDINGS -->
+    <section class="slide">
+      <div class="brand"><span class="mk"></span> Authenti<b>Gen</b></div>
+      <span class="kicker">Honest conclusions</span>
+      <h2>Key findings</h2>
+      <div class="verdicts" style="margin:16px 0 16px">
+        <div class="v card"><div class="who">Portraits</div><div class="win">Heavy</div><p>Grain + warmth flatter skin; no crisp edges to fringe. The 35 mm profile is made for faces.</p></div>
+        <div class="v card"><div class="who">Product shots</div><div class="win">Medium</div><p>Believable lens character without over-texturing — Heavy's aberration degrades crisp label type.</p></div>
+        <div class="v card"><div class="who">Landscapes</div><div class="win">Heavy</div><p>Big organic gradients take heavy grain and sun bloom well, for the most photographic look.</p></div>
+      </div>
+      <div class="limits card">
+        <h3>Limitations — stated plainly</h3>
+        <ul>
+          <li><b style="color:var(--ag-text)">Structural AI tells are out of scope.</b> Perfect mirror reflections (the marble &amp; lake), anatomy and geometry are untouched — this is surface camera character, not regeneration.</li>
+          <li><b style="color:var(--ag-text)">Aberration is eased on skin</b> (20%), so it won't "fix" flawed skin tone or blending.</li>
+          <li><b style="color:var(--ag-text)">Shadow-chroma, haze &amp; neon effects only fire on dark scenes</b> — bright daylight subjects get lighter treatment by design.</li>
+          <li><b style="color:var(--ag-text)">The vignette is fixed-position</b> and grain is a global overlay — neither adds true local detail.</li>
+        </ul>
+      </div>
+      <div class="pageno">09 / 10</div>
+    </section>
+
+    <!-- 10 · READY FOR OPEN SOURCE -->
+    <section class="slide">
+      <div class="brand"><span class="mk"></span> Authenti<b>Gen</b></div>
+      <span class="kicker">Verdict &amp; release</span>
+      <h2>Ready for open source</h2>
+      <div class="two" style="margin-top:18px">
+        <div class="verdictbox card gborder">
+          <div class="k">Pipeline verdict</div>
+          <h3>It does what it claims — and is honest about what it can't.</h3>
+          <p>The humanizer reliably adds believable camera &amp; film character across portraits, products and landscapes, with a clear best setting per subject. It makes no claim to repair structural AI artifacts, and the limitations are documented. Good to ship.</p>
+          <div class="repo">github.com/yh12-10/authentigen</div>
+        </div>
+        <div>
+          <div class="k" style="font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--ag-gold); font-weight:600; margin-bottom:14px">GitHub release checklist</div>
+          <ul class="checklist">
+            <li><span class="ck">✓</span><span><b>License</b> — open-source license in place</span></li>
+            <li><span class="ck">✓</span><span><b>README + docs</b> — setup, pipeline &amp; this deck</span></li>
+            <li><span class="ck">✓</span><span><b>.env.example</b> — no secrets committed</span></li>
+            <li><span class="ck">✓</span><span><b>Docker compose</b> — one-command self-host</span></li>
+            <li><span class="ck">✓</span><span><b>CI green</b> — build-and-test passing</span></li>
+            <li><span class="ck">✓</span><span><b>Demo assets + screenshots</b> — real before/after samples</span></li>
+            <li><span class="ck">○</span><span><b>Tag <span class="gold">v2.1.0</span></b> — cut release after merge</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="pageno">10 / 10</div>
+    </section>
+
+  </div>
+
+  <!-- nav -->
+  <div class="arrow prev" id="prev" aria-label="Previous">‹</div>
+  <div class="arrow next" id="next" aria-label="Next">›</div>
+  <div class="hint"><kbd>←</kbd> <kbd>→</kbd> navigate · <kbd>F</kbd> fullscreen</div>
+  <div class="nav"><div class="fill" id="fill"></div></div>
+</div>
+
+<script>
+  (function(){
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var stage = document.getElementById('stage');
+    var fill = document.getElementById('fill');
+    var i = 0;
+
+    function fit(){
+      var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+      stage.style.transform = 'scale(' + s + ')';
+    }
+    function show(n){
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach(function(s, k){ s.classList.toggle('is-active', k === i); });
+      fill.style.width = ((i + 1) / slides.length * 100) + '%';
+      if (history.replaceState) history.replaceState(null, '', '#' + (i + 1));
+    }
+    function fromHash(){
+      var n = parseInt((location.hash || '').slice(1), 10);
+      return isNaN(n) ? 0 : n - 1;
+    }
+    window.addEventListener('hashchange', function(){ show(fromHash()); });
+    document.getElementById('next').addEventListener('click', function(){ show(i + 1); });
+    document.getElementById('prev').addEventListener('click', function(){ show(i - 1); });
+    window.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' '){ show(i + 1); e.preventDefault(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp'){ show(i - 1); e.preventDefault(); }
+      else if (e.key === 'Home'){ show(0); }
+      else if (e.key === 'End'){ show(slides.length - 1); }
+      else if (e.key === 'f' || e.key === 'F'){
+        if (!document.fullscreenElement){ document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }
+        else { document.exitFullscreen && document.exitFullscreen(); }
+      }
+    });
+    window.addEventListener('resize', fit);
+    fit(); show(fromHash());
+  })();
+</script>
+</body>
+</html>
