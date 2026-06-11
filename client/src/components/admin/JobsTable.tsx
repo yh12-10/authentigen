@@ -32,12 +32,10 @@ export function JobsTable() {
   const [status, setStatus] = useState<
     "all" | "pending" | "processing" | "completed" | "failed"
   >("all");
-  const [type, setType] = useState<"all" | "image" | "video">("all");
   const jobsQuery = trpc.admin.jobs.useQuery({
     limit: 100,
     offset: 0,
     status: status === "all" ? undefined : status,
-    type: type === "all" ? undefined : type,
   });
 
   return (
@@ -61,19 +59,6 @@ export function JobsTable() {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Type</span>
-          <Select value={type} onValueChange={v => setType(v as typeof type)}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="image">Image</SelectItem>
-              <SelectItem value="video">Video</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       <div className="rounded-md border border-border/50 glass">
@@ -82,7 +67,6 @@ export function JobsTable() {
             <TableRow>
               <TableHead>ID</TableHead>
               <TableHead>User</TableHead>
-              <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Intensity</TableHead>
               <TableHead>Filename</TableHead>
@@ -98,9 +82,6 @@ export function JobsTable() {
                   <div className="text-xs text-muted-foreground">
                     {j.userEmail}
                   </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">{j.type}</Badge>
                 </TableCell>
                 <TableCell>
                   <Badge variant={STATUS_VARIANT[j.status]}>{j.status}</Badge>

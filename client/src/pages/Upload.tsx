@@ -7,11 +7,9 @@ import { trpc } from "@/lib/trpc";
 import {
   Upload as UploadIcon,
   Image as ImageIcon,
-  Video as VideoIcon,
   ArrowLeft,
   X,
   FileImage,
-  FileVideo,
   Zap,
   Layers,
   Shield,
@@ -21,13 +19,11 @@ import {
   Files,
   History,
   Settings,
-  Code2,
   ArrowDown,
   Info,
   LogOut,
   LayoutDashboard,
   ShieldCheck,
-  Coins,
   Sparkles,
 } from "lucide-react";
 import { RippleButton } from "@/components/visual/RippleButton";
@@ -57,15 +53,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@shared/const";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Intensity = "light" | "medium" | "heavy";
-type FileType = "image" | "video" | null;
 
 const ACCEPTED_IMAGE = ["image/jpeg", "image/png", "image/webp"];
-const ACCEPTED_VIDEO = ["video/mp4", "video/webm"];
-const ALL_ACCEPTED = [...ACCEPTED_IMAGE, ...ACCEPTED_VIDEO];
 
 const INTENSITY_OPTIONS: {
   value: Intensity;
@@ -89,14 +83,27 @@ const INTENSITY_OPTIONS: {
   },
 ];
 
-// Mock detection probabilities — illustrative UX, not real measurements.
-const DETECTION_BY_INTENSITY: Record<
+// Honest per-intensity effect profile — what the pixel pipeline actually does
+// at each level (sourced from the real humanizer profiles). No invented metrics.
+const INTENSITY_EFFECTS: Record<
   Intensity,
-  { before: number; after: number }
+  { grain: string; color: string; lens: string }
 > = {
-  light: { before: 94, after: 14 },
-  medium: { before: 94, after: 8 },
-  heavy: { before: 94, after: 3 },
+  light: {
+    grain: "Fine film grain",
+    color: "Whisper of warmth",
+    lens: "Faint vignette — near-identical to source",
+  },
+  medium: {
+    grain: "Visible film grain",
+    color: "Gentle warmth + halation",
+    lens: "Soft vignette — organic camera feel",
+  },
+  heavy: {
+    grain: "Strong film grain",
+    color: "Warm 35 mm bloom",
+    lens: "Pronounced vignette — filmic",
+  },
 };
 
 function fileToBase64(file: File): Promise<string> {
@@ -270,13 +277,6 @@ function Sidebar() {
           onClick={() => navigate("/batch")}
         />
         <SidebarItem
-          icon={<Code2 className="size-4" />}
-          label="API Access"
-          onClick={() =>
-            toast.info("Public API ships in v2 — Studio plan only")
-          }
-        />
-        <SidebarItem
           icon={<Settings className="size-4" />}
           label="Settings"
           onClick={() => navigate("/dashboard")}
@@ -290,7 +290,6 @@ function Sidebar() {
 
 interface DropZoneProps {
   file: File | null;
-  fileType: FileType;
   isDragOver: boolean;
   setIsDragOver: (v: boolean) => void;
   onFile: (f: File) => void;
@@ -300,7 +299,6 @@ interface DropZoneProps {
 
 function DropZone({
   file,
-  fileType,
   isDragOver,
   setIsDragOver,
   onFile,
@@ -331,7 +329,7 @@ function DropZone({
       <input
         ref={fileInputRef}
         type="file"
-        accept={ALL_ACCEPTED.join(",")}
+        accept={ACCEPTED_IMAGE.join(",")}
         className="hidden"
         onChange={e => {
           const selected = e.target.files?.[0];
@@ -370,17 +368,12 @@ function DropZone({
               transition={{ type: "spring", stiffness: 200, damping: 15 }}
               className="size-16 rounded-2xl bg-[#F5A623]/15 flex items-center justify-center text-[#F5A623] glow-gold-sm"
             >
-              {fileType === "image" ? (
-                <FileImage className="size-8" />
-              ) : (
-                <FileVideo className="size-8" />
-              )}
+              <FileImage className="size-8" />
             </motion.div>
             <div>
               <p className="font-semibold">{file.name}</p>
               <p className="text-muted-foreground text-sm mt-1">
-                {fileType === "image" ? "Image" : "Video"} ·{" "}
-                {fmtSize(file.size)}
+                Image · {fmtSize(file.size)}
               </p>
             </div>
             <button
@@ -415,7 +408,7 @@ function DropZone({
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-2 mt-1">
-              {["JPG", "PNG", "WEBP", "MP4", "WEBM"].map(fmt => (
+              {["JPG", "PNG", "WEBP"].map(fmt => (
                 <span
                   key={fmt}
                   className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-secondary/60 text-muted-foreground border border-border/40"
@@ -425,7 +418,7 @@ function DropZone({
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              Images up to 20 MB · Videos up to 100 MB
+              Images up to {MAX_UPLOAD_MB} MB
             </p>
           </motion.div>
         )}
@@ -497,64 +490,8 @@ function IntensityCards({
 
 // ── Right-side preview panel ──────────────────────────────────────────────────
 
-const DEMO_BEFORE_SVG = `<svg width="600" height="450" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#1a2238"/>
-      <stop offset="60%" stop-color="#2d3a5c"/>
-      <stop offset="100%" stop-color="#3a4866"/>
-    </linearGradient>
-    <linearGradient id="peak" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#e89456"/>
-      <stop offset="50%" stop-color="#7a5238"/>
-      <stop offset="100%" stop-color="#1f1a18"/>
-    </linearGradient>
-  </defs>
-  <rect width="600" height="450" fill="url(#sky)"/>
-  <ellipse cx="450" cy="80" rx="120" ry="40" fill="#5a6480" opacity="0.6"/>
-  <ellipse cx="200" cy="60" rx="160" ry="30" fill="#404a66" opacity="0.5"/>
-  <polygon points="0,450 150,200 250,300 380,150 500,280 600,220 600,450" fill="url(#peak)"/>
-  <polygon points="0,450 100,330 200,380 280,320 380,400 480,350 600,380 600,450" fill="#0e0f15" opacity="0.85"/>
-</svg>`;
-
-function ProbabilityBar({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: number;
-  color: "red" | "green";
-}) {
-  const colorMap = {
-    red: "from-red-500 to-rose-500",
-    green: "from-emerald-500 to-green-500",
-  };
-  return (
-    <div>
-      <div className="flex justify-between text-xs mb-1.5">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-mono font-semibold">{value}%</span>
-      </div>
-      <div className="h-2 rounded-full bg-secondary overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${value}%` }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          className={cn(
-            "h-full rounded-full bg-gradient-to-r",
-            colorMap[color]
-          )}
-        />
-      </div>
-    </div>
-  );
-}
-
 function PreviewPanel({ intensity }: { intensity: Intensity }) {
-  const [tab, setTab] = useState<"image" | "video">("image");
-  const detection = DETECTION_BY_INTENSITY[intensity];
-  const demoSrc = `data:image/svg+xml;utf8,${encodeURIComponent(DEMO_BEFORE_SVG)}`;
+  const effects = INTENSITY_EFFECTS[intensity];
 
   return (
     <aside className="fixed top-16 bottom-0 right-0 w-[22rem] hidden xl:flex flex-col glass border-l border-border/40 z-40 overflow-y-auto">
@@ -568,38 +505,15 @@ function PreviewPanel({ intensity }: { intensity: Intensity }) {
           </p>
         </div>
 
-        <div className="inline-flex p-1 rounded-lg bg-secondary/50 border border-border/50">
-          {(["image", "video"] as const).map(t => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={cn(
-                "relative px-4 py-1.5 text-xs font-medium rounded-md transition-colors",
-                tab === t
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {tab === t && (
-                <motion.div
-                  layoutId="preview-tab-pill"
-                  className="absolute inset-0 rounded-md bg-[#F5A623]/15 border border-[#F5A623]/40"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              )}
-              <span className="relative capitalize">{t}</span>
-            </button>
-          ))}
-        </div>
-
         <div className="space-y-4">
           <div>
             <p className="text-xs text-muted-foreground mb-2">Before</p>
             <div className="relative rounded-xl overflow-hidden border border-border/40 aspect-[4/3]">
               <img
-                src={demoSrc}
-                alt="Demo before"
+                src="/demo/before.jpg"
+                alt="AI-generated landscape, before humanization"
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
               <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-red-500/90 text-white">
                 AI Generated
@@ -620,31 +534,39 @@ function PreviewPanel({ intensity }: { intensity: Intensity }) {
           <div>
             <p className="text-xs text-muted-foreground mb-2">After</p>
             <div className="relative rounded-xl overflow-hidden border border-[#F5A623]/30 aspect-[4/3] glow-gold-sm">
-              <img
-                src={demoSrc}
-                alt="Demo after"
-                className="w-full h-full object-cover"
-                style={{
-                  filter: `contrast(${1 + intensity === "heavy" ? 0.08 : 0.04}) saturate(${
-                    intensity === "heavy"
-                      ? 1.2
-                      : intensity === "medium"
-                        ? 1.12
-                        : 1.05
-                  }) hue-rotate(${intensity === "heavy" ? "8deg" : intensity === "medium" ? "5deg" : "2deg"})`,
-                }}
-              />
-              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/90 text-white">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={intensity}
+                  src={`/demo/after-${intensity}.jpg`}
+                  alt={`Humanized result (${intensity} intensity)`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.35 }}
+                />
+              </AnimatePresence>
+              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/90 text-white z-10">
                 Humanized
               </div>
             </div>
           </div>
         </div>
 
-        <div className="space-y-3 pt-2">
-          <h3 className="text-sm font-semibold">Detection Probability</h3>
-          <ProbabilityBar label="Before" value={detection.before} color="red" />
-          <ProbabilityBar label="After" value={detection.after} color="green" />
+        <div className="space-y-2.5 pt-2">
+          <h3 className="text-sm font-semibold capitalize">
+            {intensity} · effect profile
+          </h3>
+          {[effects.grain, effects.color, effects.lens].map(item => (
+            <div
+              key={item}
+              className="flex items-center gap-2.5 text-xs text-muted-foreground"
+            >
+              <span className="size-1.5 rounded-full bg-[#F5A623] flex-shrink-0" />
+              <span>{item}</span>
+            </div>
+          ))}
         </div>
 
         <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
@@ -705,7 +627,6 @@ export default function Upload() {
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const [file, setFile] = useState<File | null>(null);
-  const [fileType, setFileType] = useState<FileType>(null);
   const [intensity, setIntensity] = useState<Intensity>("medium");
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -723,21 +644,15 @@ export default function Upload() {
   });
 
   const handleFile = useCallback((f: File) => {
-    if (!ALL_ACCEPTED.includes(f.type)) {
-      toast.error("Unsupported file type. Use JPG, PNG, WEBP, MP4, or WEBM.");
+    if (!ACCEPTED_IMAGE.includes(f.type)) {
+      toast.error("Unsupported file type. Use JPG, PNG, or WEBP.");
       return;
     }
-    const maxSize = f.type.startsWith("video/")
-      ? 100 * 1024 * 1024
-      : 20 * 1024 * 1024;
-    if (f.size > maxSize) {
-      toast.error(
-        `File too large. Max ${f.type.startsWith("video/") ? "100 MB" : "20 MB"}.`
-      );
+    if (f.size > MAX_UPLOAD_BYTES) {
+      toast.error(`File too large. Max ${MAX_UPLOAD_MB} MB.`);
       return;
     }
     setFile(f);
-    setFileType(f.type.startsWith("image/") ? "image" : "video");
   }, []);
 
   const handleSubmit = async () => {
@@ -751,12 +666,7 @@ export default function Upload() {
       const base64 = await fileToBase64(file);
       await createJob.mutateAsync({
         filename: file.name,
-        mimeType: file.type as
-          | "image/jpeg"
-          | "image/png"
-          | "image/webp"
-          | "video/mp4"
-          | "video/webm",
+        mimeType: file.type as "image/jpeg" | "image/png" | "image/webp",
         intensity,
         fileDataBase64: base64,
       });
@@ -819,8 +729,8 @@ export default function Upload() {
                     <span className="text-gold italic">Content</span>
                   </h1>
                   <p className="text-muted-foreground mt-1.5">
-                    Drop your AI-generated image or video below and we'll give
-                    it the look of real photography.
+                    Drop your AI-generated image below and we'll give it the
+                    look of real photography.
                   </p>
                 </div>
                 <HowItWorksDialog />
@@ -829,14 +739,10 @@ export default function Upload() {
               {/* Drop zone */}
               <DropZone
                 file={file}
-                fileType={fileType}
                 isDragOver={isDragOver}
                 setIsDragOver={setIsDragOver}
                 onFile={handleFile}
-                onClear={() => {
-                  setFile(null);
-                  setFileType(null);
-                }}
+                onClear={() => setFile(null)}
                 fileInputRef={fileInputRef}
               />
 
@@ -852,27 +758,14 @@ export default function Upload() {
               </div>
 
               {/* File type info */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="rounded-xl p-4 flex items-start gap-3 bg-secondary/30 border border-border/50">
-                  <div className="size-10 rounded-lg bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] flex-shrink-0">
-                    <ImageIcon className="size-5" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-sm">Images</div>
-                    <div className="text-xs text-muted-foreground">
-                      JPG, PNG, WEBP · Up to 20 MB
-                    </div>
-                  </div>
+              <div className="rounded-xl p-4 flex items-start gap-3 bg-secondary/30 border border-border/50">
+                <div className="size-10 rounded-lg bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] flex-shrink-0">
+                  <ImageIcon className="size-5" />
                 </div>
-                <div className="rounded-xl p-4 flex items-start gap-3 bg-secondary/30 border border-border/50">
-                  <div className="size-10 rounded-lg bg-[#4F8EF7]/10 flex items-center justify-center text-[#4F8EF7] flex-shrink-0">
-                    <VideoIcon className="size-5" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-sm">Videos</div>
-                    <div className="text-xs text-muted-foreground">
-                      MP4, WEBM · Up to 100 MB
-                    </div>
+                <div>
+                  <div className="font-medium text-sm">Images</div>
+                  <div className="text-xs text-muted-foreground">
+                    JPG, PNG, WEBP · Up to {MAX_UPLOAD_MB} MB
                   </div>
                 </div>
               </div>
@@ -898,13 +791,6 @@ export default function Upload() {
                   )}
                 </RippleButton>
               </MagneticButton>
-
-              {fileType === "video" && (
-                <p className="text-xs text-muted-foreground text-center -mt-3">
-                  Videos are humanized at sampled framerate with audio
-                  passthrough · 30 s max.
-                </p>
-              )}
             </div>
           </div>
         </div>

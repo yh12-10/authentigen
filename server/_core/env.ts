@@ -45,9 +45,6 @@ export const ENV = {
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
   isProduction: process.env.NODE_ENV === "production",
   appBaseUrl: process.env.APP_BASE_URL ?? "http://localhost:3000",
-  // Video pipeline
-  videoMaxDurationSeconds: Number(process.env.VIDEO_MAX_DURATION_SECONDS ?? 30),
-  videoFrameSampleEvery: Number(process.env.VIDEO_FRAME_SAMPLE_EVERY ?? 3),
   // Storage backend ("local" filesystem by default, or "s3")
   storageBackend:
     (process.env.STORAGE_BACKEND ?? "local").toLowerCase() === "s3"
@@ -76,6 +73,24 @@ export const ENV = {
   // Job processing
   maxConcurrentImageJobs: Number(process.env.MAX_CONCURRENT_IMAGE_JOBS ?? 4),
 };
+
+/**
+ * In production, refuse to start with missing critical secrets rather than
+ * failing silently at runtime. DATABASE_URL is required for any persistence;
+ * JWT_SECRET is required to sign sessions (the dev auto-gen above no-ops in prod).
+ */
+if (ENV.isProduction) {
+  const missing: string[] = [];
+  if (!ENV.databaseUrl) missing.push("DATABASE_URL");
+  if (!ENV.cookieSecret || ENV.cookieSecret.length < 32)
+    missing.push("JWT_SECRET (min 32 chars)");
+  if (missing.length > 0) {
+    throw new Error(
+      `[env] Missing required production environment variable(s): ${missing.join(", ")}. ` +
+        `Set them before starting the server (NODE_ENV=production).`
+    );
+  }
+}
 
 export function isS3Configured(): boolean {
   return Boolean(ENV.s3Bucket && ENV.s3AccessKeyId && ENV.s3SecretAccessKey);

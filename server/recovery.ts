@@ -11,7 +11,7 @@
 import { inArray } from "drizzle-orm";
 import { getDb, updateJobStatus } from "./db";
 import { jobs } from "../drizzle/schema";
-import { processImageJob, processVideoJob } from "./humanizer";
+import { processImageJob } from "./humanizer";
 
 export type OrphanAction = "requeue" | "fail" | "skip";
 
@@ -35,11 +35,10 @@ export async function recoverOrphanedJobs(): Promise<void> {
   for (const job of orphans) {
     const action = classifyOrphan(job.status);
     if (action === "requeue") {
-      const run = job.type === "image" ? processImageJob : processVideoJob;
-      run(job.id).catch(err =>
+      processImageJob(job.id).catch(err =>
         console.error(`[recovery] re-queue of job ${job.id} failed:`, err)
       );
-      console.log(`[recovery] re-queued pending ${job.type} job ${job.id}`);
+      console.log(`[recovery] re-queued pending job ${job.id}`);
     } else if (action === "fail") {
       await updateJobStatus(job.id, "failed", {
         errorMessage: "Interrupted by server restart",

@@ -43,6 +43,13 @@
       "when": 1780991605619,
       "tag": "0005_short_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1781092052584,
+      "tag": "0006_great_blacklash",
+      "breakpoints": true
     }
   ]
 }

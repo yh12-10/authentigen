@@ -7,7 +7,6 @@ conventions the project follows.
 
 - **Node 20+** and **pnpm** (`corepack enable` will provide pnpm)
 - **MySQL 8** running locally — or just use Docker (`docker compose up`), which provides it
-- `ffmpeg`/`ffprobe` are bundled via npm packages; no system install required
 
 ## Setup
 

@@ -35,8 +35,6 @@ services:
       # volume, or set your own here / via a .env file.
       JWT_SECRET: ${JWT_SECRET:-}
       APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
-      VIDEO_MAX_DURATION_SECONDS: ${VIDEO_MAX_DURATION_SECONDS:-30}
-      VIDEO_FRAME_SAMPLE_EVERY: ${VIDEO_FRAME_SAMPLE_EVERY:-3}
       # Storage: "local" (default) or "s3". For the dev MinIO below, set
       # STORAGE_BACKEND=s3, S3_ENDPOINT=http://minio:9000, S3_FORCE_PATH_STYLE=true.
       STORAGE_BACKEND: ${STORAGE_BACKEND:-local}

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
-# Use a glibc-based image (not alpine) so sharp + ffmpeg-static prebuilt
-# binaries work without extra musl shims.
+# Use a glibc-based image (not alpine) so sharp's prebuilt binaries work
+# without extra musl shims.
 FROM node:22-bookworm-slim AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH

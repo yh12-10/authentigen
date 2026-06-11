@@ -6,7 +6,7 @@ middleware; in production it serves the pre-built client from `dist/public`.
 
 ```
 client/   React 19 + Vite + Tailwind v4 front end
-server/   Express + tRPC API, humanizer/video pipelines, auth, payments, storage
+server/   Express + tRPC API, humanizer pipeline, auth, storage
   _core/  bootstrap (index.ts), env, auth, context, vite/static serving, types
 shared/   constants/types shared by client and server
 drizzle/  schema.ts + migrations (MySQL via Drizzle ORM)
@@ -38,8 +38,7 @@ A humanization job is **fire-and-forget async** inside the same process:
 3. On any failure the job is marked `failed`. Processing is free — there are no credits or charges.
 4. The client polls `jobs.status` (~2s) and renders progress, then the before/after view.
 
-Video jobs additionally pass through a **per-user in-process semaphore** so a single user can only
-run one video at a time, and image jobs share a **global concurrency cap** (`MAX_CONCURRENT_IMAGE_JOBS`).
+Image jobs share a **global concurrency cap** (`MAX_CONCURRENT_IMAGE_JOBS`); excess jobs queue.
 There is no external queue — this is a single-instance design, but `server/recovery.ts` reconciles jobs
 left `pending`/`processing` after a restart on boot (re-queue pending, fail interrupted). See
 [SECURITY.md](SECURITY.md) for scaling caveats.
@@ -63,24 +62,15 @@ order, scaled by intensity (Light 20% / Medium 55% / Heavy 100% of the heavy bas
 12. mozjpeg re-encode (4:2:0 chroma) with fabricated camera EXIF (Make/Model/ISO/etc.)
 
 Each intensity maps to a camera profile (grain σ, CA shift, vignette, blur, JPEG quality, EXIF). See
-the `Profile` table and `INTENSITY_SCALE` near the top of the file.
-
-### Video (`server/video.ts`)
-
-1. Download original to a temp dir; `ffprobe` for duration/fps/audio
-2. Reject if longer than `VIDEO_MAX_DURATION_SECONDS`
-3. `ffmpeg` extracts every `VIDEO_FRAME_SAMPLE_EVERY`-th frame to PNG
-4. Each frame runs through the image humanizer; progress updates as frames complete
-5. `ffmpeg` reassembles the humanized frames into an H.264 MP4, copying the original audio
-6. Upload the MP4; temp dir is always cleaned in `finally` (plus a startup sweep of orphans > 1h)
+the `Profile` table and `INTENSITY_SCALE` near the top of the file. Inputs larger than
+`MAX_IMAGE_DIMENSION` (12000 px/side) or `MAX_IMAGE_PIXELS` (~40 MP) are rejected before processing.
 
 ## Data model (`drizzle/schema.ts`)
 
 - **users** — `id`, `email` (unique), `passwordHash`, `loginMethod`, `role` (`user`/`admin`),
   timestamps. `openId` is reserved for future SSO.
-- **jobs** — `userId`, `type` (`image`/`video`), `status`, `intensity`, original/processed keys+URLs,
-  `progress`, `errorMessage`, `batchId`, plus video fields (`durationSeconds`,
-  `frameCount`, `framesProcessed`), timestamps.
+- **jobs** — `userId`, `type` (`image`), `status`, `intensity`, original/processed keys+URLs,
+  `progress`, `errorMessage`, `batchId`, timestamps.
 
 ## Auth (`server/_core/auth.ts`)
 

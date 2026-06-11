@@ -13,7 +13,6 @@ import {
   XCircle,
   Loader2,
   Image,
-  Video,
   LayoutGrid,
   LogOut,
   Zap,
@@ -43,7 +42,6 @@ import { Label } from "@/components/ui/label";
 
 type JobStatus = "pending" | "processing" | "completed" | "failed";
 type JobIntensity = "light" | "medium" | "heavy";
-type JobType = "image" | "video";
 
 function StatusBadge({ status }: { status: JobStatus }) {
   const map: Record<JobStatus, { label: string; class: string }> = {
@@ -111,7 +109,6 @@ export default function Dashboard() {
 
   const [tab, setTab] = useState("overview");
   const [statusFilter, setStatusFilter] = useState<"all" | JobStatus>("all");
-  const [typeFilter, setTypeFilter] = useState<"all" | JobType>("all");
 
   if (loading) {
     return (
@@ -147,9 +144,7 @@ export default function Dashboard() {
     jobs?.filter(j => j.status === "pending" || j.status === "processing") ??
     [];
   const filteredJobs = (jobs ?? []).filter(
-    j =>
-      (statusFilter === "all" || j.status === statusFilter) &&
-      (typeFilter === "all" || j.type === typeFilter)
+    j => statusFilter === "all" || j.status === statusFilter
   );
 
   return (
@@ -224,7 +219,7 @@ export default function Dashboard() {
               Overview
             </TabsTrigger>
             <TabsTrigger value="jobs">
-              <Video className="size-4 mr-1.5" />
+              <Image className="size-4 mr-1.5" />
               Jobs
             </TabsTrigger>
             <TabsTrigger value="settings">
@@ -304,11 +299,7 @@ export default function Dashboard() {
                       className="flex items-center gap-4 p-4 rounded-xl bg-secondary/30 border border-border/50"
                     >
                       <div className="w-10 h-10 rounded-lg bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] flex-shrink-0">
-                        {job.type === "image" ? (
-                          <Image className="w-5 h-5" />
-                        ) : (
-                          <Video className="w-5 h-5" />
-                        )}
+                        <Image className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm truncate">
@@ -365,11 +356,7 @@ export default function Dashboard() {
                       className="w-full flex items-center gap-4 p-3 rounded-xl bg-secondary/30 border border-border/50 text-left transition-colors hover:border-[#F5A623]/30 hover:bg-secondary/40"
                     >
                       <div className="w-9 h-9 rounded-lg bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] flex-shrink-0">
-                        {job.type === "image" ? (
-                          <Image className="w-4 h-4" />
-                        ) : (
-                          <Video className="w-4 h-4" />
-                        )}
+                        <Image className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm truncate">
@@ -423,19 +410,6 @@ export default function Dashboard() {
                   <SelectItem value="failed">Failed</SelectItem>
                 </SelectContent>
               </Select>
-              <Select
-                value={typeFilter}
-                onValueChange={v => setTypeFilter(v as typeof typeFilter)}
-              >
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All types</SelectItem>
-                  <SelectItem value="image">Image</SelectItem>
-                  <SelectItem value="video">Video</SelectItem>
-                </SelectContent>
-              </Select>
               <Button
                 variant="ghost"
                 size="sm"
@@ -470,9 +444,6 @@ export default function Dashboard() {
                     <thead>
                       <tr className="border-b border-border text-muted-foreground text-xs">
                         <th className="text-left pb-3 font-medium">File</th>
-                        <th className="text-left pb-3 font-medium hidden sm:table-cell">
-                          Type
-                        </th>
                         <th className="text-left pb-3 font-medium hidden md:table-cell">
                           Intensity
                         </th>
@@ -492,19 +463,12 @@ export default function Dashboard() {
                           <td className="py-3 pr-4">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-lg bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] flex-shrink-0">
-                                {job.type === "image" ? (
-                                  <Image className="w-4 h-4" />
-                                ) : (
-                                  <Video className="w-4 h-4" />
-                                )}
+                                <Image className="w-4 h-4" />
                               </div>
                               <span className="truncate max-w-[120px] sm:max-w-[180px]">
                                 {formatFile(job.originalFilename)}
                               </span>
                             </div>
-                          </td>
-                          <td className="py-3 pr-4 hidden sm:table-cell capitalize text-muted-foreground">
-                            {job.type}
                           </td>
                           <td className="py-3 pr-4 hidden md:table-cell">
                             <IntensityBadge intensity={job.intensity} />

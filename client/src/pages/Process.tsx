@@ -121,77 +121,6 @@ function ComparisonSlider({
   );
 }
 
-function SyncedVideoPair({
-  originalUrl,
-  processedUrl,
-  isVideo,
-}: {
-  originalUrl: string;
-  processedUrl: string;
-  isVideo: boolean;
-}) {
-  const aRef = useRef<HTMLVideoElement>(null);
-  const bRef = useRef<HTMLVideoElement>(null);
-
-  const sync = (source: "a" | "b") => () => {
-    const src = source === "a" ? aRef.current : bRef.current;
-    const dst = source === "a" ? bRef.current : aRef.current;
-    if (!src || !dst) return;
-    if (Math.abs(dst.currentTime - src.currentTime) > 0.05)
-      dst.currentTime = src.currentTime;
-    if (src.paused && !dst.paused) dst.pause();
-    if (!src.paused && dst.paused) dst.play().catch(() => {});
-  };
-
-  return (
-    <div className="grid grid-cols-2 gap-4">
-      <div>
-        <div className="text-xs text-muted-foreground mb-2 font-medium">
-          Original
-        </div>
-        <video
-          ref={aRef}
-          src={originalUrl}
-          controls
-          muted
-          onPlay={sync("a")}
-          onPause={sync("a")}
-          onSeeked={sync("a")}
-          onTimeUpdate={sync("a")}
-          className="w-full rounded-xl object-cover"
-          style={{ aspectRatio: "16/9" }}
-        />
-      </div>
-      <div>
-        <div className="text-xs text-muted-foreground mb-2 font-medium">
-          Humanized
-        </div>
-        {isVideo ? (
-          <video
-            ref={bRef}
-            src={processedUrl}
-            controls
-            muted
-            onPlay={sync("b")}
-            onPause={sync("b")}
-            onSeeked={sync("b")}
-            onTimeUpdate={sync("b")}
-            className="w-full rounded-xl object-cover"
-            style={{ aspectRatio: "16/9" }}
-          />
-        ) : (
-          <img
-            src={processedUrl}
-            alt="Humanized preview frame"
-            className="w-full rounded-xl object-cover"
-            style={{ aspectRatio: "16/9" }}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
 function ProgressBar({ progress }: { progress: number }) {
   return (
     <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
@@ -254,14 +183,6 @@ export default function Process() {
     navigate("/");
     return null;
   }
-
-  // Detect if processed output is a video (real per-frame pipeline) vs preview JPG
-  const processedIsVideo = Boolean(
-    job?.type === "video" &&
-      job.processedUrl &&
-      !job.processedUrl.endsWith(".jpg") &&
-      !job.processedUrl.endsWith(".jpeg")
-  );
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -383,7 +304,7 @@ export default function Process() {
               {[
                 {
                   label: "Type",
-                  value: job.type === "image" ? "Image" : "Video",
+                  value: "Image",
                 },
                 {
                   label: "Intensity",
@@ -412,23 +333,15 @@ export default function Process() {
                 Before / After Comparison
               </h2>
 
-              {job.type === "video" ? (
-                <SyncedVideoPair
+              <div>
+                <p className="text-muted-foreground text-sm mb-4">
+                  Drag the slider to compare original vs. humanized.
+                </p>
+                <ComparisonSlider
                   originalUrl={job.originalUrl}
                   processedUrl={job.processedUrl}
-                  isVideo={processedIsVideo}
                 />
-              ) : (
-                <div>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    Drag the slider to compare original vs. humanized.
-                  </p>
-                  <ComparisonSlider
-                    originalUrl={job.originalUrl}
-                    processedUrl={job.processedUrl}
-                  />
-                </div>
-              )}
+              </div>
             </div>
           )}
 

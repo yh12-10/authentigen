@@ -2,10 +2,10 @@
 
 # AuthentiGen
 
-**Give AI-generated images and video the fingerprint of a real camera.**
+**Give AI-generated images the fingerprint of a real camera.**
 
-AuthentiGen is a self-hostable web app that runs images and short videos through a
-deterministic, pixel-level pipeline — sensor grain, lens optics, color grading, JPEG/codec
+AuthentiGen is a self-hostable web app that runs AI-generated images through a
+deterministic, pixel-level pipeline — sensor grain, lens optics, color grading, JPEG
 artefacts, and camera EXIF — so the output carries the statistical signatures of real
 photographic capture instead of clean synthetic output.
 
@@ -23,8 +23,8 @@ A full-stack TypeScript web app, complete and runnable on your own machine:
   ~1000-line deterministic pipeline built on [`sharp`](https://sharp.pixelplumbing.com/) and raw
   buffer math. The output looks nearly identical to the input — it just no longer looks
   _computer-clean_.
-- **Images and video.** Images are processed in one pass; short videos are decoded frame-by-frame
-  with `ffmpeg`, humanized per frame, and re-encoded to a real MP4 with the original audio.
+- **Images.** Each upload is processed in one pass through the deterministic pixel pipeline
+  (JPG / PNG / WEBP, up to 20 MB).
 - **Three intensity levels** — Light / Medium / Heavy — mapped to plausible camera profiles
   (e.g. ISO 200 phone → ISO 3200 35mm film).
 - **Free and unlimited.** Self-hosted with no credits, paywalls, or usage limits — run it on your own
@@ -34,18 +34,18 @@ A full-stack TypeScript web app, complete and runnable on your own machine:
 
 ## Features
 
-| Area             | What's included                                                                                        |
-| ---------------- | ------------------------------------------------------------------------------------------------------ |
-| **Humanization** | 12-step image pipeline + frame-by-frame video pipeline (30s cap), Light/Medium/Heavy intensity         |
-| **Auth**         | Email + password, bcrypt hashing, JWT session cookie (1-year)                                          |
-| **Jobs**         | Async processing, progress polling, batch upload (1–10 files) with ZIP download                        |
-| **UI**           | React 19 + Tailwind v4 dark theme, before/after comparison slider, synced video pair, dashboard, admin |
-| **Quality**      | Strict TypeScript (0 errors), passing Vitest tests (server + client), Prettier                         |
+| Area             | What's included                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| **Humanization** | 13-step deterministic image pipeline, Light/Medium/Heavy intensity                  |
+| **Auth**         | Email + password, bcrypt hashing, JWT session cookie (1-year)                       |
+| **Jobs**         | Async processing, progress polling, batch upload (1–10 files) with ZIP download     |
+| **UI**           | React 19 + Tailwind v4 dark theme, before/after comparison slider, dashboard, admin |
+| **Quality**      | Strict TypeScript (0 errors), passing Vitest tests (server + client), Prettier      |
 
 ## Tech stack
 
 - **Client:** React 19, Vite 7, TypeScript, Tailwind CSS v4, tRPC + React Query, Wouter, Framer Motion, three.js, shadcn/ui (Radix)
-- **Server:** Node + Express, tRPC, Drizzle ORM, MySQL 8, `sharp`, `ffmpeg-static`/`ffprobe-static`, `jose` (JWT), `bcryptjs`
+- **Server:** Node + Express, tRPC, Drizzle ORM, MySQL 8, `sharp`, `jose` (JWT), `bcryptjs`
 - **Tooling:** pnpm, esbuild, Vitest, Prettier
 
 ---
@@ -79,8 +79,6 @@ pnpm db:push                  # create tables
 pnpm dev                      # starts on http://localhost:3000 (auto-picks next free port)
 ```
 
-`ffmpeg`/`ffprobe` are bundled via `ffmpeg-static` / `ffprobe-static` — no system install needed.
-
 ### Production build
 
 ```bash
@@ -99,8 +97,6 @@ Copy `.env.example` to `.env`. Summary:
 | `DATABASE_URL`                                                            | ✅        | MySQL connection string. Docker Compose supplies this automatically.                                                                            |
 | `JWT_SECRET`                                                              | ✅ (prod) | 32+ char random string for signing sessions. Auto-generated and written to `.env` on first dev run.                                             |
 | `APP_BASE_URL`                                                            | optional  | Public origin used in links (e.g. job-completion emails).                                                                                       |
-| `VIDEO_MAX_DURATION_SECONDS`                                              | optional  | Hard cap on input video length (default 30); over-limit jobs fail.                                                                              |
-| `VIDEO_FRAME_SAMPLE_EVERY`                                                | optional  | Humanize every Nth frame (default 3).                                                                                                           |
 | `STORAGE_BACKEND`                                                         | optional  | `local` (default) or `s3`. See [Storage backends](#storage-backends).                                                                           |
 | `S3_BUCKET` / `S3_REGION` / `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | for S3    | Required when `STORAGE_BACKEND=s3`. `S3_ENDPOINT` + `S3_FORCE_PATH_STYLE` enable R2/MinIO/B2; `S3_PUBLIC_URL` serves long-lived URLs via a CDN. |
 | `SMTP_HOST` / `SMTP_FROM` / `SMTP_*`                                      | optional  | Enable email; blank disables it (logs to console). See [Email](#email). `OWNER_EMAIL` receives admin notifications.                             |
@@ -133,7 +129,7 @@ The image pipeline applies, in order: barrel distortion → Sobel edge + skin-to
 edge-aware chromatic aberration → shadow crush / highlight clip / micro-banding → ring motion blur →
 sensor hot pixels → color-temperature drift → focus-falloff blur → film grain + lens dust + vignette →
 mozjpeg re-encode with fake-camera EXIF. Dark/neon scenes additionally get haze, neon bloom, and rain
-streaks. Video reuses the same per-frame engine and reassembles with `ffmpeg`.
+streaks.
 
 Processing is free and unlimited — there are no credits or per-job costs.
 
@@ -153,7 +149,7 @@ pnpm format     # Prettier write
 
 ```
 client/        React + Vite front end (pages, components, hooks)
-server/        Express + tRPC API, humanizer & video pipelines, auth, payments, storage
+server/        Express + tRPC API, humanizer pipeline, auth, storage
   _core/       Server bootstrap, env, auth, context, vite/static serving
 shared/        Constants/types shared between client and server
 drizzle/       Drizzle schema + migrations (MySQL)

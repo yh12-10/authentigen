@@ -49,14 +49,13 @@ export async function sendMail(opts: {
 export async function sendJobCompletionEmail(params: {
   to: string;
   jobId: number;
-  type: "image" | "video";
 }): Promise<void> {
   if (!isSmtpConfigured()) return;
   const link = `${ENV.appBaseUrl.replace(/\/+$/, "")}/process/${params.jobId}`;
   await sendMail({
     to: params.to,
     subject: "Your AuthentiGen result is ready",
-    text: `Your ${params.type} has finished processing.\n\nView and download it here:\n${link}`,
+    text: `Your humanized image has finished processing.\n\nView and download it here:\n${link}`,
   }).catch(() => {});
 }
 

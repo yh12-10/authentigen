@@ -3,16 +3,12 @@ import type { Response } from "express";
 import { jobs } from "../drizzle/schema";
 import { getDb, createJob, getUserById } from "./db";
 import { storagePut, storageGetBuffer } from "./storage";
-import { processImageJob, processVideoJob } from "./humanizer";
+import { processImageJob } from "./humanizer";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@shared/const";
 
 interface BatchFile {
   filename: string;
-  mimeType:
-    | "image/jpeg"
-    | "image/png"
-    | "image/webp"
-    | "video/mp4"
-    | "video/webm";
+  mimeType: "image/jpeg" | "image/png" | "image/webp";
   intensity: "light" | "medium" | "heavy";
   fileDataBase64: string;
 }
@@ -34,9 +30,14 @@ export async function createBatch(
   const jobIds: number[] = [];
 
   for (const file of files) {
-    const type = file.mimeType.startsWith("image/") ? "image" : "video";
+    const type = "image";
     const requestedKey = `originals/${userId}/${Date.now()}-${file.filename}`;
     const buf = Buffer.from(file.fileDataBase64, "base64");
+    if (buf.length > MAX_UPLOAD_BYTES) {
+      throw new Error(
+        `File too large: ${file.filename}. Max ${MAX_UPLOAD_MB} MB.`
+      );
+    }
     const { key: originalKey, url: originalUrl } = await storagePut(
       requestedKey,
       buf,
@@ -65,8 +66,7 @@ export async function createBatch(
         const job = (await import("./db")).getJobById;
         const j = await job(jobId);
         if (!j) continue;
-        const fn = j.type === "image" ? processImageJob : processVideoJob;
-        await fn(jobId);
+        await processImageJob(jobId);
       } catch (err) {
         console.error(`[Batch] job ${jobId} failed:`, err);
       }

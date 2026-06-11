@@ -5,7 +5,6 @@ import {
   text,
   timestamp,
   varchar,
-  float,
   uniqueIndex,
   index,
 } from "drizzle-orm/mysql-core";
@@ -38,7 +37,7 @@ export const jobs = mysqlTable(
   {
     id: int("id").autoincrement().primaryKey(),
     userId: int("userId").notNull(),
-    type: mysqlEnum("type", ["image", "video"]).notNull(),
+    type: mysqlEnum("type", ["image"]).notNull(),
     status: mysqlEnum("status", [
       "pending",
       "processing",
@@ -59,9 +58,6 @@ export const jobs = mysqlTable(
     progress: int("progress").default(0).notNull(),
     errorMessage: text("errorMessage"),
     batchId: varchar("batchId", { length: 36 }),
-    durationSeconds: float("durationSeconds"),
-    frameCount: int("frameCount"),
-    framesProcessed: int("framesProcessed").default(0).notNull(),
     processingStartedAt: timestamp("processingStartedAt"),
     completedAt: timestamp("completedAt"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),

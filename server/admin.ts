@@ -88,13 +88,11 @@ export async function listAdminJobs(opts: {
   limit: number;
   offset: number;
   status?: "pending" | "processing" | "completed" | "failed";
-  type?: "image" | "video";
 }) {
   const db = await getDb();
   if (!db) return [];
   const conditions = [] as any[];
   if (opts.status) conditions.push(eq(jobs.status, opts.status));
-  if (opts.type) conditions.push(eq(jobs.type, opts.type));
 
   const where =
     conditions.length === 0

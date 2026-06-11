@@ -40,8 +40,6 @@ const IMAGES = {
     "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/feature_shield-5aympYYyki6z5uCpsMWN94.webp",
   featureHumanizer:
     "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/feature_humanizer-YLWtwRqsT5MUjd9mYKRp6K.webp",
-  featureVideo:
-    "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/feature_video-42jBJtdPW8t5YqMdKdCyCf.webp",
   pricingBg:
     "https://d2xsxph8kpxj0f.cloudfront.net/310519663259820393/BFLz82b6GYCyJFpcFZXEzr/pricing_bg-bUPbt5GkjuDKtSMLB66HfJ.webp",
   dashboardPreview:
@@ -67,12 +65,6 @@ const FEATURES: Feature[] = [
     image: IMAGES.featureHumanizer,
     title: "Image Humanizer",
     desc: "Sub-pixel barrel warp, edge-aware chromatic aberration, Gaussian sensor noise, lens vignette, film halation — applied with real cinematic intent.",
-  },
-  {
-    icon: Sparkles,
-    image: IMAGES.featureVideo,
-    title: "Video Processing",
-    desc: "Frame-sampled FFmpeg pipeline humanizes every frame, preserves audio, caps at 30 s, plays back from a real MP4 you can download.",
   },
   {
     icon: Layers,
@@ -222,9 +214,9 @@ export default function Home() {
             </h1>
 
             <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed">
-              Give AI-generated images and videos the grain, lens optics, and
-              imperfections of real photography — through a deterministic,
-              pixel-level pipeline that runs entirely on your own server.
+              Give AI-generated images the grain, lens optics, and imperfections
+              of real photography — through a deterministic, pixel-level
+              pipeline that runs entirely on your own server.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
@@ -362,7 +354,7 @@ export default function Home() {
               {
                 step: "01",
                 title: "Upload Your File",
-                desc: "Drop in your AI-generated image (JPG, PNG, WEBP) or video (MP4, WEBM). Files are encrypted on upload.",
+                desc: "Drop in your AI-generated image (JPG, PNG, WEBP). Files are encrypted on upload.",
               },
               {
                 step: "02",
@@ -559,7 +551,7 @@ export default function Home() {
                   {
                     icon: Zap,
                     title: "No credits or limits",
-                    desc: "Process unlimited images and video for free.",
+                    desc: "Process unlimited images for free.",
                   },
                   {
                     icon: Github,
@@ -664,7 +656,7 @@ export default function Home() {
                 </h2>
                 <p className="text-muted-foreground text-lg mb-8 max-w-lg mx-auto">
                   Add the grain, optics, and imperfections of real photography
-                  to your AI-generated images and video.
+                  to your AI-generated images.
                 </p>
                 <MagneticButton strength={12} radius={150}>
                   <RippleButton
@@ -694,8 +686,8 @@ export default function Home() {
               <span className="text-base font-semibold">AuthentiGen</span>
             </div>
             <p className="text-xs text-muted-foreground max-w-xs">
-              Premium AI humanization for images and videos. Camera-realistic,
-              private, and self-hosted.
+              Premium AI humanization for images. Camera-realistic, private, and
+              self-hosted.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 text-sm">

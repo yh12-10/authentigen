@@ -12,7 +12,8 @@ import {
 import { signupUser, loginUser, signSessionToken } from "./_core/auth";
 import { createJob, getJobById, getJobsByUserId } from "./db";
 import { storagePut } from "./storage";
-import { processImageJob, processVideoJob } from "./humanizer";
+import { processImageJob } from "./humanizer";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@shared/const";
 import { getAdminStats, listAdminUsers, listAdminJobs } from "./admin";
 import { createBatch, listJobsByBatch } from "./batch";
 
@@ -23,13 +24,7 @@ const jobsRouter = router({
     .input(
       z.object({
         filename: z.string().min(1).max(255),
-        mimeType: z.enum([
-          "image/jpeg",
-          "image/png",
-          "image/webp",
-          "video/mp4",
-          "video/webm",
-        ]),
+        mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
         intensity: z.enum(["light", "medium", "heavy"]).default("medium"),
         fileDataBase64: z.string(),
         batchId: z.string().min(1).max(36).optional(),
@@ -37,12 +32,20 @@ const jobsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
-      const type = input.mimeType.startsWith("image/") ? "image" : "video";
+      const type = "image";
 
       // Upload original file to storage. storagePut returns the actual key
       // (with a unique hash suffix) — store THAT in the DB so subsequent reads find the file.
       const requestedKey = `originals/${userId}/${Date.now()}-${input.filename}`;
       const fileBuffer = Buffer.from(input.fileDataBase64, "base64");
+      // Server-side size guard — never trust the client. Rejects oversized
+      // uploads (e.g. a direct API call past the browser's check).
+      if (fileBuffer.length > MAX_UPLOAD_BYTES) {
+        throw new TRPCError({
+          code: "PAYLOAD_TOO_LARGE",
+          message: `File too large. Max ${MAX_UPLOAD_MB} MB.`,
+        });
+      }
       const { key: originalKey, url: originalUrl } = await storagePut(
         requestedKey,
         fileBuffer,
@@ -64,8 +67,7 @@ const jobsRouter = router({
       });
 
       // Trigger processing asynchronously (fire and forget)
-      const processFn = type === "image" ? processImageJob : processVideoJob;
-      processFn(jobId).catch(err => {
+      processImageJob(jobId).catch(err => {
         console.error(`[Humanizer] Job ${jobId} failed:`, err);
       });
 
@@ -107,7 +109,6 @@ const adminRouter = router({
         status: z
           .enum(["pending", "processing", "completed", "failed"])
           .optional(),
-        type: z.enum(["image", "video"]).optional(),
       })
     )
     .query(({ input }) => listAdminJobs(input)),
@@ -117,13 +118,7 @@ const adminRouter = router({
 
 const fileSchema = z.object({
   filename: z.string().min(1).max(255),
-  mimeType: z.enum([
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "video/mp4",
-    "video/webm",
-  ]),
+  mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
   intensity: z.enum(["light", "medium", "heavy"]).default("medium"),
   fileDataBase64: z.string(),
 });

@@ -72,10 +72,6 @@ export const FAQ_ITEMS = [
     a: "Light keeps the image nearly identical with subtle ISO 200-style grain and faint vignetting. Medium adds organic color grading, lens imperfections, and depth-of-field micro-blur. Heavy delivers a full vintage 35mm cinematic pass with crushed blacks, teal-orange toning, lens flares, and heavy grain.",
   },
   {
-    q: "How long do videos take to humanize?",
-    a: "Videos are processed frame-sampled (every 3rd frame by default) with the original audio passed through unchanged, then reassembled into a real MP4. Time scales with clip length and resolution. The 30-second cap exists so the wait stays predictable.",
-  },
-  {
     q: "Are my files private?",
     a: "AuthentiGen is self-hosted: originals and humanized outputs are stored on the server you deploy to (local filesystem by default), under per-user keys. Nothing is sent to a third party, indexed, or used as training data. You can remove a job from the dashboard at any time.",
   },

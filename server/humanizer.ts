@@ -37,7 +37,10 @@ import { sendJobCompletionEmail } from "./_core/email";
 import { ENV } from "./_core/env";
 
 export type IntensityLevel = "light" | "medium" | "heavy";
-export type MediaType = "image" | "video";
+
+// Reject pathological inputs before sharp allocates huge buffers (OOM guard).
+export const MAX_IMAGE_DIMENSION = 12000; // px per side
+export const MAX_IMAGE_PIXELS = 40_000_000; // ~40 MP total
 
 // ─── Tuning tables ────────────────────────────────────────────────────────────
 
@@ -893,6 +896,19 @@ export async function humanizeImageBuffer(
   const W = meta.width ?? 1024;
   const H = meta.height ?? 1024;
 
+  // Guard against pathological dimensions that would exhaust memory in sharp.
+  if (
+    W > MAX_IMAGE_DIMENSION ||
+    H > MAX_IMAGE_DIMENSION ||
+    W * H > MAX_IMAGE_PIXELS
+  ) {
+    throw new Error(
+      `Image too large: ${W}×${H}. Max ${MAX_IMAGE_DIMENSION}px per side and ${Math.round(
+        MAX_IMAGE_PIXELS / 1_000_000
+      )} MP total.`
+    );
+  }
+
   let raw = await sharp(normalized).removeAlpha().raw().toBuffer();
 
   // Step 1.5: Detect scene type from the unmodified raw — gates the dark/neon
@@ -1137,7 +1153,7 @@ export async function processImageJob(jobId: number): Promise<void> {
     try {
       const user = await getUserById(job.userId);
       if (user?.email) {
-        await sendJobCompletionEmail({ to: user.email, jobId, type: "image" });
+        await sendJobCompletionEmail({ to: user.email, jobId });
       }
     } catch (err) {
       console.warn(`[email] job ${jobId} completion notice failed:`, err);
@@ -1148,9 +1164,4 @@ export async function processImageJob(jobId: number): Promise<void> {
     await updateJobStatus(jobId, "failed", { errorMessage: msg.slice(0, 500) });
     throw error;
   }
-}
-
-export async function processVideoJob(jobId: number): Promise<void> {
-  const { runVideoPipeline } = await import("./video");
-  await runVideoPipeline(jobId);
 }

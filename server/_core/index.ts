@@ -79,11 +79,6 @@ async function startServer() {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
-  // Clean up orphan video temp dirs older than 1h on boot.
-  import("../video")
-    .then(m => m.sweepOldTempDirs())
-    .catch(err => console.warn("[Startup] sweep failed:", err));
-
   // Reconcile jobs left pending/processing after a crash or restart.
   import("../recovery")
     .then(m => m.recoverOrphanedJobs())

@@ -18,7 +18,6 @@ import {
   Clock,
   Download,
   FileImage,
-  FileVideo,
 } from "lucide-react";
 import { RippleButton } from "@/components/visual/RippleButton";
 import {
@@ -37,20 +36,9 @@ import {
 } from "@/components/ui/card";
 
 type Intensity = "light" | "medium" | "heavy";
-type Mime =
-  | "image/jpeg"
-  | "image/png"
-  | "image/webp"
-  | "video/mp4"
-  | "video/webm";
+type Mime = "image/jpeg" | "image/png" | "image/webp";
 
-const ACCEPTED: Mime[] = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "video/mp4",
-  "video/webm",
-];
+const ACCEPTED: Mime[] = ["image/jpeg", "image/png", "image/webp"];
 const MAX_FILES = 10;
 
 interface Item {
@@ -290,18 +278,13 @@ export default function BatchUpload() {
 
             <div className="space-y-2 mb-6">
               {items.map((it, i) => {
-                const isImg = it.file.type.startsWith("image/");
                 return (
                   <div
                     key={i}
                     className="bg-secondary/30 border border-border/50 rounded-xl p-3 flex items-center gap-3"
                   >
                     <div className="size-10 rounded-lg bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] flex-shrink-0">
-                      {isImg ? (
-                        <FileImage className="size-5" />
-                      ) : (
-                        <FileVideo className="size-5" />
-                      )}
+                      <FileImage className="size-5" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm truncate">
