@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  :root{ --gold:#f5a623; --blue:#4f8ef7; --bg:#0a0a0a; --muted:#9a9a9a; --faint:#c9c9c9; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg)}
+  .page{
+    position:relative;width:1080px;height:1080px;overflow:hidden;color:#f2f2f2;
+    font-family:Inter,system-ui,sans-serif;padding:84px 84px 72px;display:flex;flex-direction:column;
+    background:
+      radial-gradient(120% 70% at 84% 2%, rgba(245,166,35,.11), transparent 50%),
+      radial-gradient(110% 70% at 0% 100%, rgba(79,142,247,.07), transparent 52%),
+      var(--bg);
+    page-break-after:always;break-after:page;
+  }
+  .page:last-child{page-break-after:auto}
+  .grain{position:absolute;inset:0;opacity:.05;mix-blend-mode:overlay;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  .brand{display:flex;align-items:center;gap:14px;font-family:"DM Serif Display",Georgia,serif;font-size:38px;z-index:2}
+  .mk{width:34px;height:34px;border-radius:10px;background:var(--gold);box-shadow:0 0 22px rgba(245,166,35,.55)}
+  .top{display:flex;justify-content:space-between;align-items:center;z-index:2}
+  .pageno{font-size:18px;letter-spacing:.22em;color:var(--muted)}
+  .kicker{color:var(--gold);letter-spacing:.32em;font-size:22px;font-weight:600;text-transform:uppercase}
+  h1{font-family:"DM Serif Display",Georgia,serif;font-weight:400;line-height:1.04}
+  h2{font-family:"DM Serif Display",Georgia,serif;font-weight:400;font-size:62px;line-height:1.06;z-index:2}
+  .lead{color:var(--faint);font-size:27px;line-height:1.5;z-index:2}
+  .gold{color:var(--gold)} .muted{color:var(--muted)} .em{font-style:italic;color:var(--gold)}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(245,166,35,.5),transparent)}
+  footer{margin-top:auto;display:flex;justify-content:space-between;align-items:center;z-index:2;color:var(--muted);font-size:21px}
+
+  /* cover */
+  .cover{justify-content:center;text-align:center;align-items:center}
+  .cover .kicker{margin-bottom:30px}
+  .cover h1{font-size:150px}
+  .cover h1 .em{font-style:italic}
+  .cover .tag{font-size:34px;color:var(--faint);margin:34px auto 0;max-width:760px;line-height:1.45}
+  .cover .chips{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:46px}
+  .chip{border:1px solid rgba(245,166,35,.35);color:#ededed;padding:13px 24px;border-radius:999px;font-size:22px;background:rgba(245,166,35,.06)}
+  .cover .url{position:absolute;bottom:72px;left:0;right:0;text-align:center;color:var(--muted);font-size:24px}
+
+  /* before/after row */
+  .ba{display:flex;gap:26px;margin-top:38px;z-index:2}
+  .ba figure{position:relative;flex:1;border-radius:18px;overflow:hidden;border:1px solid rgba(245,166,35,.22);
+    box-shadow:0 34px 70px -44px #000;aspect-ratio:4/5}
+  .ba img{width:100%;height:100%;object-fit:cover;display:block}
+  .pill{position:absolute;top:16px;left:16px;padding:8px 16px;border-radius:999px;font-size:18px;font-weight:700;
+    letter-spacing:.06em;background:rgba(10,10,10,.72)}
+  .pill.red{color:#ff6b6b;border:1.5px solid rgba(255,107,107,.55)}
+  .pill.gold{color:var(--gold);border:1.5px solid rgba(245,166,35,.6)}
+
+  /* effect grid */
+  .fx{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:36px;z-index:2}
+  .fx .cell{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);border-radius:16px;padding:22px 24px}
+  .fx .cell h3{font-size:25px;font-weight:600;margin-bottom:6px}
+  .fx .cell p{color:var(--muted);font-size:19px;line-height:1.4}
+  .pills{display:flex;gap:14px;margin-top:30px;z-index:2}
+  .level{flex:1;text-align:center;border:1px solid rgba(245,166,35,.3);border-radius:14px;padding:18px 0;font-size:24px;background:rgba(245,166,35,.05)}
+
+  /* two-column cards */
+  .cols{display:flex;gap:26px;margin-top:36px;z-index:2}
+  .col{flex:1;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);border-radius:18px;padding:30px 30px}
+  .col .h{font-size:22px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:18px}
+  .col ul{list-style:none;display:flex;flex-direction:column;gap:13px}
+  .col li{position:relative;padding-left:26px;font-size:23px;color:var(--faint);line-height:1.35}
+  .col li::before{content:"";position:absolute;left:0;top:11px;width:9px;height:9px;border-radius:50%;background:var(--gold)}
+  .stack{display:flex;flex-wrap:wrap;gap:13px;margin-top:30px;z-index:2}
+  .stack span{border:1px solid rgba(255,255,255,.12);color:#e8e8e8;padding:11px 20px;border-radius:999px;font-size:21px}
+
+  /* principles + CTA */
+  .cta{justify-content:center;text-align:center;align-items:center}
+  .principles{display:flex;gap:24px;margin:14px 0 52px;width:100%}
+  .principles .p{flex:1;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px 22px;background:rgba(255,255,255,.02)}
+  .principles .p .t{font-family:"DM Serif Display",Georgia,serif;font-size:34px;color:var(--gold);margin-bottom:10px}
+  .principles .p .d{font-size:20px;color:var(--muted);line-height:1.4}
+  .ctabox{border:1.5px solid rgba(245,166,35,.45);border-radius:22px;padding:44px 56px;background:rgba(245,166,35,.05)}
+  .ctabox .u{font-family:"DM Serif Display",Georgia,serif;font-size:46px;color:#fff}
+  .ctabox .s{font-size:24px;color:var(--faint);margin-top:14px}
+
+  @media print{
+    @page{ size:11.25in 11.25in; margin:0 }
+    html,body{ background:#0a0a0a !important }
+    .page{ width:11.25in; height:11.25in }
+    *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important }
+  }
+</style>
+</head>
+<body>
+
+<!-- 1 · COVER -->
+<section class="page cover">
+  <div class="grain"></div>
+  <div class="brand" style="position:absolute;top:84px;left:84px"><span class="mk"></span> AuthentiGen</div>
+  <span class="kicker">Open source · v3.0.0</span>
+  <h1>Authenti<span class="em">Gen</span></h1>
+  <p class="tag">Give AI-generated images the fingerprint of a real camera.</p>
+  <div class="chips">
+    <span class="chip">13-step pixel pipeline</span>
+    <span class="chip">Light · Medium · Heavy</span>
+    <span class="chip">MIT licensed</span>
+    <span class="chip">Self-hosted</span>
+  </div>
+  <div class="url">github.com/yh12-10/authentigen</div>
+</section>
+
+<!-- 2 · THE IDEA + BEFORE/AFTER -->
+<section class="page">
+  <div class="grain"></div>
+  <div class="top"><div class="brand"><span class="mk"></span> AuthentiGen</div><div class="pageno">02 / 05</div></div>
+  <h2 style="margin-top:40px">AI images look <span class="em">too clean</span>.</h2>
+  <p class="lead" style="margin-top:18px">No sensor grain, no lens flaws, no film character. AuthentiGen adds back what real cameras and film leave in — so the output reads as a real photo, not a render.</p>
+  <div class="ba">
+    <figure><img src="../humanization-deck/images/portrait-original.jpg" alt="before"><figcaption class="pill red">AI-GENERATED</figcaption></figure>
+    <figure><img src="../humanization-deck/images/portrait-heavy.jpg" alt="after"><figcaption class="pill gold">HUMANIZED</figcaption></figure>
+  </div>
+  <footer><span>Real before / after — same image, run through the pipeline</span></footer>
+</section>
+
+<!-- 3 · HOW IT WORKS -->
+<section class="page">
+  <div class="grain"></div>
+  <div class="top"><div class="brand"><span class="mk"></span> AuthentiGen</div><div class="pageno">03 / 05</div></div>
+  <span class="kicker" style="margin-top:40px">How it works</span>
+  <h2 style="margin-top:12px">A deterministic 13-step<br/>pixel pipeline</h2>
+  <p class="lead" style="margin-top:16px;font-size:24px">Real pixel math on <span class="gold">sharp</span> — no AI model, no cloud calls.</p>
+  <div class="fx">
+    <div class="cell"><h3>Film grain &amp; hot pixels</h3><p>Sensor-style noise and stray bright pixels.</p></div>
+    <div class="cell"><h3>Chromatic aberration</h3><p>Edge-aware color fringing, eased on skin.</p></div>
+    <div class="cell"><h3>Lens vignette &amp; halation</h3><p>Corner falloff and warm highlight bloom.</p></div>
+    <div class="cell"><h3>Color drift &amp; EXIF</h3><p>Temperature shift + authentic camera metadata.</p></div>
+  </div>
+  <div class="pills">
+    <div class="level"><span class="gold">Light</span></div>
+    <div class="level"><span class="gold">Medium</span></div>
+    <div class="level"><span class="gold">Heavy</span></div>
+  </div>
+  <footer><span>Three intensities — ISO 200 phone → ISO 3200 35 mm film</span></footer>
+</section>
+
+<!-- 4 · ENGINEERING -->
+<section class="page">
+  <div class="grain"></div>
+  <div class="top"><div class="brand"><span class="mk"></span> AuthentiGen</div><div class="pageno">04 / 05</div></div>
+  <span class="kicker" style="margin-top:40px">Built end-to-end</span>
+  <h2 style="margin-top:12px">Full-stack &amp; production-ready</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="h">Frontend</div>
+      <ul>
+        <li>React 19 · Vite · Tailwind v4</li>
+        <li>Before/after comparison slider</li>
+        <li>Job dashboard + batch uploads</li>
+        <li>Admin panel</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="h">Backend</div>
+      <ul>
+        <li>Node · Express · tRPC</li>
+        <li>Drizzle ORM + MySQL · sharp</li>
+        <li>JWT + bcrypt auth · rate limiting</li>
+        <li>Crash-safe jobs · local/S3 storage</li>
+      </ul>
+    </div>
+  </div>
+  <div class="stack">
+    <span>TypeScript (strict, 0 errors)</span><span>Docker — one command</span>
+    <span>GitHub Actions CI</span><span>Vitest</span><span>MIT licensed</span>
+  </div>
+  <footer><span>Self-hosted · privacy-first · nothing leaves your machine</span></footer>
+</section>
+
+<!-- 5 · PRINCIPLES + CTA -->
+<section class="page cta">
+  <div class="grain"></div>
+  <div class="brand" style="position:absolute;top:84px;left:84px"><span class="mk"></span> AuthentiGen</div>
+  <span class="kicker" style="margin-bottom:30px">What I cared about</span>
+  <div class="principles">
+    <div class="p"><div class="t">Honest</div><div class="d">No "undetectable" claims. Ships a candid before/after and states its limits.</div></div>
+    <div class="p"><div class="t">Private</div><div class="d">Fully self-hosted. No cloud, no accounts, nothing leaves your server.</div></div>
+    <div class="p"><div class="t">Free</div><div class="d">MIT-licensed, open source. No credits, no paywalls, run it forever.</div></div>
+  </div>
+  <div class="ctabox">
+    <div class="u">github.com/yh12-10/authentigen</div>
+    <div class="s">⭐ Clone it · <span class="gold">docker compose up</span> · open localhost:3000</div>
+  </div>
+</section>
+
+</body>
+</html>
